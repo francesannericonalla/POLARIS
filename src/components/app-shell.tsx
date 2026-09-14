@@ -13,16 +13,16 @@ export async function AppShell({
   activeUnitId?: string;
   children: React.ReactNode;
 }) {
-  const navLinks: { label: string; href: string }[] = [
-    { label: "Dashboard", href: "/dashboard" },
-  ];
-  if (profile.unit_id) {
-    navLinks.push({ label: "Repository", href: `/repository/${profile.unit_id}` });
-  }
-  if (profile.role === "system_admin") {
-    navLinks.push({ label: "Account Approvals", href: "/admin/approvals" });
-    navLinks.push({ label: "All Accounts", href: "/admin/accounts" });
-  }
+  const navLinks: { label: string; href: string }[] =
+    profile.role === "system_admin"
+      ? [
+          { label: "Account Approvals", href: "/admin/approvals" },
+          { label: "All Accounts", href: "/admin/accounts" },
+        ]
+      : [
+          { label: "Dashboard", href: "/dashboard" },
+          ...(profile.unit_id ? [{ label: "Repository", href: `/repository/${profile.unit_id}` }] : []),
+        ];
 
   const showSidebar = profile.role === "qao";
 

@@ -20,7 +20,17 @@ export default async function AccountsPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f0f2f5]">
-      <Topbar title="System Administration" userName={profile.full_name} role={profile.role} idNumber={profile.id_number} unitName={profile.unit_name} navLinks={[]} />
+      <Topbar
+        title="System Administration"
+        userName={profile.full_name}
+        role={profile.role}
+        idNumber={profile.id_number}
+        unitName={profile.unit_name}
+        navLinks={[
+          { label: "Account Approvals", href: "/admin/approvals" },
+          { label: "All Accounts", href: "/admin/accounts" },
+        ]}
+      />
       <main className="flex-1 p-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-6">

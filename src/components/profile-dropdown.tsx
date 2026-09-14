@@ -33,10 +33,11 @@ export function ProfileDropdown({
     office_user: "Office User",
   };
 
-  const words = userName.trim().split(/\s+/);
+  const trimmed = (userName ?? "").trim();
+  const words = trimmed ? trimmed.split(/\s+/) : ["?"];
   const initials = words.length === 1
-    ? words[0][0].toUpperCase()
-    : (words[0][0] + words[words.length - 1][0]).toUpperCase();
+    ? (words[0][0] ?? "?").toUpperCase()
+    : ((words[0][0] ?? "") + (words[words.length - 1][0] ?? "")).toUpperCase() || "?";
 
   return (
     <div ref={ref} className="relative">
