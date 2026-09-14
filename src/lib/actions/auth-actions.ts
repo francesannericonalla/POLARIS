@@ -11,6 +11,7 @@ export async function signup(_prev: SignupState, formData: FormData): Promise<Si
   const password = String(formData.get("password") || "");
   const fullName = String(formData.get("full_name") || "").trim();
   const unitId = String(formData.get("unit_id") || "");
+  const idNumber = String(formData.get("id_number") || "").trim();
 
   if (!email || !email.endsWith("@cit.edu")) {
     return { error: "Please use your official CIT-U email address." };
@@ -23,6 +24,12 @@ export async function signup(_prev: SignupState, formData: FormData): Promise<Si
   }
   if (!unitId) {
     return { error: "Please select your college/department or office." };
+  }
+  if (!idNumber) {
+    return { error: "Please enter your ID number." };
+  }
+  if (!/^\d{1,9}$/.test(idNumber)) {
+    return { error: "ID number must be 1–9 digits with no dashes or spaces." };
   }
 
   const admin = createAdminClient();
@@ -51,6 +58,7 @@ export async function signup(_prev: SignupState, formData: FormData): Promise<Si
     role: "office_user",
     status: "pending",
     unit_id: unitId,
+    id_number: idNumber,
   });
 
   if (profileErr) {

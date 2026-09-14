@@ -17,9 +17,9 @@ export function DownloadButton({ storagePath }: { storagePath: string }) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="text-maroon font-semibold text-xs hover:underline disabled:opacity-50"
+      className="text-xs font-medium text-maroon hover:text-maroon-dark disabled:opacity-50 transition-colors"
     >
-      {loading ? "Preparing\u2026" : "Download"}
+      {loading ? "Preparing..." : "Download"}
     </button>
   );
 }

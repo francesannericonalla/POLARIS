@@ -5,6 +5,7 @@ import { canAccessUnitRepository } from "@/lib/permissions";
 import { getUnitById } from "@/lib/data/units";
 import { getFolderById, getDocumentsForFolder, getDistinctSchoolYears, getVersionHistory } from "@/lib/data/documents";
 import { AppShell } from "@/components/app-shell";
+import { FilterBar } from "@/components/filter-bar";
 import { UploadModal } from "@/components/upload-modal";
 import { DownloadButton } from "@/components/download-button";
 import { ArchiveButton } from "@/components/archive-button";
@@ -37,59 +38,74 @@ export default async function FolderPage({
     show === "archived" ? documents.filter((d) => d.archived) : documents.filter((d) => show === "all" || !d.archived);
 
   return (
-    <AppShell profile={profile} title={`${unit.name} — ${folder.name}`} activeUnitId={unitId}>
+    <AppShell profile={profile} title={folder.name} activeUnitId={unitId}>
       <div className="p-6 max-w-6xl mx-auto">
-        <Link href={`/repository/${unitId}`} className="text-xs text-maroon font-semibold hover:underline">
-          {"\u2190"} Back to {unit.name}
-        </Link>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-3 mb-5">
-          <h1 className="text-lg font-bold text-maroon-dark">{folder.name}</h1>
-          <UploadModal
-            folderId={folderId}
-            schoolYears={schoolYears}
-            triggerLabel="+ Upload File"
-            triggerClassName="btn-primary text-sm"
-          />
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
+          <Link href={`/repository/${unitId}`} className="hover:text-maroon transition-colors">
+            {unit.name}
+          </Link>
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          <span className="text-gray-600 font-medium">{folder.name}</span>
         </div>
 
-        <FilterBar unitId={unitId} folderId={folderId} schoolYears={schoolYears} sy={sy} sem={sem} show={show} />
+        {/* Header row with inline filters */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <h1 className="text-lg font-semibold text-gray-800">{folder.name}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <FilterBar unitId={unitId} folderId={folderId} schoolYears={schoolYears} sy={sy} sem={sem} show={show} />
+            <UploadModal
+              folderId={folderId}
+              schoolYears={schoolYears}
+              triggerLabel="+ Upload File"
+              triggerClassName="btn-primary"
+            />
+          </div>
+        </div>
 
+        {/* Document table */}
         <div className="card overflow-hidden mt-4">
           {visibleDocuments.length === 0 ? (
-            <div className="p-10 text-center text-sm text-gray-400">
-              No documents {includeArchived ? "" : "uploaded"} here yet for this filter.
+            <div className="p-12 text-center">
+              <svg className="w-10 h-10 text-gray-200 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-sm text-gray-400">No documents here yet for this filter.</p>
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 text-left text-xs text-gray-500 uppercase">
-                  <th className="px-4 py-3 font-semibold">Title</th>
-                  <th className="px-4 py-3 font-semibold">SY / Semester</th>
-                  <th className="px-4 py-3 font-semibold">Version</th>
-                  <th className="px-4 py-3 font-semibold">Uploaded By</th>
-                  <th className="px-4 py-3 font-semibold">Date</th>
-                  <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                <tr className="border-b border-gray-100">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Title</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">SY / Semester</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Version</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Uploaded By</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Date</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {visibleDocuments.map((doc) => (
-                  <tr key={doc.id} className={`border-t border-gray-100 ${doc.archived ? "opacity-50" : ""}`}>
+                  <tr key={doc.id} className={`border-b border-gray-50 hover:bg-gray-50/60 transition-colors ${doc.archived ? "opacity-50" : ""}`}>
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-800">{doc.title}</div>
-                      <div className="text-xs text-gray-400">{doc.file_name}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{doc.file_name}</div>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {doc.school_year} &middot; {doc.semester}
+                    <td className="px-4 py-3">
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+                        {doc.school_year} &middot; {doc.semester === "N/A" ? "Full Year" : doc.semester}
+                      </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      v{doc.version}
+                    <td className="px-4 py-3">
+                      <span className="text-xs font-medium text-gray-500">v{doc.version}</span>
                       {doc.version > 1 && <VersionHistoryLink documentId={doc.id} />}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{doc.uploader_name}</td>
-                    <td className="px-4 py-3 text-gray-500">{new Date(doc.created_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-xs text-gray-500">{doc.uploader_name}</td>
+                    <td className="px-4 py-3 text-xs text-gray-400">{new Date(doc.created_at).toLocaleDateString()}</td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-3">
+                      <div className="flex items-center justify-end gap-2">
                         <DownloadButton storagePath={doc.storage_path} />
                         {!doc.archived && (
                           <UploadModal
@@ -98,7 +114,7 @@ export default async function FolderPage({
                             replacesId={doc.id}
                             replacesTitle={doc.title}
                             triggerLabel="New Version"
-                            triggerClassName="text-maroon font-semibold text-xs hover:underline"
+                            triggerClassName="text-xs font-medium text-gray-400 hover:text-maroon transition-colors"
                           />
                         )}
                         <ArchiveButton documentId={doc.id} archived={doc.archived} />
@@ -115,48 +131,6 @@ export default async function FolderPage({
   );
 }
 
-function FilterBar({
-  unitId,
-  folderId,
-  schoolYears,
-  sy,
-  sem,
-  show,
-}: {
-  unitId: string;
-  folderId: string;
-  schoolYears: string[];
-  sy?: string;
-  sem?: string;
-  show?: string;
-}) {
-  return (
-    <form method="GET" className="card p-3 flex flex-wrap gap-3 items-center text-sm">
-      <select name="sy" defaultValue={sy ?? ""} className="input-field w-auto">
-        <option value="">All School Years</option>
-        {schoolYears.map((y) => (
-          <option key={y} value={y}>
-            {y}
-          </option>
-        ))}
-      </select>
-      <select name="sem" defaultValue={sem ?? ""} className="input-field w-auto">
-        <option value="">All Semesters</option>
-        <option value="1st">1st Semester</option>
-        <option value="2nd">2nd Semester</option>
-        <option value="Summer">Summer</option>
-      </select>
-      <select name="show" defaultValue={show ?? "active"} className="input-field w-auto">
-        <option value="active">Active Only</option>
-        <option value="archived">Archived Only</option>
-        <option value="all">Show All</option>
-      </select>
-      <button type="submit" className="btn-secondary text-xs">
-        Apply Filters
-      </button>
-    </form>
-  );
-}
 
 async function VersionHistoryLink({ documentId }: { documentId: string }) {
   const history = await getVersionHistory(documentId);

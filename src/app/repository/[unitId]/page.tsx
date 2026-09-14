@@ -21,20 +21,34 @@ export default async function UnitRepositoryPage({ params }: { params: Promise<{
   const exclusiveFolders = folders.filter((f) => f.is_qao_exclusive);
 
   return (
-    <AppShell profile={profile} title={`${unit.name} — My Repository`} activeUnitId={unitId}>
+    <AppShell profile={profile} title={unit.name} activeUnitId={unitId}>
       <div className="p-6 max-w-6xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-lg font-semibold text-gray-800">{unit.name}</h1>
+          <p className="text-sm text-gray-400 mt-0.5">Document Repository</p>
+        </div>
+
         <FolderGrid folders={standardFolders} counts={counts} unitId={unitId} />
 
         {exclusiveFolders.length > 0 && (
           <>
-            <h2 className="text-sm font-bold text-maroon-dark uppercase tracking-wide mt-8 mb-3">
-              QAO-Exclusive Folders
-            </h2>
+            <div className="flex items-center gap-3 mt-10 mb-4">
+              <h2 className="text-xs font-bold text-gold uppercase tracking-widest">QAO-Exclusive Folders</h2>
+              <div className="flex-1 h-px bg-gold/20" />
+            </div>
             <FolderGrid folders={exclusiveFolders} counts={counts} unitId={unitId} />
           </>
         )}
       </div>
     </AppShell>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+    </svg>
   );
 }
 
@@ -48,20 +62,29 @@ function FolderGrid({
   unitId: string;
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {folders.map((folder) => (
-        <Link
-          key={folder.id}
-          href={`/repository/${unitId}/${folder.id}`}
-          className="card p-5 hover:shadow-md hover:border-gold transition-all"
-        >
-          <div className="w-9 h-9 bg-gold rounded-md flex items-center justify-center text-white text-lg mb-4">
-            {"\u{1F4C1}"}
-          </div>
-          <div className="font-semibold text-maroon-dark text-sm mb-1">{folder.name}</div>
-          <div className="text-xs text-gray-400">{counts[folder.id] ?? 0} files</div>
-        </Link>
-      ))}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {folders.map((folder) => {
+        const count = counts[folder.id] ?? 0;
+        return (
+          <Link
+            key={folder.id}
+            href={`/repository/${unitId}/${folder.id}`}
+            className="card p-5 hover:shadow-md hover:border-maroon/20 transition-all group"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-10 h-10 rounded-xl bg-maroon/8 text-maroon flex items-center justify-center group-hover:bg-maroon group-hover:text-white transition-colors">
+                <FolderIcon />
+              </div>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                count > 0 ? "bg-maroon/10 text-maroon" : "bg-gray-100 text-gray-400"
+              }`}>
+                {count} {count === 1 ? "file" : "files"}
+              </span>
+            </div>
+            <div className="font-semibold text-gray-800 text-sm leading-snug">{folder.name}</div>
+          </Link>
+        );
+      })}
     </div>
   );
 }

@@ -105,27 +105,34 @@ export async function getDocumentsForFolder(
 }
 
 // Full version chain for one document lineage, newest first.
+// Uses a single query: fetch all docs sharing the same title+folder, ordered by version desc.
 export async function getVersionHistory(documentId: string): Promise<DocumentRow[]> {
   const admin = createAdminClient();
-  const versions: DocumentRow[] = [];
-  let currentId: string | null = documentId;
+  const { data: target } = await admin
+    .from("documents")
+    .select("folder_id, title")
+    .eq("id", documentId)
+    .single();
+  if (!target) return [];
 
-  // Walk backward from the given version through previous_version_id.
-  // (Version chains are short in practice -- a handful of corrections
-  // per document -- so a simple loop is clearer than a recursive SQL CTE.)
-  while (currentId) {
-    const { data }: { data: DocumentRow | null } = await admin.from("documents").select("*").eq("id", currentId).single();
-    if (!data) break;
-    versions.push(data as DocumentRow);
-    currentId = data.previous_version_id;
-  }
+  const { data } = await admin
+    .from("documents")
+    .select("id, version, created_at, previous_version_id")
+    .eq("folder_id", target.folder_id)
+    .eq("title", target.title)
+    .order("version", { ascending: false });
 
-  return versions;
+  return (data ?? []) as DocumentRow[];
 }
 
 export async function getDistinctSchoolYears(unitId: string): Promise<string[]> {
   const admin = createAdminClient();
-  const { data, error } = await admin.from("documents").select("school_year").eq("unit_id", unitId);
+  const { data, error } = await admin
+    .from("documents")
+    .select("school_year")
+    .eq("unit_id", unitId)
+    .eq("is_latest", true)
+    .order("school_year", { ascending: false });
   if (error) throw error;
-  return Array.from(new Set((data as { school_year: string }[]).map((d) => d.school_year))).sort().reverse();
+  return Array.from(new Set((data as { school_year: string }[]).map((d) => d.school_year)));
 }
