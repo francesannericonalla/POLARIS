@@ -9,6 +9,8 @@ export type Profile = {
   role: "office_user" | "qao" | "system_admin";
   status: "pending" | "approved" | "rejected";
   unit_id: string | null;
+  id_number: string | null;
+  unit_name: string | null;
 };
 
 // The one place that answers "who is making this request, and are
@@ -22,15 +24,17 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
   if (!user) return null;
 
-  // Profile row itself is small and permitted by RLS for the owner,
-  // but we use the admin client here too so behavior is identical
-  // whether or not RLS is in place -- one code path, not two.
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("profiles")
-    .select("id, email, full_name, role, status, unit_id")
+    .select("id, email, full_name, role, status, unit_id, id_number, units(name)")
     .eq("id", user.id)
     .single();
 
-  return profile as Profile | null;
+  if (!profile) return null;
+
+  return {
+    ...(profile as any),
+    unit_name: (profile as any).units?.name ?? null,
+  } as Profile;
 }

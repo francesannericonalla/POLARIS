@@ -40,8 +40,9 @@ export async function uploadDocument(_prev: UploadState, formData: FormData): Pr
   if (!ALLOWED_TYPES.includes(file.type)) {
     return { error: "Only PDF, Word, Excel, JPG, and PNG files are allowed." };
   }
+  const VALID_SEMESTERS = ["1st", "2nd", "Summer", "N/A"];
   if (!schoolYear) return { error: "Please select the school year." };
-  if (!semester) return { error: "Please select the semester." };
+  if (!semester || !VALID_SEMESTERS.includes(semester)) return { error: "Please select a valid semester." };
   if (!title) return { error: "Please give the document a short title." };
 
   const admin = createAdminClient();

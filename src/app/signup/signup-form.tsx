@@ -16,29 +16,73 @@ export default function SignupForm({ tree }: { tree: Tree }) {
   const [state, formAction] = useFormState(signup, initialState);
   const [branch, setBranch] = useState<"academics" | "administration" | "">("");
   const [collegeId, setCollegeId] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const selectedCollege = tree.academics.find((c) => c.id === collegeId);
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    if (password !== confirmPassword) {
+      e.preventDefault();
+      setPasswordError("Passwords do not match.");
+      return;
+    }
+    setPasswordError("");
+  }
+
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="text-sm text-gray-700 block mb-1">Full Name</label>
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">Full Name</label>
         <input name="full_name" required className="input-field" placeholder="Juan Dela Cruz" />
       </div>
 
       <div>
-        <label className="text-sm text-gray-700 block mb-1">CIT-U Email</label>
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">CIT-U Email</label>
         <input name="email" type="email" required className="input-field" placeholder="juan.delacruz@cit.edu" />
       </div>
 
       <div>
-        <label className="text-sm text-gray-700 block mb-1">Password</label>
-        <input name="password" type="password" required minLength={8} className="input-field" />
-        <p className="text-xs text-gray-400 mt-1">At least 8 characters.</p>
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">ID Number</label>
+        <input
+          name="id_number"
+          required
+          className="input-field"
+          placeholder="e.g. 2277"
+          maxLength={9}
+        />
       </div>
 
       <div>
-        <label className="text-sm text-gray-700 block mb-1">I am from</label>
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">Password</label>
+        <input
+          name="password"
+          type="password"
+          required
+          minLength={8}
+          className="input-field"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">Confirm Password</label>
+        <input
+          type="password"
+          required
+          className="input-field"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+        {passwordError && (
+          <p className="text-xs text-red-500 mt-1">{passwordError}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">I am from</label>
         <select
           className="input-field"
           value={branch}
@@ -48,7 +92,7 @@ export default function SignupForm({ tree }: { tree: Tree }) {
           }}
           required
         >
-          <option value="">Select Academics or Administration</option>
+          <option value="">Please select</option>
           <option value="academics">Academics</option>
           <option value="administration">Administration</option>
         </select>
@@ -57,7 +101,7 @@ export default function SignupForm({ tree }: { tree: Tree }) {
       {branch === "academics" && (
         <>
           <div>
-            <label className="text-sm text-gray-700 block mb-1">College</label>
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">College</label>
             <select className="input-field" value={collegeId} onChange={(e) => setCollegeId(e.target.value)} required>
               <option value="">Select your college</option>
               {tree.academics.map((c) => (
@@ -70,7 +114,7 @@ export default function SignupForm({ tree }: { tree: Tree }) {
 
           {selectedCollege && (
             <div>
-              <label className="text-sm text-gray-700 block mb-1">Department</label>
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">Department</label>
               <select name="unit_id" className="input-field" required defaultValue="">
                 <option value="">Select your department</option>
                 {selectedCollege.departments.map((d) => (
@@ -86,7 +130,7 @@ export default function SignupForm({ tree }: { tree: Tree }) {
 
       {branch === "administration" && (
         <div>
-          <label className="text-sm text-gray-700 block mb-1">Office</label>
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">Office</label>
           <select name="unit_id" className="input-field" required defaultValue="">
             <option value="">Select your office</option>
             {tree.administration.map((o) => (
@@ -98,16 +142,18 @@ export default function SignupForm({ tree }: { tree: Tree }) {
         </div>
       )}
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state?.error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{state.error}</p>
+      )}
 
-      <SubmitButton pendingText={"Creating account\u2026"} className="btn-primary w-full">
+      <SubmitButton pendingText={"Creating account…"} className="btn-primary w-full mt-2">
         Create Account
       </SubmitButton>
 
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-gray-400">
         Already have an account?{" "}
         <Link href="/login" className="text-maroon font-semibold hover:underline">
-          Log in
+          Sign in
         </Link>
       </p>
     </form>

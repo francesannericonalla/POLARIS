@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type Unit = {
@@ -11,18 +12,23 @@ export type Unit = {
   sort_order: number;
 };
 
-// Full tree, used to render the sidebar and the signup dropdown.
-export async function getAllUnits(): Promise<Unit[]> {
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("units")
-    .select("id, name, type, branch, parent_id, is_qao, sort_order")
-    .order("branch")
-    .order("sort_order");
+// Cached — units never change at runtime, so we cache indefinitely
+// and only revalidate when seed/schema changes are made manually.
+export const getAllUnits = unstable_cache(
+  async (): Promise<Unit[]> => {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("units")
+      .select("id, name, type, branch, parent_id, is_qao, sort_order")
+      .order("branch")
+      .order("sort_order");
 
-  if (error) throw error;
-  return data as Unit[];
-}
+    if (error) throw error;
+    return data as Unit[];
+  },
+  ["all-units"],
+  { revalidate: 3600 }
+);
 
 export async function getUnitById(id: string): Promise<Unit | null> {
   const admin = createAdminClient();
