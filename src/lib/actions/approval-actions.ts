@@ -2,12 +2,12 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/auth";
-import { isQao } from "@/lib/permissions";
+import { isSystemAdmin } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
 
 export async function approveAccount(userId: string) {
   const profile = await getCurrentProfile();
-  if (!profile || !isQao(profile)) throw new Error("Not authorized.");
+  if (!profile || !isSystemAdmin(profile)) throw new Error("Not authorized.");
 
   const admin = createAdminClient();
   const { error } = await admin
@@ -29,7 +29,7 @@ export async function approveAccount(userId: string) {
 
 export async function rejectAccount(userId: string) {
   const profile = await getCurrentProfile();
-  if (!profile || !isQao(profile)) throw new Error("Not authorized.");
+  if (!profile || !isSystemAdmin(profile)) throw new Error("Not authorized.");
 
   const admin = createAdminClient();
   const { error } = await admin
