@@ -55,7 +55,7 @@ export async function signup(_prev: SignupState, formData: FormData): Promise<Si
     id: created.user.id,
     email,
     full_name: fullName,
-    role: "office_user",
+    role: unit.is_qao ? "qao" : "office_user",
     status: "pending",
     unit_id: unitId,
     id_number: idNumber,
