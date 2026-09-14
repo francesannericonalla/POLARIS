@@ -6,18 +6,18 @@ const config: Config = {
     extend: {
       colors: {
         maroon: {
-          DEFAULT: "#6D1223",
-          dark: "#4E0C19",
-          light: "#8A2036",
+          DEFAULT: "#7A1428",
+          dark: "#56101D",
+          light: "#9A2035",
         },
         gold: {
-          DEFAULT: "#D4A017",
-          light: "#F5DFA3",
+          DEFAULT: "#E8B84B",
+          light: "#FAF0D0",
         },
         ink: "#1E1E1E",
       },
       fontFamily: {
-        sans: ["var(--font-poppins)", "sans-serif"],
+        sans: ["var(--font-inter)", "sans-serif"],
       },
     },
   },
