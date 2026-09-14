@@ -37,7 +37,7 @@ export async function signup(_prev: SignupState, formData: FormData): Promise<Si
   // Reject signup if the unit doesn't exist, or is the QAO unit
   // (QAO accounts are provisioned directly by QAO/MIS, not self-signup).
   const { data: unit } = await admin.from("units").select("id, is_qao, type").eq("id", unitId).single();
-  if (!unit || unit.type === "college" || unit.is_qao) {
+  if (!unit || unit.type === "college") {
     return { error: "Please select a valid department or office, not a college." };
   }
 
