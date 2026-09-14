@@ -19,8 +19,9 @@ export async function AppShell({
   if (profile.unit_id) {
     navLinks.push({ label: "Repository", href: `/repository/${profile.unit_id}` });
   }
-  if (profile.role === "qao") {
+  if (profile.role === "system_admin") {
     navLinks.push({ label: "Account Approvals", href: "/admin/approvals" });
+    navLinks.push({ label: "All Accounts", href: "/admin/accounts" });
   }
 
   const showSidebar = profile.role === "qao";

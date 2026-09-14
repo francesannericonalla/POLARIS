@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { isQao } from "@/lib/permissions";
+import { isSystemAdmin } from "@/lib/permissions";
 import { getProfilesByStatus } from "@/lib/data/profiles";
 import { AppShell } from "@/components/app-shell";
 import { approveAccount, rejectAccount } from "@/lib/actions/approval-actions";
@@ -9,7 +9,7 @@ export default async function ApprovalsPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
   if (profile.status !== "approved") redirect("/pending");
-  if (!isQao(profile)) redirect("/dashboard");
+  if (!isSystemAdmin(profile)) redirect("/dashboard");
 
   const pending = await getProfilesByStatus("pending");
 
