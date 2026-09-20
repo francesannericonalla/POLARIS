@@ -2,32 +2,138 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Fonts ── */
 :root {
-  --font-inter: "Inter", sans-serif;
+  --font-poppins: "Poppins", Georgia, serif;
+  --font-manrope: "Manrope", system-ui, sans-serif;
 }
 
 body {
-  font-family: var(--font-inter);
-  background-color: #f0f2f5;
-  color: #1e1e1e;
+  font-family: var(--font-manrope);
+  background-color: #F7F3EC;
+  color: #201A1D;
+  -webkit-font-smoothing: antialiased;
 }
 
+* { box-sizing: border-box; }
+
+/* ── POLARIS animations ── */
+@keyframes polDrift {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-40px, -26px, 0); }
+}
+@keyframes polTwinkle {
+  0%, 100% { opacity: 0.18; }
+  50%       { opacity: 0.95; }
+}
+@keyframes polPulse {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  70%  { transform: scale(2.4); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes polSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes polSheen {
+  0%, 58% { background-position: 120% 0; }
+  100%    { background-position: -120% 0; }
+}
+@keyframes polRule {
+  0%, 100% { transform: scaleX(1);   opacity: 0.85; }
+  50%       { transform: scaleX(1.5); opacity: 1; }
+}
+@keyframes polShoot {
+  0%       { opacity: 0; transform: translate3d(0, 0, 0) rotate(19deg); }
+  4%       { opacity: 1; }
+  16%      { opacity: 0; }
+  17%, 100%{ opacity: 0; transform: translate3d(72vw, 26vh, 0) rotate(19deg); }
+}
+@keyframes polRoseSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes polRoseBreathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.045); }
+}
+@keyframes polFieldFocus {
+  from { box-shadow: 0 0 0 0 rgba(184,137,43,.28); }
+  to   { box-shadow: 0 0 0 4px rgba(184,137,43,0); }
+}
+@keyframes polRise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Shared utility classes ── */
+.pol-left-panel {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 22% 18%, #5E1228 0%, #4A0E1F 46%, #330916 100%);
+  padding: 56px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.pol-input {
+  width: 100%;
+  padding: 13px 14px;
+  font-size: 14.5px;
+  font-family: var(--font-manrope);
+  color: #201A1D;
+  background: #f7f7f7;
+  border: 1px solid rgba(74,14,31,.16);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.pol-input:focus {
+  border-color: #7A1330;
+  animation: polFieldFocus 0.5s ease-out;
+}
+.pol-input:focus-visible {
+  outline: 2px solid #B8892B;
+  outline-offset: 2px;
+}
+
+.pol-label {
+  display: block;
+  font: 600 12.5px/1 var(--font-manrope), sans-serif;
+  color: #4A0E1F;
+  margin-bottom: 8px;
+}
+
+.pol-btn-primary {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #7A1330;
+  color: #F7F3EC;
+  font: 700 14.5px/1 var(--font-manrope), sans-serif;
+  box-shadow: inset 0 -2px 0 rgba(74,14,31,.55);
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+.pol-btn-primary:hover  { background: #4A0E1F; }
+.pol-btn-primary:active { transform: translateY(1px); }
+.pol-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Legacy classes kept for inner-app pages */
 .btn-primary {
   @apply bg-maroon hover:bg-maroon-dark text-white font-semibold text-sm rounded-lg px-4 py-2 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
 }
-
 .btn-secondary {
   @apply border border-maroon text-maroon hover:bg-maroon/5 font-semibold text-sm rounded-lg px-4 py-2 shadow-sm transition-colors;
 }
-
 .btn-danger {
   @apply border border-red-400 text-red-600 hover:bg-red-50 font-semibold text-sm rounded-lg px-4 py-2 shadow-sm transition-colors;
 }
-
 .input-field {
   @apply w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold transition-colors;
 }
-
 .card {
   @apply bg-white border border-gray-100 rounded-xl shadow-sm;
 }

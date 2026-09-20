@@ -10,9 +10,19 @@ export async function approveAccount(userId: string) {
   if (!profile || !isSystemAdmin(profile)) throw new Error("Not authorized.");
 
   const admin = createAdminClient();
+
+  const { data: target } = await admin
+    .from("profiles")
+    .select("unit_id, units(is_qao)")
+    .eq("id", userId)
+    .single();
+
+  const isQaoUnit = (target as any)?.units?.is_qao ?? false;
+  const correctRole = isQaoUnit ? "qao" : "office_user";
+
   const { error } = await admin
     .from("profiles")
-    .update({ status: "approved", approved_by: profile.id, approved_at: new Date().toISOString() })
+    .update({ status: "approved", role: correctRole, approved_by: profile.id, approved_at: new Date().toISOString() })
     .eq("id", userId);
 
   if (error) throw error;

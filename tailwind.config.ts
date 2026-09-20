@@ -6,18 +6,29 @@ const config: Config = {
     extend: {
       colors: {
         maroon: {
-          DEFAULT: "#7A1428",
-          dark: "#56101D",
-          light: "#9A2035",
+          DEFAULT: "#7A1330",
+          dark: "#4A0E1F",
+          darker: "#330916",
+          deep: "#5E1228",
+          light: "#8A2036",
         },
         gold: {
-          DEFAULT: "#E8B84B",
-          light: "#FAF0D0",
+          DEFAULT: "#B8892B",
+          light: "#E8C66E",
+          warm: "#D9A43A",
+          muted: "#9C6F1F",
         },
-        ink: "#1E1E1E",
+        cream: {
+          DEFAULT: "#F7F3EC",
+          warm: "#FFFCF7",
+          muted: "#EADFCB",
+        },
+        ink: "#201A1D",
+        teal: "#1F5C52",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "sans-serif"],
+        sans:    ["Manrope", "system-ui", "sans-serif"],
+        poppins: ["Poppins", "system-ui", "sans-serif"],
       },
     },
   },

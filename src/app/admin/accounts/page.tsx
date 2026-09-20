@@ -27,8 +27,8 @@ export default async function AccountsPage() {
         idNumber={profile.id_number}
         unitName={profile.unit_name}
         navLinks={[
-          { label: "Account Approvals", href: "/admin/approvals" },
           { label: "All Accounts", href: "/admin/accounts" },
+          { label: "Account Approvals", href: "/admin/approvals" },
         ]}
       />
       <main className="flex-1 p-6">

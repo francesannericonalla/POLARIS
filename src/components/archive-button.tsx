@@ -12,7 +12,14 @@ export function ArchiveButton({ documentId, archived }: { documentId: string; ar
 
   return (
     <form action={action}>
-      <button type="submit" className="text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors">
+      <button
+        type="submit"
+        className={`text-xs font-medium px-2 py-1.5 rounded transition-colors ${
+          archived
+            ? "text-green-700 hover:bg-green-50"
+            : "text-gray-400 hover:text-red-500 hover:bg-red-50"
+        }`}
+      >
         {archived ? "Restore" : "Archive"}
       </button>
     </form>

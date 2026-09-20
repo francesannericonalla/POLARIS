@@ -1,29 +1,15 @@
 -- ============================================================
--- POLARIS seed data
--- Run AFTER schema.sql. Populates the units/folders that are
--- already confirmed. Only "College of Engineering and
--- Architecture" is finalized on the Academics side -- add the
--- remaining colleges the same way once Sir Hanz confirms them.
+-- POLARIS seed data  (complete — all confirmed colleges)
+-- Run AFTER schema.sql.
 -- ============================================================
 
--- ---------- Standard folder set (used for every department/office) ----------
--- Academics wording
 do $$
 declare
-  cea_id uuid;
-  dept_id uuid;
-  dept_name text;
-  dept_names text[] := array[
-    'Architecture Department',
-    'Civil Engineering Department',
-    'Chemical Engineering Department',
-    'Computer Engineering Department',
-    'Electrical Engineering Department',
-    'Electronics Engineering Department',
-    'Industrial Engineering Department',
-    'Mechanical Engineering Department',
-    'Mining Engineering Department'
-  ];
+  college_id uuid;
+  dept_id    uuid;
+  dept_name  text;
+  i          int;
+
   academic_folders text[] := array[
     'BUYLO: Accomplishments & Plans',
     'Balance Scorecard',
@@ -52,6 +38,63 @@ declare
     'Customer Satisfaction Result',
     'ISO 21001 Internal Audit'
   ];
+
+  -- CEA programs
+  cea_depts text[] := array[
+    'Architecture Department',
+    'Civil Engineering Department',
+    'Chemical Engineering Department',
+    'Computer Engineering Department',
+    'Electrical Engineering Department',
+    'Electronics Engineering Department',
+    'Industrial Engineering Department',
+    'Mechanical Engineering Department',
+    'Mining Engineering Department'
+  ];
+
+  -- CMBA programs
+  cmba_depts text[] := array[
+    'BS Accountancy',
+    'BS Accounting Information Systems',
+    'BS Management Accounting',
+    'BS Business Administration',
+    'BS Hospitality Management',
+    'BS Tourism Management',
+    'BS Office Administration',
+    'Bachelor in Public Administration'
+  ];
+
+  -- CASE programs
+  case_depts text[] := array[
+    'AB Communication',
+    'AB English Language with Applied Linguistics',
+    'Bachelor of Elementary Education',
+    'Bachelor of Secondary Education',
+    'Bachelor of Multimedia Arts',
+    'BS Biology',
+    'BS Math with Applied Industrial Mathematics',
+    'BS Psychology',
+    'Bachelor of Special Needs Education'
+  ];
+
+  -- CNAHS programs
+  cnahs_depts text[] := array[
+    'BS Nursing',
+    'BS Pharmacy',
+    'BS Medical Technology'
+  ];
+
+  -- CCS programs
+  ccs_depts text[] := array[
+    'BS Information Technology',
+    'BS Computer Science'
+  ];
+
+  -- CCJ programs
+  ccj_depts text[] := array[
+    'BS Criminology'
+  ];
+
   admin_office_names text[] := array[
     'AI FAB Lab',
     'Alumni Affairs Office',
@@ -88,23 +131,96 @@ declare
   office_id uuid;
   office_name text;
   qao_admin_id uuid;
-  i int;
 begin
   -- ===================== ACADEMICS =====================
+
+  -- 1. College of Engineering and Architecture
   insert into units (name, type, branch, sort_order)
     values ('College of Engineering and Architecture', 'college', 'academics', 1)
-    returning id into cea_id;
-
+    returning id into college_id;
   i := 1;
-  foreach dept_name in array dept_names loop
+  foreach dept_name in array cea_depts loop
     insert into units (name, type, branch, parent_id, sort_order)
-      values (dept_name, 'department', 'academics', cea_id, i)
+      values (dept_name, 'department', 'academics', college_id, i)
       returning id into dept_id;
-
     insert into folders (unit_id, name, sort_order)
       select dept_id, f, row_number() over ()
       from unnest(academic_folders) as f;
+    i := i + 1;
+  end loop;
 
+  -- 2. College of Management, Business & Accountancy
+  insert into units (name, type, branch, sort_order)
+    values ('College of Management, Business & Accountancy', 'college', 'academics', 2)
+    returning id into college_id;
+  i := 1;
+  foreach dept_name in array cmba_depts loop
+    insert into units (name, type, branch, parent_id, sort_order)
+      values (dept_name, 'department', 'academics', college_id, i)
+      returning id into dept_id;
+    insert into folders (unit_id, name, sort_order)
+      select dept_id, f, row_number() over ()
+      from unnest(academic_folders) as f;
+    i := i + 1;
+  end loop;
+
+  -- 3. College of Arts, Sciences & Education
+  insert into units (name, type, branch, sort_order)
+    values ('College of Arts, Sciences & Education', 'college', 'academics', 3)
+    returning id into college_id;
+  i := 1;
+  foreach dept_name in array case_depts loop
+    insert into units (name, type, branch, parent_id, sort_order)
+      values (dept_name, 'department', 'academics', college_id, i)
+      returning id into dept_id;
+    insert into folders (unit_id, name, sort_order)
+      select dept_id, f, row_number() over ()
+      from unnest(academic_folders) as f;
+    i := i + 1;
+  end loop;
+
+  -- 4. College of Nursing & Allied Health Sciences
+  insert into units (name, type, branch, sort_order)
+    values ('College of Nursing & Allied Health Sciences', 'college', 'academics', 4)
+    returning id into college_id;
+  i := 1;
+  foreach dept_name in array cnahs_depts loop
+    insert into units (name, type, branch, parent_id, sort_order)
+      values (dept_name, 'department', 'academics', college_id, i)
+      returning id into dept_id;
+    insert into folders (unit_id, name, sort_order)
+      select dept_id, f, row_number() over ()
+      from unnest(academic_folders) as f;
+    i := i + 1;
+  end loop;
+
+  -- 5. College of Computer Studies
+  insert into units (name, type, branch, sort_order)
+    values ('College of Computer Studies', 'college', 'academics', 5)
+    returning id into college_id;
+  i := 1;
+  foreach dept_name in array ccs_depts loop
+    insert into units (name, type, branch, parent_id, sort_order)
+      values (dept_name, 'department', 'academics', college_id, i)
+      returning id into dept_id;
+    insert into folders (unit_id, name, sort_order)
+      select dept_id, f, row_number() over ()
+      from unnest(academic_folders) as f;
+    i := i + 1;
+  end loop;
+
+  -- 6. College of Criminal Justice
+  insert into units (name, type, branch, sort_order)
+    values ('College of Criminal Justice', 'college', 'academics', 6)
+    returning id into college_id;
+  i := 1;
+  foreach dept_name in array ccj_depts loop
+    insert into units (name, type, branch, parent_id, sort_order)
+      values (dept_name, 'department', 'academics', college_id, i)
+      returning id into dept_id;
+    insert into folders (unit_id, name, sort_order)
+      select dept_id, f, row_number() over ()
+      from unnest(academic_folders) as f;
     i := i + 1;
   end loop;
 
