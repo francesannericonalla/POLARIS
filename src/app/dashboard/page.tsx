@@ -44,7 +44,7 @@ export default async function DashboardPage({
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
   if (profile.status !== "approved") redirect("/pending");
-  if (profile.role === "system_admin") redirect("/admin/accounts");
+  if (profile.role === "system_admin") redirect("/admin/approvals");
 
   const defaultSY = currentSchoolYear();
 
