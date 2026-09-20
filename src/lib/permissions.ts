@@ -2,18 +2,20 @@ import "server-only";
 import type { Profile } from "@/lib/auth";
 
 // QAO can see every unit's repository and dashboard. Office users can
-// only see their own unit. System Administrator manages accounts, not
-// document contents, so it is deliberately NOT included here.
+// only see their own unit. System Administrator manages accounts only —
+// they must never access document contents.
 export function canAccessUnitRepository(profile: Profile, unitId: string): boolean {
   if (profile.status !== "approved") return false;
+  if (profile.role === "system_admin") return false;
   if (profile.role === "qao") return true;
   if (profile.role === "office_user") return profile.unit_id === unitId;
   return false;
 }
 
-// Anyone approved can upload to a folder inside a unit they can access.
+// Only the office's own approved user can upload. QAO is read-only — they
+// review submissions, not submit on behalf of offices.
 export function canUploadToUnit(profile: Profile, unitId: string): boolean {
-  return canAccessUnitRepository(profile, unitId);
+  return profile.status === "approved" && profile.role === "office_user" && profile.unit_id === unitId;
 }
 
 // Archiving a file: QAO can archive/restore anything. An office user

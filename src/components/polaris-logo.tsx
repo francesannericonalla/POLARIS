@@ -1,26 +1,27 @@
-export function PolarisLogo({ size = 24, className = "" }: { size?: number; className?: string }) {
+export function PolarisLogo({ size = 44, className = "" }: { size?: number; className?: string }) {
   return (
     <svg
+      viewBox="0 0 100 100"
       width={size}
       height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "block", overflow: "visible" }}
+      aria-hidden="true"
       className={className}
-      aria-label="Polaris north star logo"
     >
-      {/* 4 long cardinal points */}
-      <path d="M24 2 L26.5 21.5 L24 24 L21.5 21.5 Z" fill="#D4A017" />
-      <path d="M24 46 L21.5 26.5 L24 24 L26.5 26.5 Z" fill="#D4A017" />
-      <path d="M2 24 L21.5 21.5 L24 24 L21.5 26.5 Z" fill="#D4A017" />
-      <path d="M46 24 L26.5 26.5 L24 24 L26.5 21.5 Z" fill="#D4A017" />
-      {/* 4 shorter diagonal points */}
-      <path d="M8.69 8.69 L20.8 22 L24 24 L22 20.8 Z" fill="#D4A017" opacity="0.7" />
-      <path d="M39.31 8.69 L28 20.8 L24 24 L27.2 22 Z" fill="#D4A017" opacity="0.7" />
-      <path d="M8.69 39.31 L22 27.2 L24 24 L20.8 28 Z" fill="#D4A017" opacity="0.7" />
-      <path d="M39.31 39.31 L27.2 26 L24 24 L28 27.2 Z" fill="#D4A017" opacity="0.7" />
-      {/* Center dot */}
-      <circle cx="24" cy="24" r="2.5" fill="#6D1223" />
+      {/* Spinning shadow petals */}
+      <g style={{ transformOrigin: "50px 50px", animation: "polRoseSpin 150s linear infinite" }}>
+        <path d="M50 50 L60 40 L84 16 L60 60 Z" fill="#9C6F1F" opacity=".9" />
+        <path d="M50 50 L60 60 L84 84 L40 60 Z" fill="#9C6F1F" opacity=".9" />
+        <path d="M50 50 L40 60 L16 84 L40 40 Z" fill="#9C6F1F" opacity=".9" />
+        <path d="M50 50 L40 40 L16 16 L60 40 Z" fill="#9C6F1F" opacity=".9" />
+      </g>
+      {/* Breathing compass rose */}
+      <g style={{ transformOrigin: "50px 50px", animation: "polRoseBreathe 9s ease-in-out infinite" }}>
+        <path d="M50 1 L64 40 L50 99 L36 40 Z" fill="#D9A43A" />
+        <path d="M1 50 L40 36 L99 50 L40 64 Z" fill="#C9973A" />
+        <circle cx="50" cy="50" r="16" fill="#7A1330" />
+        <circle cx="50" cy="50" r="16" fill="none" stroke="#E8C66E" strokeWidth="4" opacity=".95" />
+      </g>
     </svg>
   );
 }

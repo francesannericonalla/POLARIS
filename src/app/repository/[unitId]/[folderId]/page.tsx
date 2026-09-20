@@ -1,14 +1,21 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth";
-import { canAccessUnitRepository } from "@/lib/permissions";
+import { canAccessUnitRepository, canUploadToUnit } from "@/lib/permissions";
 import { getUnitById } from "@/lib/data/units";
-import { getFolderById, getDocumentsForFolder, getDistinctSchoolYears, getVersionHistory } from "@/lib/data/documents";
+import {
+  getFolderById,
+  getDocumentsForFolder,
+  getDistinctSchoolYears,
+  getVersionHistoriesForFolder,
+  type DocumentRow,
+} from "@/lib/data/documents";
 import { AppShell } from "@/components/app-shell";
 import { FilterBar } from "@/components/filter-bar";
 import { UploadModal } from "@/components/upload-modal";
 import { DownloadButton } from "@/components/download-button";
 import { ArchiveButton } from "@/components/archive-button";
+import { formatDate } from "@/lib/date-utils";
 
 export default async function FolderPage({
   params,
@@ -27,19 +34,37 @@ export default async function FolderPage({
   if (!canAccessUnitRepository(profile, unitId)) redirect("/dashboard");
 
   const { sy, sem, show } = await searchParams;
-  const includeArchived = show === "all" || show === "archived";
+  const activeTab: "active" | "archived" = show === "archived" ? "archived" : "active";
+  const includeArchived = activeTab === "archived";
 
-  const [documents, schoolYears] = await Promise.all([
-    getDocumentsForFolder(folderId, { schoolYear: sy, semester: sem, includeArchived }),
+  const [allDocuments, schoolYears, versionHistories] = await Promise.all([
+    getDocumentsForFolder(folderId, { schoolYear: sy, semester: sem, includeArchived: true }),
     getDistinctSchoolYears(unitId),
+    getVersionHistoriesForFolder(folderId),
   ]);
 
-  const visibleDocuments =
-    show === "archived" ? documents.filter((d) => d.archived) : documents.filter((d) => show === "all" || !d.archived);
+  // Filter documents for the active tab, then apply SY/semester filters
+  const baseFiltered = allDocuments.filter((d) =>
+    activeTab === "archived" ? d.archived : !d.archived
+  );
+  // SY/sem filtering already done server-side via getDocumentsForFolder opts,
+  // but we passed includeArchived:true and filter tabs client-side by archived flag.
+  // Re-apply SY/sem here since we fetch all and split by tab.
+  const visibleDocuments = baseFiltered.filter((d) => {
+    if (sy && d.school_year !== sy) return false;
+    if (sem && d.semester !== sem) return false;
+    return true;
+  });
+
+  const canUpload = canUploadToUnit(profile, unitId);
+
+  const activeCount = allDocuments.filter((d) => !d.archived).length;
+  const archivedCount = allDocuments.filter((d) => d.archived).length;
 
   return (
-    <AppShell profile={profile} title={folder.name} activeUnitId={unitId}>
+    <AppShell profile={profile} title={folder.name} activeUnitId={unitId} activeHref={`/repository/${unitId}`}>
       <div className="p-6 max-w-6xl mx-auto">
+
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
           <Link href={`/repository/${unitId}`} className="hover:text-maroon transition-colors">
@@ -51,100 +76,253 @@ export default async function FolderPage({
           <span className="text-gray-600 font-medium">{folder.name}</span>
         </div>
 
-        {/* Header row with inline filters */}
+        {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <h1 className="text-lg font-semibold text-gray-800">{folder.name}</h1>
           <div className="flex items-center gap-2 flex-wrap">
-            <FilterBar unitId={unitId} folderId={folderId} schoolYears={schoolYears} sy={sy} sem={sem} show={show} />
-            <UploadModal
-              folderId={folderId}
-              schoolYears={schoolYears}
-              triggerLabel="+ Upload File"
-              triggerClassName="btn-primary"
-            />
+            <FilterBar unitId={unitId} folderId={folderId} schoolYears={schoolYears} sy={sy} sem={sem} />
+            {canUpload && (
+              <UploadModal
+                folderId={folderId}
+                schoolYears={schoolYears}
+                triggerLabel="Upload File"
+                triggerClassName="btn-primary"
+              />
+            )}
           </div>
         </div>
 
-        {/* Document table */}
-        <div className="card overflow-hidden mt-4">
+        {/* Active / Archived tabs */}
+        <div className="flex items-center gap-1 mb-4">
+          <TabLink
+            href={buildTabHref(unitId, folderId, "active", sy, sem)}
+            active={activeTab === "active"}
+            label="Active"
+            count={activeCount}
+          />
+          <TabLink
+            href={buildTabHref(unitId, folderId, "archived", sy, sem)}
+            active={activeTab === "archived"}
+            label="Archived"
+            count={archivedCount}
+          />
+        </div>
+
+        {/* Document list */}
+        <div className="card overflow-hidden">
           {visibleDocuments.length === 0 ? (
             <div className="p-12 text-center">
               <svg className="w-10 h-10 text-gray-200 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-sm text-gray-400">No documents here yet for this filter.</p>
+              <p className="text-sm text-gray-400">
+                {activeTab === "archived" ? "No archived documents." : "No documents here yet for this filter."}
+              </p>
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Title</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">SY / Semester</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Version</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Uploaded By</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Date</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleDocuments.map((doc) => (
-                  <tr key={doc.id} className={`border-b border-gray-50 hover:bg-gray-50/60 transition-colors ${doc.archived ? "opacity-50" : ""}`}>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800">{doc.title}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">{doc.file_name}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
-                        {doc.school_year} &middot; {doc.semester === "N/A" ? "Full Year" : doc.semester}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-xs font-medium text-gray-500">v{doc.version}</span>
-                      {doc.version > 1 && <VersionHistoryLink documentId={doc.id} />}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500">{doc.uploader_name}</td>
-                    <td className="px-4 py-3 text-xs text-gray-400">{new Date(doc.created_at).toLocaleDateString()}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <DownloadButton storagePath={doc.storage_path} />
-                        {!doc.archived && (
-                          <UploadModal
-                            folderId={folderId}
-                            schoolYears={schoolYears}
-                            replacesId={doc.id}
-                            replacesTitle={doc.title}
-                            triggerLabel="New Version"
-                            triggerClassName="text-xs font-medium text-gray-400 hover:text-maroon transition-colors"
-                          />
-                        )}
-                        <ArchiveButton documentId={doc.id} archived={doc.archived} />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="divide-y divide-gray-50">
+              {visibleDocuments.map((doc) => {
+                const history = versionHistories.get(doc.id) ?? [];
+                return (
+                  <DocumentRow
+                    key={doc.id}
+                    doc={doc}
+                    history={history}
+                    folderId={folderId}
+                    schoolYears={schoolYears}
+                    canUpload={canUpload}
+                    isArchived={activeTab === "archived"}
+                  />
+                );
+              })}
+            </div>
           )}
         </div>
+
       </div>
     </AppShell>
   );
 }
 
+function buildTabHref(unitId: string, folderId: string, tab: string, sy?: string, sem?: string) {
+  const params = new URLSearchParams();
+  if (tab === "archived") params.set("show", "archived");
+  if (sy) params.set("sy", sy);
+  if (sem) params.set("sem", sem);
+  const qs = params.toString();
+  return `/repository/${unitId}/${folderId}${qs ? `?${qs}` : ""}`;
+}
 
-async function VersionHistoryLink({ documentId }: { documentId: string }) {
-  const history = await getVersionHistory(documentId);
-  if (history.length <= 1) return null;
+function TabLink({ href, active, label, count }: { href: string; active: boolean; label: string; count: number }) {
   return (
-    <details className="inline-block ml-1 align-middle">
-      <summary className="text-xs text-maroon cursor-pointer inline">({history.length - 1} older)</summary>
-      <ul className="mt-1 text-xs text-gray-500 space-y-0.5">
-        {history.slice(1).map((v) => (
-          <li key={v.id}>
-            v{v.version} &middot; {new Date(v.created_at).toLocaleDateString()}
-          </li>
-        ))}
-      </ul>
+    <Link
+      href={href}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+        active
+          ? "bg-maroon text-white"
+          : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+      }`}
+    >
+      {label}
+      <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${
+        active ? "bg-white/20 text-white" : "bg-gray-200 text-gray-500"
+      }`}>
+        {count}
+      </span>
+    </Link>
+  );
+}
+
+function DocumentRow({
+  doc,
+  history,
+  folderId,
+  schoolYears,
+  canUpload,
+  isArchived,
+}: {
+  doc: DocumentRow;
+  history: DocumentRow[];
+  folderId: string;
+  schoolYears: string[];
+  canUpload: boolean;
+  isArchived: boolean;
+}) {
+  const hasHistory = history.length > 1;
+
+  return (
+    <div className={`px-5 py-4 ${isArchived ? "opacity-60" : ""}`}>
+      {/* Main row */}
+      <div className="flex items-start gap-4">
+        {/* File type icon */}
+        <div className="w-9 h-9 rounded-lg bg-maroon/8 text-maroon flex items-center justify-center shrink-0 mt-0.5">
+          <FileIcon mimeType={doc.mime_type} />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-gray-800 text-sm">{doc.title}</span>
+            <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">
+              {doc.school_year} · {doc.semester === "N/A" ? "Full Year" : `${doc.semester} sem`}
+            </span>
+            <VersionPill version={doc.version} />
+            {isArchived && (
+              <span className="text-[11px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+                Archived
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-1 text-xs text-gray-400 flex-wrap">
+            <span className="truncate max-w-[200px]" title={doc.file_name}>{doc.file_name}</span>
+            <span>·</span>
+            <span>{doc.uploader_name}</span>
+            <span>·</span>
+            <span>{formatDate(doc.created_at)}</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          <DownloadButton storagePath={doc.storage_path} />
+          {!isArchived && canUpload && (
+            <UploadModal
+              folderId={folderId}
+              schoolYears={schoolYears}
+              replacesId={doc.id}
+              replacesTitle={doc.title}
+              triggerLabel="New Version"
+              triggerClassName="text-xs font-medium text-gray-400 hover:text-maroon transition-colors px-2 py-1.5 rounded hover:bg-gray-50"
+            />
+          )}
+          <ArchiveButton documentId={doc.id} archived={doc.archived} />
+        </div>
+      </div>
+
+      {/* Version history — expandable */}
+      {hasHistory && (
+        <VersionHistoryTable history={history} />
+      )}
+    </div>
+  );
+}
+
+function VersionPill({ version }: { version: number }) {
+  if (version === 1) {
+    return (
+      <span className="text-[11px] font-medium text-gray-400 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded">
+        v1
+      </span>
+    );
+  }
+  return (
+    <span className="text-[11px] font-medium text-maroon bg-maroon/8 border border-maroon/15 px-1.5 py-0.5 rounded">
+      v{version} · Updated
+    </span>
+  );
+}
+
+function VersionHistoryTable({ history }: { history: DocumentRow[] }) {
+  return (
+    <details className="mt-3 ml-13 group" style={{ marginLeft: "52px" }}>
+      <summary className="text-xs text-maroon cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-maroon/80 transition-colors">
+        <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+        </svg>
+        {history.length - 1} previous version{history.length - 1 !== 1 ? "s" : ""}
+      </summary>
+      <div className="mt-2 rounded-lg border border-gray-100 overflow-hidden">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Version</th>
+              <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Uploaded by</th>
+              <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Date</th>
+              <th className="px-3 py-2 text-right font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Download</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {history.map((v, i) => (
+              <tr key={v.id} className={i === 0 ? "bg-maroon/[0.02]" : ""}>
+                <td className="px-3 py-2">
+                  <span className={`font-semibold ${i === 0 ? "text-maroon" : "text-gray-500"}`}>
+                    v{v.version}
+                    {i === 0 && <span className="ml-1 text-[10px] text-maroon/60 font-normal">(current)</span>}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-gray-500">{v.uploader_name ?? "—"}</td>
+                <td className="px-3 py-2 text-gray-400">{formatDate(v.created_at)}</td>
+                <td className="px-3 py-2 text-right">
+                  <DownloadButton storagePath={v.storage_path} compact />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </details>
   );
 }
+
+function FileIcon({ mimeType }: { mimeType: string }) {
+  if (mimeType === "application/pdf") {
+    return (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    );
+  }
+  if (mimeType?.includes("spreadsheet") || mimeType?.includes("excel")) {
+    return (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M3 14h18M10 3v18M3 3h18v18H3z" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+

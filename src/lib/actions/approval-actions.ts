@@ -2,17 +2,27 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/auth";
-import { isQao } from "@/lib/permissions";
+import { isSystemAdmin } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
 
 export async function approveAccount(userId: string) {
   const profile = await getCurrentProfile();
-  if (!profile || !isQao(profile)) throw new Error("Not authorized.");
+  if (!profile || !isSystemAdmin(profile)) throw new Error("Not authorized.");
 
   const admin = createAdminClient();
+
+  const { data: target } = await admin
+    .from("profiles")
+    .select("unit_id, units(is_qao)")
+    .eq("id", userId)
+    .single();
+
+  const isQaoUnit = (target as any)?.units?.is_qao ?? false;
+  const correctRole = isQaoUnit ? "qao" : "office_user";
+
   const { error } = await admin
     .from("profiles")
-    .update({ status: "approved", approved_by: profile.id, approved_at: new Date().toISOString() })
+    .update({ status: "approved", role: correctRole, approved_by: profile.id, approved_at: new Date().toISOString() })
     .eq("id", userId);
 
   if (error) throw error;
@@ -29,7 +39,7 @@ export async function approveAccount(userId: string) {
 
 export async function rejectAccount(userId: string) {
   const profile = await getCurrentProfile();
-  if (!profile || !isQao(profile)) throw new Error("Not authorized.");
+  if (!profile || !isSystemAdmin(profile)) throw new Error("Not authorized.");
 
   const admin = createAdminClient();
   const { error } = await admin

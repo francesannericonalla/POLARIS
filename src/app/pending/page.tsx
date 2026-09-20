@@ -6,7 +6,12 @@ import { PolarisLogo } from "@/components/polaris-logo";
 export default async function PendingPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
-  if (profile.status === "approved") redirect("/dashboard");
+  // Only redirect approved users who actually have a unit assigned.
+  // An approved office_user with no unit_id would loop between /dashboard
+  // and /pending because dashboard also redirects to /pending when unit_id is null.
+  if (profile.status === "approved" && profile.unit_id) redirect("/dashboard");
+  if (profile.status === "approved" && profile.role === "qao") redirect("/dashboard");
+  if (profile.status === "approved" && profile.role === "system_admin") redirect("/admin/accounts");
 
   const rejected = profile.status === "rejected";
 

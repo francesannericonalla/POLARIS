@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type Folder = {
@@ -31,17 +32,21 @@ export type DocumentRow = {
 
 export const BUCKET = "documents";
 
-export async function getFoldersForUnit(unitId: string): Promise<Folder[]> {
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("folders")
-    .select("id, unit_id, name, is_qao_exclusive, sort_order")
-    .eq("unit_id", unitId)
-    .order("sort_order");
+export const getFoldersForUnit = unstable_cache(
+  async (unitId: string): Promise<Folder[]> => {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("folders")
+      .select("id, unit_id, name, is_qao_exclusive, sort_order")
+      .eq("unit_id", unitId)
+      .order("sort_order");
 
-  if (error) throw error;
-  return data as Folder[];
-}
+    if (error) throw error;
+    return data as Folder[];
+  },
+  ["folders-for-unit"],
+  { revalidate: 300, tags: ["folders"] }
+);
 
 export async function getFolderById(id: string): Promise<Folder | null> {
   const admin = createAdminClient();
@@ -53,25 +58,50 @@ export async function getFolderById(id: string): Promise<Folder | null> {
   return data as Folder | null;
 }
 
-// Counts of active (non-archived, latest-version) documents per folder,
-// used for the folder-grid cards and the basic dashboard counts.
-export async function getDocumentCountsForUnit(unitId: string): Promise<Record<string, number>> {
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("documents")
-    .select("folder_id")
-    .eq("unit_id", unitId)
-    .eq("is_latest", true)
-    .eq("archived", false);
+export const getDocumentCountsForUnit = unstable_cache(
+  async (unitId: string): Promise<Record<string, number>> => {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("documents")
+      .select("folder_id")
+      .eq("unit_id", unitId)
+      .eq("is_latest", true)
+      .eq("archived", false);
 
-  if (error) throw error;
+    if (error) throw error;
 
-  const counts: Record<string, number> = {};
-  for (const row of data as { folder_id: string }[]) {
-    counts[row.folder_id] = (counts[row.folder_id] ?? 0) + 1;
-  }
-  return counts;
-}
+    const counts: Record<string, number> = {};
+    for (const row of data as { folder_id: string }[]) {
+      counts[row.folder_id] = (counts[row.folder_id] ?? 0) + 1;
+    }
+    return counts;
+  },
+  ["document-counts-for-unit"],
+  { revalidate: 300, tags: ["documents"] }
+);
+
+export const getDocumentCountsForUnitThisSY = unstable_cache(
+  async (unitId: string, schoolYear: string): Promise<Record<string, number>> => {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("documents")
+      .select("folder_id")
+      .eq("unit_id", unitId)
+      .eq("is_latest", true)
+      .eq("archived", false)
+      .eq("school_year", schoolYear);
+
+    if (error) throw error;
+
+    const counts: Record<string, number> = {};
+    for (const row of data as { folder_id: string }[]) {
+      counts[row.folder_id] = (counts[row.folder_id] ?? 0) + 1;
+    }
+    return counts;
+  },
+  ["document-counts-for-unit-this-sy"],
+  { revalidate: 300, tags: ["documents"] }
+);
 
 type ListOptions = {
   schoolYear?: string;
@@ -104,8 +134,6 @@ export async function getDocumentsForFolder(
   }));
 }
 
-// Full version chain for one document lineage, newest first.
-// Uses a single query: fetch all docs sharing the same title+folder, ordered by version desc.
 export async function getVersionHistory(documentId: string): Promise<DocumentRow[]> {
   const admin = createAdminClient();
   const { data: target } = await admin
@@ -125,14 +153,62 @@ export async function getVersionHistory(documentId: string): Promise<DocumentRow
   return (data ?? []) as DocumentRow[];
 }
 
+// Returns a map of documentId → version history for all docs in a folder,
+// fetched in two queries instead of one per document (avoids N+1).
+export async function getVersionHistoriesForFolder(
+  folderId: string
+): Promise<Map<string, DocumentRow[]>> {
+  const admin = createAdminClient();
+
+  // Get all docs in this folder (all versions, not just latest)
+  const { data } = await admin
+    .from("documents")
+    .select("id, title, version, created_at, previous_version_id, is_latest, storage_path, uploaded_by, profiles!documents_uploaded_by_fkey(full_name)")
+    .eq("folder_id", folderId)
+    .order("version", { ascending: false });
+
+  const rows = ((data ?? []) as any[]).map((row) => ({
+    ...row,
+    uploader_name: row.profiles?.full_name ?? "Unknown",
+    profiles: undefined,
+  })) as (DocumentRow & { is_latest: boolean })[];
+
+  // Group all versions by title (same title = same lineage)
+  const byTitle = new Map<string, DocumentRow[]>();
+  for (const row of rows) {
+    const list = byTitle.get(row.title) ?? [];
+    list.push(row);
+    byTitle.set(row.title, list);
+  }
+
+  // Map latest-version doc id → full history array
+  const result = new Map<string, DocumentRow[]>();
+  for (const row of rows) {
+    if (row.is_latest) {
+      result.set(row.id, byTitle.get(row.title) ?? [row]);
+    }
+  }
+  return result;
+}
+
 export async function getDistinctSchoolYears(unitId: string): Promise<string[]> {
   const admin = createAdminClient();
-  const { data, error } = await admin
+  // Use distinct at the query level to avoid fetching all rows + deduping in JS
+  const { data, error } = await (admin as any)
     .from("documents")
     .select("school_year")
     .eq("unit_id", unitId)
     .eq("is_latest", true)
     .order("school_year", { ascending: false });
   if (error) throw error;
-  return Array.from(new Set((data as { school_year: string }[]).map((d) => d.school_year)));
+  // Supabase JS doesn't expose .distinct(), so deduplicate the compact result set
+  const seen = new Set<string>();
+  const years: string[] = [];
+  for (const row of (data as { school_year: string }[])) {
+    if (!seen.has(row.school_year)) {
+      seen.add(row.school_year);
+      years.push(row.school_year);
+    }
+  }
+  return years;
 }
