@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 
 export async function approveAccount(userId: string) {
   const profile = await getCurrentProfile();
-  if (!profile || !isSystemAdmin(profile)) throw new Error("Not authorized.");
+  if (!profile || profile.status !== "approved" || !isSystemAdmin(profile)) throw new Error("Not authorized.");
 
   const admin = createAdminClient();
 
@@ -39,7 +39,7 @@ export async function approveAccount(userId: string) {
 
 export async function rejectAccount(userId: string) {
   const profile = await getCurrentProfile();
-  if (!profile || !isSystemAdmin(profile)) throw new Error("Not authorized.");
+  if (!profile || profile.status !== "approved" || !isSystemAdmin(profile)) throw new Error("Not authorized.");
 
   const admin = createAdminClient();
   const { error } = await admin

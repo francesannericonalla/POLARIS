@@ -154,6 +154,88 @@ export const getUnitFolderStatsByFilter = unstable_cache(
   { revalidate: 300, tags: ["documents"] }
 );
 
+export type FolderSubmissionStat = {
+  folder_name: string;
+  branch: "academics" | "administration";
+  submitted: number;
+  total: number;
+};
+
+export const getFolderSubmissionStats = unstable_cache(
+  async (schoolYear?: string): Promise<FolderSubmissionStat[]> => {
+    const admin = createAdminClient();
+    const sy = schoolYear || currentSchoolYear();
+
+    const [allUnits, { data: folders }, { data: docs }] = await Promise.all([
+      getAllUnits(),
+      admin
+        .from("folders")
+        .select("id, name, unit_id, sort_order")
+        .eq("is_qao_exclusive", false)
+        .order("sort_order"),
+      admin
+        .from("documents")
+        .select("folder_id")
+        .eq("is_latest", true)
+        .eq("archived", false)
+        .eq("school_year", sy),
+    ]);
+
+    const leafUnits = allUnits.filter((u) => u.type !== "college");
+    const academicsTotal = leafUnits.filter((u) => u.branch === "academics").length;
+    const adminTotal = leafUnits.filter((u) => u.branch === "administration").length;
+
+    // Map unit_id → branch for quick lookup
+    const unitBranch = new Map<string, "academics" | "administration">();
+    for (const u of leafUnits) unitBranch.set(u.id, u.branch);
+
+    // Map folder_id → { unit_id, name, branch, sort_order } — only for leaf units (branch known)
+    const folderMeta = new Map<string, { unitId: string; name: string; branch: "academics" | "administration"; sortOrder: number }>();
+    for (const f of (folders ?? []) as { id: string; name: string; unit_id: string; sort_order: number }[]) {
+      const branch = unitBranch.get(f.unit_id);
+      if (branch) folderMeta.set(f.id, { unitId: f.unit_id, name: f.name, branch, sortOrder: f.sort_order });
+    }
+
+    // For each folder that has a doc this SY, mark its unit as having submitted to that folder name
+    // Key: `${branch}::${folder_name}` → Set of unit_ids that submitted
+    const coverage = new Map<string, Set<string>>();
+    for (const d of (docs ?? []) as { folder_id: string }[]) {
+      const meta = folderMeta.get(d.folder_id);
+      if (!meta) continue;
+      const key = `${meta.branch}::${meta.name}`;
+      if (!coverage.has(key)) coverage.set(key, new Set());
+      coverage.get(key)!.add(meta.unitId);
+    }
+
+    // Collect unique (branch, folder_name) pairs, tracking the min sort_order seen for each
+    const seen = new Map<string, number>(); // key → min sortOrder
+    const stats: (FolderSubmissionStat & { sortOrder: number })[] = [];
+    for (const meta of folderMeta.values()) {
+      const key = `${meta.branch}::${meta.name}`;
+      if (!seen.has(key)) {
+        seen.set(key, meta.sortOrder);
+        stats.push({
+          folder_name: meta.name,
+          branch: meta.branch,
+          submitted: coverage.get(key)?.size ?? 0,
+          total: meta.branch === "academics" ? academicsTotal : adminTotal,
+          sortOrder: meta.sortOrder,
+        });
+      }
+    }
+
+    // Sort: academics first, then by seed sort_order within each branch
+    stats.sort((a, b) => {
+      if (a.branch !== b.branch) return a.branch === "academics" ? -1 : 1;
+      return a.sortOrder - b.sortOrder;
+    });
+
+    return stats.map(({ sortOrder: _so, ...rest }) => rest);
+  },
+  ["folder-submission-stats"],
+  { revalidate: 300, tags: ["documents", "units"] }
+);
+
 export type RecentActivityItem = {
   id: string;
   title: string;

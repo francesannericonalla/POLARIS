@@ -12,10 +12,13 @@ export function canAccessUnitRepository(profile: Profile, unitId: string): boole
   return false;
 }
 
-// Only the office's own approved user can upload. QAO is read-only — they
-// review submissions, not submit on behalf of offices.
+// Office users can upload to their own unit. QAO can upload only to their
+// own unit's repository (not on behalf of other offices).
 export function canUploadToUnit(profile: Profile, unitId: string): boolean {
-  return profile.status === "approved" && profile.role === "office_user" && profile.unit_id === unitId;
+  if (profile.status !== "approved") return false;
+  if (profile.role === "office_user") return profile.unit_id === unitId;
+  if (profile.role === "qao") return profile.unit_id === unitId;
+  return false;
 }
 
 // Archiving a file: QAO can archive/restore anything. An office user

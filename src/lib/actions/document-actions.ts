@@ -40,8 +40,9 @@ export async function uploadDocument(_prev: UploadState, formData: FormData): Pr
   if (!ALLOWED_TYPES.includes(file.type)) {
     return { error: "Only PDF, Word, Excel, JPG, and PNG files are allowed." };
   }
-  const VALID_SEMESTERS = ["1st", "2nd", "Summer", "N/A"];
+  const VALID_SEMESTERS = ["1st", "2nd", "Summer"];
   if (!schoolYear) return { error: "Please select the school year." };
+  if (!/^\d{4}-\d{4}$/.test(schoolYear)) return { error: "Invalid school year format." };
   if (!semester || !VALID_SEMESTERS.includes(semester)) return { error: "Please select a valid semester." };
   if (!title) return { error: "Please give the document a short title." };
 
@@ -94,7 +95,16 @@ export async function uploadDocument(_prev: UploadState, formData: FormData): Pr
 
   // Mark the old version as no longer the latest.
   if (previousVersionId) {
-    await admin.from("documents").update({ is_latest: false }).eq("id", previousVersionId);
+    const { error: chainErr } = await admin
+      .from("documents")
+      .update({ is_latest: false })
+      .eq("id", previousVersionId);
+    if (chainErr) {
+      // New doc is already saved — clean up so there's no dual is_latest state.
+      await admin.from("documents").delete().eq("id", inserted.id);
+      await admin.storage.from(BUCKET).remove([path]);
+      return { error: "Could not update version chain. Please try again." };
+    }
   }
 
   await admin.from("audit_log").insert({
