@@ -71,7 +71,7 @@ export default function SignupForm({ tree }: { tree: Tree }) {
 
         <div>
           <label style={LABEL}>ID number</label>
-          <input name="id_number" required placeholder="21-4512-088" maxLength={9} style={FIELD} />
+          <input name="id_number" required placeholder="214512088" maxLength={9} inputMode="numeric" pattern="\d*" style={FIELD} />
         </div>
 
         <div>

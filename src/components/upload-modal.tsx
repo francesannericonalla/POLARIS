@@ -93,7 +93,6 @@ export function UploadModal({
                     <option value="1st">1st Semester</option>
                     <option value="2nd">2nd Semester</option>
                     <option value="Summer">Summer</option>
-                    <option value="N/A">Full Year (N/A)</option>
                   </select>
                 </div>
               </div>

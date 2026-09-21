@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const SELECT_CLS =
   "text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold";
@@ -19,10 +19,11 @@ export function FilterBar({
   sem?: string;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   function navigate(next: { sy?: string; sem?: string }) {
-    const params = new URLSearchParams(window.location.search);
-    // Preserve the active tab (show param)
+    const params = new URLSearchParams(searchParams.toString());
+    // Preserve the active tab (show param) and update sy/sem
     if (next.sy) params.set("sy", next.sy);
     else params.delete("sy");
     if (next.sem) params.set("sem", next.sem);

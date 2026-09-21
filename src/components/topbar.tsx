@@ -9,7 +9,7 @@ export function Topbar({
   unitName,
   navLinks,
 }: {
-  title: string;
+  title?: string;
   userName: string;
   role: string;
   idNumber?: string | null;

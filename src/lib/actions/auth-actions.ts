@@ -60,7 +60,8 @@ export async function signup(_prev: SignupState, formData: FormData): Promise<Si
   });
 
   if (profileErr) {
-    return { error: "Account created but profile setup failed. Please contact QAO." };
+    await admin.auth.admin.deleteUser(created.user.id);
+    return { error: "Profile setup failed. Please try signing up again." };
   }
 
   redirect("/login?registered=1");
