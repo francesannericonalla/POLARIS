@@ -236,6 +236,57 @@ export const getFolderSubmissionStats = unstable_cache(
   { revalidate: 300, tags: ["documents", "units"] }
 );
 
+export type PendingOffice = {
+  id: string;
+  name: string;
+  type: "department" | "office";
+};
+
+export async function getPendingOfficesForFolder(
+  folderName: string,
+  branch: "academics" | "administration",
+  schoolYear?: string
+): Promise<PendingOffice[]> {
+  const admin = createAdminClient();
+  const sy = schoolYear || currentSchoolYear();
+
+  const allUnits = await getAllUnits();
+  const leafUnits = allUnits.filter((u) => u.type !== "college" && u.branch === branch);
+  const leafIds = new Set(leafUnits.map((u) => u.id));
+
+  const [{ data: folders }, { data: docs }] = await Promise.all([
+    admin
+      .from("folders")
+      .select("id, unit_id")
+      .eq("name", folderName)
+      .eq("is_qao_exclusive", false),
+    admin
+      .from("documents")
+      .select("folder_id")
+      .eq("is_latest", true)
+      .eq("archived", false)
+      .eq("school_year", sy),
+  ]);
+
+  // folder_id → unit_id, only for leaf units in this branch
+  const folderToUnit = new Map<string, string>();
+  for (const f of (folders ?? []) as { id: string; unit_id: string }[]) {
+    if (leafIds.has(f.unit_id)) folderToUnit.set(f.id, f.unit_id);
+  }
+
+  // Which units have submitted to this folder this SY?
+  const submitted = new Set<string>();
+  for (const d of (docs ?? []) as { folder_id: string }[]) {
+    const uid = folderToUnit.get(d.folder_id);
+    if (uid) submitted.add(uid);
+  }
+
+  return leafUnits
+    .filter((u) => !submitted.has(u.id))
+    .map((u) => ({ id: u.id, name: u.name, type: u.type as "department" | "office" }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export type RecentActivityItem = {
   id: string;
   title: string;

@@ -16,6 +16,7 @@ import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
 import { OfficeUserSYFilter } from "./office-user-sy-filter";
+import { FolderCoverageWithDrawer } from "./folder-coverage-drawer";
 
 export default async function DashboardPage({
   searchParams,
@@ -591,67 +592,25 @@ function FolderCoverageSection({
       </div>
       <div className={`grid gap-4 ${showAcademics && showAdmin ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
         {showAcademics && academicsStats.length > 0 && (
-          <FolderCoveragePanel
+          <FolderCoverageWithDrawer
             title="Academics"
             subtitle={`${academicsStats[0]?.total ?? 0} departments`}
             stats={academicsStats}
             accentColor="bg-maroon"
+            accentHex="#7A1330"
+            schoolYear={activeSY}
           />
         )}
         {showAdmin && adminStats.length > 0 && (
-          <FolderCoveragePanel
+          <FolderCoverageWithDrawer
             title="Administration"
             subtitle={`${adminStats[0]?.total ?? 0} offices`}
             stats={adminStats}
             accentColor="bg-gold"
+            accentHex="#B8892B"
+            schoolYear={activeSY}
           />
         )}
-      </div>
-    </div>
-  );
-}
-
-function FolderCoveragePanel({
-  title,
-  subtitle,
-  stats,
-  accentColor,
-}: {
-  title: string;
-  subtitle: string;
-  stats: FolderSubmissionStat[];
-  accentColor: string;
-}) {
-  return (
-    <div className="card overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-3">
-        <span className={`w-2 h-2 rounded-full shrink-0 ${accentColor}`} />
-        <div>
-          <span className="text-sm font-semibold text-gray-800">{title}</span>
-          <span className="ml-2 text-xs text-gray-400">{subtitle}</span>
-        </div>
-      </div>
-      <div className="px-5 py-4 space-y-3.5">
-        {stats.map((s) => {
-          const pct = s.total > 0 ? Math.round((s.submitted / s.total) * 100) : 0;
-          const barColor = pct >= 80 ? "#16a34a" : pct >= 50 ? "#B8892B" : pct > 0 ? "#ef4444" : "#e5e7eb";
-          return (
-            <div key={s.folder_name}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-medium text-gray-700 truncate mr-3">{s.folder_name}</span>
-                <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: pct === 0 ? "#9ca3af" : barColor }}>
-                  {s.submitted}<span className="font-normal text-gray-300"> / {s.total}</span>
-                </span>
-              </div>
-              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{ width: `${pct}%`, background: barColor }}
-                />
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
