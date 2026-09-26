@@ -12,11 +12,13 @@ import {
   type FolderSubmissionStat,
   type RecentActivityItem,
 } from "@/lib/data/dashboard";
+import { getAllUnits } from "@/lib/data/units";
 import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
 import { OfficeUserSYFilter } from "./office-user-sy-filter";
 import { FolderCoverageWithDrawer } from "./folder-coverage-drawer";
+import { CollegeComplianceList, type CollegeRow } from "./college-drawer";
 
 export default async function DashboardPage({
   searchParams,
@@ -232,9 +234,10 @@ export default async function DashboardPage({
   const searchQ = (search ?? "").toLowerCase().trim();
   const syOptions = buildSchoolYearOptions();
 
-  const [allSummaries, folderStats] = await Promise.all([
+  const [allSummaries, folderStats, allUnits] = await Promise.all([
     getUnitSummaries(validBranch, activeSY),
     getFolderSubmissionStats(activeSY),
+    getAllUnits(),
   ]);
 
   const summaries = searchQ
@@ -242,27 +245,57 @@ export default async function DashboardPage({
     : allSummaries;
 
   const totalUnits = allSummaries.length;
-  const withSubmissions = allSummaries.filter((u) => u.thisYearCount > 0).length;
-  const noSubmissions = totalUnits - withSubmissions;
-  const submissionRate = totalUnits > 0 ? Math.round((withSubmissions / totalUnits) * 100) : 0;
-  const totalDocsThisSY = allSummaries.reduce((s, u) => s + u.thisYearCount, 0);
-  const totalDocsAcademics = allSummaries.filter((u) => u.branch === "academics").reduce((s, u) => s + u.thisYearCount, 0);
-  const totalDocsAdmin = allSummaries.filter((u) => u.branch === "administration").reduce((s, u) => s + u.thisYearCount, 0);
+  // Folder-slot completion: total filled / total expected across all offices
+  const totalFolderSlots = allSummaries.reduce((s, u) => s + u.totalFolders, 0);
+  const totalFoldersFiled = allSummaries.reduce((s, u) => s + u.foldersThisYear, 0);
+  const submissionRate = totalFolderSlots > 0 ? Math.round((totalFoldersFiled / totalFolderSlots) * 100) : 0;
+  // Fully filed offices (all folders submitted)
+  const withSubmissions = allSummaries.filter((u) => u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders).length;
+  // Offices with any submission this SY
+  const withAnySubmission = allSummaries.filter((u) => u.foldersThisYear > 0).length;
+  // Zero submissions
+  const noAnySubmission = allSummaries.filter((u) => u.foldersThisYear === 0).length;
 
-  const barData = [...allSummaries]
-    .sort((a, b) => b.thisYearCount - a.thisYearCount)
-    .slice(0, 12);
-  const maxBar = Math.max(...barData.map((u) => u.thisYearCount), 1);
+  // ── Compliance data ──────────────────────────────────────────────────────────
+  const summaryById = new Map(allSummaries.map((u) => [u.id, u]));
 
-  function abbrev(name: string) {
-    const STOPS = ["of", "and", "the", "&"];
-    return name
-      .split(" ")
-      .filter((w) => !STOPS.includes(w.toLowerCase()))
-      .slice(0, 4)
-      .map((w) => (w.length > 10 ? w.slice(0, 9) + "…" : w))
-      .join(" ");
-  }
+  // Branch-level
+  const acadSummaries = allSummaries.filter((u) => u.branch === "academics");
+  const adminSummaries = allSummaries.filter((u) => u.branch === "administration");
+  const branchStats = [
+    {
+      label: "Academics",
+      color: "#7A1330",
+      filed: acadSummaries.filter((u) => u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders).length,
+      total: acadSummaries.length,
+    },
+    {
+      label: "Administration",
+      color: "#B8892B",
+      filed: adminSummaries.filter((u) => u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders).length,
+      total: adminSummaries.length,
+    },
+  ];
+
+  // College rollup — group departments by parent college
+  const colleges = allUnits.filter((u) => u.type === "college").sort((a, b) => a.sort_order - b.sort_order);
+  const collegeRows = colleges.map((college) => {
+    const depts = allUnits.filter((u) => u.parent_id === college.id && u.type === "department");
+    const deptSummaries = depts.map((d) => summaryById.get(d.id)).filter(Boolean) as typeof allSummaries;
+    const filed = deptSummaries.filter((u) => u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders).length;
+    return {
+      id: college.id,
+      name: college.name,
+      filed,
+      total: deptSummaries.length,
+      departments: deptSummaries.map((u) => ({
+        id: u.id,
+        name: u.name,
+        foldersThisYear: u.foldersThisYear,
+        totalFolders: u.totalFolders,
+      })),
+    };
+  }).filter((c) => c.total > 0);
 
   function daysSince(dateStr: string | null): string {
     if (!dateStr) return "Never";
@@ -313,35 +346,36 @@ export default async function DashboardPage({
                 </svg>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">{withSubmissions} of {totalUnits} offices filed</p>
+            <p className="text-xs text-gray-400 mt-1">
+              {withAnySubmission === 0
+                ? "No offices have submitted yet"
+                : `${withAnySubmission} of ${totalUnits} offices have started`}
+            </p>
           </div>
 
-          {/* Documents this SY */}
+          {/* Fully filed offices */}
           <div className="card p-5">
             <div className="flex items-center gap-1.5 mb-4">
-              <span className="w-2 h-2 rounded-full bg-maroon shrink-0" />
-              <span className="text-xs font-medium text-gray-500">Documents · SY {activeSY}</span>
+              <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+              <span className="text-xs font-medium text-gray-500">Fully Filed · SY {activeSY}</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{totalDocsThisSY.toLocaleString()}</p>
-            <div className="flex items-center gap-4 mt-2">
-              <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                <span className="w-2 h-2 rounded-sm bg-maroon inline-block" />{totalDocsAcademics} Academics
-              </span>
-              <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                <span className="w-2 h-2 rounded-sm bg-gold inline-block" />{totalDocsAdmin} Admin
-              </span>
-            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{withSubmissions}</p>
+            <p className="text-xs text-gray-400">
+              {withSubmissions === totalUnits
+                ? "All offices have completed all folders"
+                : `of ${totalUnits} offices completed all folders`}
+            </p>
           </div>
 
           {/* Pending offices */}
           <div className="card p-5">
             <div className="flex items-center gap-1.5 mb-4">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${noSubmissions > 0 ? "bg-red-400" : "bg-green-500"}`} />
+              <span className={`w-2 h-2 rounded-full shrink-0 ${noAnySubmission > 0 ? "bg-red-400" : "bg-green-500"}`} />
               <span className="text-xs font-medium text-gray-500">No Submissions Yet</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{noSubmissions}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{noAnySubmission}</p>
             <p className="text-xs text-gray-400">
-              {noSubmissions === 0 ? "All offices have filed" : `${noSubmissions} office${noSubmissions !== 1 ? "s" : ""} still pending`}
+              {noAnySubmission === 0 ? "All offices have submitted" : `${noAnySubmission} office${noAnySubmission !== 1 ? "s" : ""} haven't submitted anything`}
             </p>
           </div>
         </div>
@@ -350,42 +384,53 @@ export default async function DashboardPage({
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4">
 
           {/* Bar chart */}
-          <div className="card overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
+          {/* Compliance card */}
+          <div className="card overflow-hidden flex flex-col">
+            <div className="px-5 py-4 border-b border-gray-50">
               <h2 className="text-sm font-semibold text-gray-800">
-                Documents per office
+                Compliance Overview
                 <span className="ml-2 text-xs font-normal text-gray-400">SY {activeSY}</span>
               </h2>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5 text-[11px] text-gray-400"><span className="w-2.5 h-2.5 rounded-sm bg-maroon inline-block" />Academics</span>
-                <span className="flex items-center gap-1.5 text-[11px] text-gray-400"><span className="w-2.5 h-2.5 rounded-sm bg-gold inline-block" />Admin</span>
-              </div>
             </div>
-            <div className="p-5">
-              {barData.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8">No submissions for this period.</p>
-              ) : (
-                <div className="space-y-2.5">
-                  {barData.map((u) => (
-                    <Link
-                      key={u.id}
-                      href={`/dashboard/office/${u.id}`}
-                      className="flex items-center gap-3 group rounded-lg py-0.5 hover:bg-gray-50 transition-colors -mx-1 px-1"
-                    >
-                      <span className="text-xs text-gray-500 group-hover:text-maroon transition-colors w-32 shrink-0 truncate text-right leading-tight">
-                        {abbrev(u.name)}
-                      </span>
-                      <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
+            <div className="p-5 flex flex-col gap-6 flex-1">
+
+              {/* Branch breakdown */}
+              <div className="space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">By Branch</p>
+                {branchStats.map((b) => {
+                  const pct = b.total > 0 ? Math.round((b.filed / b.total) * 100) : 0;
+                  return (
+                    <div key={b.label}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-medium text-gray-700">{b.label}</span>
+                        <span className="text-xs tabular-nums">
+                          <span className="font-semibold text-gray-800">{b.filed}</span>
+                          <span className="text-gray-300"> / {b.total}</span>
+                          <span className="ml-2 font-semibold" style={{ color: pct >= 80 ? "#16a34a" : pct >= 50 ? "#B8892B" : "#ef4444" }}>
+                            {pct}%
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-md transition-all ${u.branch === "academics" ? "bg-maroon" : "bg-gold"}`}
-                          style={{ width: `${Math.max((u.thisYearCount / maxBar) * 100, u.thisYearCount > 0 ? 2 : 0)}%`, opacity: 0.85 }}
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${pct}%`, background: b.color }}
                         />
                       </div>
-                      <span className="text-xs font-semibold text-gray-500 w-5 text-right shrink-0">{u.thisYearCount}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-gray-100" />
+
+              {/* College rollup */}
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">By College</p>
+                <CollegeComplianceList collegeRows={collegeRows as CollegeRow[]} schoolYear={activeSY} />
+              </div>
+
             </div>
           </div>
 
@@ -422,12 +467,17 @@ export default async function DashboardPage({
                           </Link>
                         </td>
                         <td className="px-3 py-2.5 text-right">
-                          <span className="text-sm font-bold text-gray-800">{u.thisYearCount}</span>
+                          <span className="text-sm font-bold text-gray-800">{u.foldersThisYear}</span>
+                          <span className="text-xs text-gray-300 font-normal"> / {u.totalFolders}</span>
                         </td>
                         <td className="px-3 py-2.5">
-                          {u.thisYearCount > 0 ? (
+                          {u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders ? (
                             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700">
                               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />Filed
+                            </span>
+                          ) : u.foldersThisYear > 0 ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />Partial
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-500">
