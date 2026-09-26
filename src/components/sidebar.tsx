@@ -50,7 +50,7 @@ export async function Sidebar({ profile, activeUnitId }: { profile: Profile; act
 
   return (
     <nav
-      className="w-56 shrink-0 overflow-y-auto overflow-x-hidden hidden md:flex md:flex-col"
+      className="w-56 shrink-0 overflow-hidden hidden md:flex md:flex-col"
       style={{ background: "#3d0f1f", borderRight: "1px solid rgba(255,255,255,0.07)" }}
     >
       {/* ── QAO section ── */}
@@ -90,7 +90,7 @@ export async function Sidebar({ profile, activeUnitId }: { profile: Profile; act
 
       {/* ── Academics + Administration tree (QAO only) ── */}
       {isQao && (
-        <div className="flex-1 overflow-y-auto mt-2">
+        <div className="sidebar-tree-scroll flex-1 overflow-y-auto mt-2">
           {treeSection}
         </div>
       )}

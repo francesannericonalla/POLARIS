@@ -36,7 +36,7 @@ export async function AppShell({
 
   // qao: sidebar + plain topbar (logo + profile only)
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       <Topbar
         title={title}
         userName={profile.full_name}
