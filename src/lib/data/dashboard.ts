@@ -7,6 +7,8 @@ export type UnitSummary = Unit & {
   activeDocumentCount: number;
   thisYearCount: number;
   lastUpdate: string | null;
+  totalFolders: number;
+  foldersThisYear: number;
 };
 
 export function currentSchoolYear(): string {
@@ -31,14 +33,17 @@ export const getUnitSummaries = unstable_cache(
     const admin = createAdminClient();
     const sy = schoolYear || currentSchoolYear();
 
-    // Run unit fetch + document fetch in parallel
-    const [allUnits, { data: docs, error }] = await Promise.all([
+    const [allUnits, { data: docs, error }, { data: folders }] = await Promise.all([
       getAllUnits(),
       admin
         .from("documents")
-        .select("unit_id, created_at, school_year")
+        .select("unit_id, folder_id, created_at, school_year")
         .eq("is_latest", true)
         .eq("archived", false),
+      admin
+        .from("folders")
+        .select("id, unit_id")
+        .eq("is_qao_exclusive", false),
     ]);
 
     if (error) throw error;
@@ -46,11 +51,26 @@ export const getUnitSummaries = unstable_cache(
     const units = branch ? allUnits.filter((u) => u.branch === branch) : allUnits;
     const leafUnits = units.filter((u) => u.type !== "college");
 
-    const byUnit = new Map<string, { count: number; thisYear: number; last: string | null }>();
-    for (const d of docs as { unit_id: string; created_at: string; school_year: string }[]) {
-      const entry = byUnit.get(d.unit_id) ?? { count: 0, thisYear: 0, last: null };
+    // folder counts per unit (non-QAO folders only)
+    const folderCountByUnit = new Map<string, number>();
+    for (const f of (folders ?? []) as { id: string; unit_id: string }[]) {
+      folderCountByUnit.set(f.unit_id, (folderCountByUnit.get(f.unit_id) ?? 0) + 1);
+    }
+
+    // folder_id → unit_id for quick lookup
+    const folderToUnit = new Map<string, string>();
+    for (const f of (folders ?? []) as { id: string; unit_id: string }[]) {
+      folderToUnit.set(f.id, f.unit_id);
+    }
+
+    const byUnit = new Map<string, { count: number; thisYear: number; last: string | null; foldersThisYear: Set<string> }>();
+    for (const d of docs as { unit_id: string; folder_id: string; created_at: string; school_year: string }[]) {
+      const entry = byUnit.get(d.unit_id) ?? { count: 0, thisYear: 0, last: null, foldersThisYear: new Set() };
       entry.count += 1;
-      if (d.school_year === sy) entry.thisYear += 1;
+      if (d.school_year === sy) {
+        entry.thisYear += 1;
+        entry.foldersThisYear.add(d.folder_id);
+      }
       if (!entry.last || d.created_at > entry.last) entry.last = d.created_at;
       byUnit.set(d.unit_id, entry);
     }
@@ -60,6 +80,8 @@ export const getUnitSummaries = unstable_cache(
       activeDocumentCount: byUnit.get(u.id)?.count ?? 0,
       thisYearCount: byUnit.get(u.id)?.thisYear ?? 0,
       lastUpdate: byUnit.get(u.id)?.last ?? null,
+      totalFolders: folderCountByUnit.get(u.id) ?? 0,
+      foldersThisYear: byUnit.get(u.id)?.foldersThisYear.size ?? 0,
     }));
   },
   ["unit-summaries"],
