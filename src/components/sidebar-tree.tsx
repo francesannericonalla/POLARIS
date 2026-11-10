@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { GraduationCap, Building2 } from "lucide-react";
 
 const GOLD = "#c9a84c";
 
@@ -94,7 +95,10 @@ export function SidebarTree({
         className="w-full flex items-center justify-between px-4 py-2 transition-colors hover:bg-white/[0.04]"
         style={{ color: GOLD, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" }}
       >
-        <span>Academics</span>
+        <span className="flex items-center gap-2">
+          <GraduationCap className="w-[15px] h-[15px] shrink-0 opacity-75" />
+          <span>Academics</span>
+        </span>
         <ChevronIcon open={academicsOpen} />
       </button>
 
@@ -117,7 +121,10 @@ export function SidebarTree({
         className="w-full flex items-center justify-between px-4 py-2 transition-colors hover:bg-white/[0.04]"
         style={{ color: GOLD, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" }}
       >
-        <span>Administration</span>
+        <span className="flex items-center gap-2">
+          <Building2 className="w-[15px] h-[15px] shrink-0 opacity-75" />
+          <span>Administration</span>
+        </span>
         <ChevronIcon open={adminOpen} />
       </button>
 

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F3EC;color:#201A1D;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#7A1330;text-decoration:none}
+a:hover{color:#4A0E1F;text-decoration:underline}
+input,select,button{font-family:inherit}
+input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid #B8892B;outline-offset:2px}
+input:focus{border-color:#7A1330;animation:polFieldFocus .5s ease-out}
+button{transition:background .18s ease,transform .18s ease,box-shadow .18s ease}
+button:active{transform:translateY(1px)}
+@keyframes polDrift{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-40px,-26px,0)}}
+@keyframes polTwinkle{0%,100%{opacity:.18}50%{opacity:.95}}
+@keyframes polPulse{0%{transform:scale(1);opacity:.55}70%{transform:scale(2.4);opacity:0}100%{opacity:0}}
+@keyframes polSpin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@keyframes polExpand{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes polRise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes polRoseSpin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@keyframes polRoseBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes polSheen{0%,58%{background-position:120% 0}100%{background-position:-120% 0}}
+@keyframes polRule{0%,100%{transform:scaleX(1);opacity:.85}50%{transform:scaleX(1.5);opacity:1}}
+@keyframes polShoot{0%{opacity:0;transform:translate3d(0,0,0) rotate(19deg)}4%{opacity:1}16%{opacity:0}17%,100%{opacity:0;transform:translate3d(72vw,26vh,0) rotate(19deg)}}
+@keyframes polFieldFocus{from{box-shadow:0 0 0 0 rgba(184,137,43,.28)}to{box-shadow:0 0 0 4px rgba(184,137,43,0)}}
+</style>
+</helmet>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));min-height:100vh">
+  <div style="position:relative;overflow:hidden;background:radial-gradient(120% 90% at 22% 18%,#5E1228 0%,#4A0E1F 46%,#330916 100%);padding:56px 60px;display:flex;flex-direction:column;justify-content:space-between">
+    <div style="position:absolute;inset:-12% -12% -12% -12%;animation:polDrift 78s linear infinite alternate">
+      <div style="position:absolute;left:12%;top:18%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 6s ease-in-out infinite"></div>
+      <div style="position:absolute;left:26%;top:9%;width:3px;height:3px;border-radius:50%;background:#B8892B;animation:polTwinkle 9s ease-in-out .8s infinite"></div>
+      <div style="position:absolute;left:41%;top:24%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 7.5s ease-in-out 1.6s infinite"></div>
+      <div style="position:absolute;left:58%;top:12%;width:2px;height:2px;border-radius:50%;background:#EADFCB;animation:polTwinkle 11s ease-in-out .4s infinite"></div>
+      <div style="position:absolute;left:73%;top:30%;width:3px;height:3px;border-radius:50%;background:#B8892B;animation:polTwinkle 8s ease-in-out 2.2s infinite"></div>
+      <div style="position:absolute;left:88%;top:16%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 10s ease-in-out 1.1s infinite"></div>
+      <div style="position:absolute;left:8%;top:46%;width:2px;height:2px;border-radius:50%;background:#EADFCB;animation:polTwinkle 9.5s ease-in-out 3s infinite"></div>
+      <div style="position:absolute;left:33%;top:58%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 6.8s ease-in-out 2.4s infinite"></div>
+      <div style="position:absolute;left:52%;top:47%;width:3px;height:3px;border-radius:50%;background:#B8892B;animation:polTwinkle 12s ease-in-out .2s infinite"></div>
+      <div style="position:absolute;left:67%;top:64%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 7.2s ease-in-out 1.9s infinite"></div>
+      <div style="position:absolute;left:84%;top:52%;width:2px;height:2px;border-radius:50%;background:#EADFCB;animation:polTwinkle 10.5s ease-in-out 2.7s infinite"></div>
+      <div style="position:absolute;left:18%;top:76%;width:3px;height:3px;border-radius:50%;background:#B8892B;animation:polTwinkle 8.6s ease-in-out .9s infinite"></div>
+      <div style="position:absolute;left:44%;top:84%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 9.2s ease-in-out 3.4s infinite"></div>
+      <div style="position:absolute;left:62%;top:90%;width:2px;height:2px;border-radius:50%;background:#EADFCB;animation:polTwinkle 6.4s ease-in-out 1.4s infinite"></div>
+      <div style="position:absolute;left:79%;top:79%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 11.4s ease-in-out 2s infinite"></div>
+      <div style="position:absolute;left:94%;top:68%;width:3px;height:3px;border-radius:50%;background:#B8892B;animation:polTwinkle 7.8s ease-in-out .6s infinite"></div>
+    </div>
+    <div style="position:absolute;left:78%;top:26%;width:360px;height:360px;margin:-180px 0 0 -180px;pointer-events:none">
+      <div style="position:absolute;inset:0;border-radius:50%;border:1px solid rgba(184,137,43,.18);animation:polSpin 240s linear infinite"></div>
+      <div style="position:absolute;inset:52px;border-radius:50%;border:1px solid rgba(184,137,43,.12)"></div>
+      <div style="position:absolute;inset:104px;border-radius:50%;border:1px dashed rgba(247,243,236,.1);animation:polSpin 160s linear infinite reverse"></div>
+      <div style="position:absolute;left:50%;top:50%;width:1px;height:196px;margin:-98px 0 0 0;background:linear-gradient(180deg,rgba(184,137,43,0),rgba(184,137,43,.5),rgba(184,137,43,0))"></div>
+      <div style="position:absolute;left:50%;top:50%;width:196px;height:1px;margin:0 0 0 -98px;background:linear-gradient(90deg,rgba(184,137,43,0),rgba(184,137,43,.35),rgba(184,137,43,0))"></div>
+      <div style="position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#B8892B;box-shadow:0 0 26px 6px rgba(184,137,43,.45)"></div>
+      <div style="position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:rgba(184,137,43,.6);animation:polPulse 6s ease-out infinite"></div>
+    </div>
+    <div style="position:absolute;left:-14%;top:26%;width:150px;height:1.5px;background:linear-gradient(90deg,rgba(247,243,236,0),rgba(247,243,236,.85));border-radius:2px;transform:rotate(19deg);animation:polShoot 17s ease-in 4s infinite"></div>
+    <div style="position:absolute;left:-14%;top:62%;width:110px;height:1.5px;background:linear-gradient(90deg,rgba(184,137,43,0),rgba(232,198,110,.8));border-radius:2px;transform:rotate(14deg);animation:polShoot 23s ease-in 12s infinite"></div>
+    <div style="position:relative;display:flex;align-items:center;gap:12px">
+      <svg viewBox="0 0 100 100" width="52" height="52" style="display:block;overflow:visible" aria-hidden="true">
+        <g style="transform-origin:50px 50px;animation:polRoseSpin 150s linear infinite">
+          <path d="M50 50 L60 40 L84 16 L60 60 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L60 60 L84 84 L40 60 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L40 60 L16 84 L40 40 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L40 40 L16 16 L60 40 Z" fill="#9C6F1F" opacity=".9"></path>
+        </g>
+        <g style="transform-origin:50px 50px;animation:polRoseBreathe 9s ease-in-out infinite">
+          <path d="M50 1 L64 40 L50 99 L36 40 Z" fill="#D9A43A"></path>
+          <path d="M1 50 L40 36 L99 50 L40 64 Z" fill="#C9973A"></path>
+          <circle cx="50" cy="50" r="16" fill="#7A1330"></circle>
+          <circle cx="50" cy="50" r="16" fill="none" stroke="#E8C66E" stroke-width="4" opacity=".95"></circle>
+        </g>
+      </svg>
+      <div style="font:600 13px/1 Manrope,sans-serif;color:rgba(247,243,236,.72)">Cebu Institute of Technology – University</div>
+    </div>
+    <div style="position:relative;max-width:420px">
+      <div style="position:relative;font:600 76px/.92 Fraunces,Georgia,serif;letter-spacing:-.02em;color:#F7F3EC;background:linear-gradient(100deg,#F7F3EC 38%,#E8C66E 50%,#F7F3EC 62%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:polSheen 11s ease-in-out infinite">POLARIS</div>
+      <div style="margin-top:18px;width:64px;height:2px;background:linear-gradient(90deg,#B8892B,rgba(184,137,43,0));transform-origin:left center;animation:polRule 11s ease-in-out infinite"></div>
+      <p style="margin:22px 0 0;font:400 16px/1.65 Manrope,sans-serif;color:rgba(247,243,236,.76);text-wrap:pretty">Performance and Organization Leadership Analytics, Reporting, and Institutional Stewardship</p>
+    </div>
+    <div style="position:relative;display:flex;flex-direction:column;gap:16px;align-items:flex-start">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;padding:6px;border-radius:12px;background:rgba(247,243,236,.08)">
+      <sc-for list="{{ screenTabs }}" as="t" hint-placeholder-count="6">
+        <button onClick="{{ t.onClick }}" style="border:none;cursor:pointer;border-radius:8px;padding:6px 11px;font:600 11.5px/1 Manrope,sans-serif;color:{{ t.color }};background:{{ t.bg }}">{{ t.label }}</button>
+      </sc-for>
+    </div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:center;padding:56px 40px;background:#F7F3EC">
+    <div style="width:100%;max-width:400px">
+      <div style="font:600 34px/1.15 Fraunces,Georgia,serif;letter-spacing:-.01em;color:#201A1D">Sign in</div>
+      <p style="margin:10px 0 32px;font:400 14.5px/1.6 Manrope,sans-serif;color:rgba(32,26,29,.72)">Use the CIT-U account issued to your department or office.</p>
+      <label style="display:block;font:600 12.5px/1 Manrope,sans-serif;color:#4A0E1F;margin-bottom:8px">CIT-U email</label>
+      <input type="email" placeholder="name@cit.edu" style="width:100%;padding:13px 14px;font-size:14.5px;color:#201A1D;background:#FFFCF7;border:1px solid rgba(74,14,31,.22);border-radius:8px;margin-bottom:20px">
+      <label style="display:block;font:600 12.5px/1 Manrope,sans-serif;color:#4A0E1F;margin-bottom:8px">Password</label>
+      <input type="password" placeholder="••••••••••" style="width:100%;padding:13px 14px;font-size:14.5px;color:#201A1D;background:#FFFCF7;border:1px solid rgba(74,14,31,.22);border-radius:8px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:26px">
+        <label style="display:flex;align-items:center;gap:8px;font:500 13px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)"><input type="checkbox" style="accent-color:#7A1330;width:15px;height:15px">Keep me signed in</label>
+        <a href="#" style="font:600 13px/1 Manrope,sans-serif">Forgot password</a>
+      </div>
+      <button onClick="{{ goQao }}" style="width:100%;padding:14px;border:none;border-radius:8px;cursor:pointer;background:#7A1330;color:#F7F3EC;font:700 14.5px/1 Manrope,sans-serif;box-shadow:inset 0 -2px 0 rgba(74,14,31,.55)" style-hover="background:#4A0E1F">Sign in</button>
+      <div style="margin-top:22px;padding-top:22px;border-top:1px solid rgba(74,14,31,.12);font:400 13.5px/1.6 Manrope,sans-serif;color:rgba(32,26,29,.72)">No account yet? <a href="#" onClick="{{ goSignup }}" style="font-weight:600">Request access</a> — QAO approves new accounts before first sign-in.</div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:minmax(280px,1fr) minmax(460px,2fr);min-height:100vh">
+  <div style="position:relative;overflow:hidden;background:radial-gradient(130% 80% at 30% 20%,#5E1228 0%,#4A0E1F 50%,#330916 100%);padding:52px 48px;display:flex;flex-direction:column;justify-content:space-between">
+    <div style="position:absolute;inset:-14%;animation:polDrift 94s linear infinite alternate">
+      <div style="position:absolute;left:16%;top:14%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 8s ease-in-out infinite"></div>
+      <div style="position:absolute;left:38%;top:26%;width:3px;height:3px;border-radius:50%;background:#B8892B;animation:polTwinkle 11s ease-in-out 1.4s infinite"></div>
+      <div style="position:absolute;left:64%;top:18%;width:2px;height:2px;border-radius:50%;background:#EADFCB;animation:polTwinkle 9s ease-in-out 2.6s infinite"></div>
+      <div style="position:absolute;left:84%;top:38%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 7s ease-in-out .7s infinite"></div>
+      <div style="position:absolute;left:22%;top:58%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 10s ease-in-out 3.1s infinite"></div>
+      <div style="position:absolute;left:52%;top:72%;width:3px;height:3px;border-radius:50%;background:#B8892B;animation:polTwinkle 12s ease-in-out .3s infinite"></div>
+      <div style="position:absolute;left:78%;top:84%;width:2px;height:2px;border-radius:50%;background:#EADFCB;animation:polTwinkle 8.6s ease-in-out 2s infinite"></div>
+      <div style="position:absolute;left:10%;top:88%;width:2px;height:2px;border-radius:50%;background:#F7F3EC;animation:polTwinkle 9.6s ease-in-out 1.1s infinite"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <svg viewBox="0 0 100 100" width="44" height="44" style="display:block;overflow:visible" aria-hidden="true">
+        <g style="transform-origin:50px 50px;animation:polRoseSpin 150s linear infinite">
+          <path d="M50 50 L60 40 L84 16 L60 60 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L60 60 L84 84 L40 60 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L40 60 L16 84 L40 40 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L40 40 L16 16 L60 40 Z" fill="#9C6F1F" opacity=".9"></path>
+        </g>
+        <g style="transform-origin:50px 50px;animation:polRoseBreathe 9s ease-in-out infinite">
+          <path d="M50 1 L64 40 L50 99 L36 40 Z" fill="#D9A43A"></path>
+          <path d="M1 50 L40 36 L99 50 L40 64 Z" fill="#C9973A"></path>
+          <circle cx="50" cy="50" r="16" fill="#7A1330"></circle>
+          <circle cx="50" cy="50" r="16" fill="none" stroke="#E8C66E" stroke-width="4" opacity=".9"></circle>
+        </g>
+      </svg>
+      <div style="font:600 42px/1 Fraunces,Georgia,serif;color:#F7F3EC;background:linear-gradient(100deg,#F7F3EC 38%,#E8C66E 50%,#F7F3EC 62%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:polSheen 11s ease-in-out infinite">POLARIS</div>
+    </div>
+    <div>
+      <div style="font:600 22px/1.3 Fraunces,Georgia,serif;color:#F7F3EC">Request an account</div>
+      <div style="margin-top:28px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;gap:14px">
+          <div style="position:relative;width:26px;height:26px;flex:none;border-radius:50%;background:#B8892B;color:#330916;font:700 12px/26px Manrope,sans-serif;text-align:center">1<span style="position:absolute;inset:0;border-radius:50%;background:rgba(184,137,43,.55);animation:polPulse 4.5s ease-out infinite"></span></div>
+          <div><div style="font:600 14px/1.3 Manrope,sans-serif;color:#F7F3EC">Identify yourself</div><div style="font:400 13px/1.5 Manrope,sans-serif;color:rgba(247,243,236,.62)">Name, CIT-U email, ID number</div></div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <div style="width:26px;height:26px;flex:none;border-radius:50%;border:1.5px solid rgba(247,243,236,.4);color:rgba(247,243,236,.8);font:700 12px/23px Manrope,sans-serif;text-align:center">2</div>
+          <div><div style="font:600 14px/1.3 Manrope,sans-serif;color:#F7F3EC">Choose your unit</div><div style="font:400 13px/1.5 Manrope,sans-serif;color:rgba(247,243,236,.62)">The college, department, or office you submit for</div></div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <div style="width:26px;height:26px;flex:none;border-radius:50%;border:1.5px solid rgba(247,243,236,.4);color:rgba(247,243,236,.8);font:700 12px/23px Manrope,sans-serif;text-align:center">3</div>
+          <div><div style="font:600 14px/1.3 Manrope,sans-serif;color:#F7F3EC">Wait for approval</div><div style="font:400 13px/1.5 Manrope,sans-serif;color:rgba(247,243,236,.62)">QAO reviews every request before access is granted</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;align-items:flex-start">
+      <div style="font:500 12px/1.5 Manrope,sans-serif;color:rgba(247,243,236,.45)">Already have an account? <a href="#" onClick="{{ goLogin }}" style="color:#B8892B;font-weight:600">Sign in</a></div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;padding:6px;border-radius:12px;background:rgba(247,243,236,.08)">
+      <sc-for list="{{ screenTabs }}" as="t" hint-placeholder-count="6">
+        <button onClick="{{ t.onClick }}" style="border:none;cursor:pointer;border-radius:8px;padding:6px 11px;font:600 11.5px/1 Manrope,sans-serif;color:{{ t.color }};background:{{ t.bg }}">{{ t.label }}</button>
+      </sc-for>
+    </div>
+    </div>
+  </div>
+
+  <div style="padding:56px 44px;background:#F7F3EC;overflow:auto">
+    <div style="max-width:620px">
+      <div style="font:600 32px/1.15 Fraunces,Georgia,serif;color:#201A1D">Create your POLARIS account</div>
+      <p style="margin:10px 0 34px;font:400 14.5px/1.6 Manrope,sans-serif;color:rgba(32,26,29,.72)">Accounts are tied to a single unit. If you submit for more than one office, request them separately.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 20px">
+        <div style="grid-column:1/-1">
+          <label style="display:block;font:600 12.5px/1 Manrope,sans-serif;color:#4A0E1F;margin-bottom:8px">Full name</label>
+          <input placeholder="Maria Louise Abella" style="width:100%;padding:12px 14px;font-size:14.5px;background:#FFFCF7;border:1px solid rgba(74,14,31,.22);border-radius:8px">
+        </div>
+        <div>
+          <label style="display:block;font:600 12.5px/1 Manrope,sans-serif;color:#4A0E1F;margin-bottom:8px">CIT-U email</label>
+          <input placeholder="m.abella@cit.edu" style="width:100%;padding:12px 14px;font-size:14.5px;background:#FFFCF7;border:1px solid rgba(74,14,31,.22);border-radius:8px">
+        </div>
+        <div>
+          <label style="display:block;font:600 12.5px/1 Manrope,sans-serif;color:#4A0E1F;margin-bottom:8px">ID number</label>
+          <input placeholder="21-4512-088" style="width:100%;padding:12px 14px;font-size:14.5px;background:#FFFCF7;border:1px solid rgba(74,14,31,.22);border-radius:8px">
+        </div>
+        <div>
+          <label style="display:block;font:600 12.5px/1 Manrope,sans-serif;color:#4A0E1F;margin-bottom:8px">Password</label>
+          <input type="password" placeholder="At least 10 characters" style="width:100%;padding:12px 14px;font-size:14.5px;background:#FFFCF7;border:1px solid rgba(74,14,31,.22);border-radius:8px">
+        </div>
+        <div>
+          <label style="display:block;font:600 12.5px/1 Manrope,sans-serif;color:#4A0E1F;margin-bottom:8px">Confirm password</label>
+          <input type="password" placeholder="Repeat password" style="width:100%;padding:12px 14px;font-size:14.5px;background:#FFFCF7;border:1px solid rgba(74,14,31,.22);border-radius:8px">
+        </div>
+      </div>
+
+      <div style="margin-top:34px;border:1px solid rgba(74,14,31,.16);border-radius:12px;background:#FFFCF7;overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid rgba(74,14,31,.1)">
+          <div style="font:600 15px/1.2 Manrope,sans-serif;color:#201A1D">Your unit</div>
+          <div style="margin-top:5px;font:400 13px/1.5 Manrope,sans-serif;color:rgba(32,26,29,.72)">Pick a branch, then find your unit. This determines which folders you can upload to.</div>
+        </div>
+        <div style="padding:18px 22px">
+          <div style="display:flex;gap:10px;margin-bottom:16px">
+            <button onClick="{{ pickAcademics }}" style="flex:1;text-align:left;cursor:pointer;padding:14px 16px;border-radius:10px;border:1.5px solid {{ acadBorder }};background:{{ acadBg }}">
+              <div style="font:700 14px/1.2 Manrope,sans-serif;color:{{ acadInk }}">Academics</div>
+              <div style="margin-top:4px;font:400 12.5px/1.4 Manrope,sans-serif;color:{{ acadSub }}">College, then department</div>
+            </button>
+            <button onClick="{{ pickAdmin }}" style="flex:1;text-align:left;cursor:pointer;padding:14px 16px;border-radius:10px;border:1.5px solid {{ admBorder }};background:{{ admBg }}">
+              <div style="font:700 14px/1.2 Manrope,sans-serif;color:{{ admInk }}">Administration</div>
+              <div style="margin-top:4px;font:400 12.5px/1.4 Manrope,sans-serif;color:{{ admSub }}">Office</div>
+            </button>
+          </div>
+          <input value="{{ unitQuery }}" onChange="{{ onUnitQuery }}" placeholder="{{ unitSearchPlaceholder }}" style="width:100%;padding:11px 14px;font-size:14px;background:#F7F3EC;border:1px solid rgba(74,14,31,.2);border-radius:8px">
+          <div style="margin-top:12px;max-height:212px;overflow:auto;border:1px solid rgba(74,14,31,.12);border-radius:8px">
+            <sc-for list="{{ unitResults }}" as="u" hint-placeholder-count="5">
+              <div onClick="{{ u.onClick }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(74,14,31,.07);background:{{ u.bg }}">
+                <div>
+                  <div style="font:600 13.5px/1.3 Manrope,sans-serif;color:#201A1D">{{ u.name }}</div>
+                  <div style="font:400 12px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ u.parent }}</div>
+                </div>
+                <div style="width:16px;height:16px;flex:none;border-radius:50%;border:1.5px solid {{ u.dotBorder }};background:{{ u.dotFill }}"></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:14px;padding:12px 14px;border-radius:8px;background:rgba(31,92,82,.08);font:500 13px/1.45 Manrope,sans-serif;color:#1F5C52">{{ unitSummary }}</div>
+        </div>
+      </div>
+
+      <div style="margin-top:28px;display:flex;align-items:center;gap:16px">
+        <button style="padding:14px 28px;border:none;border-radius:8px;cursor:pointer;background:#7A1330;color:#F7F3EC;font:700 14.5px/1 Manrope,sans-serif;box-shadow:inset 0 -2px 0 rgba(74,14,31,.55)">Submit request</button>
+        <div style="font:400 13px/1.5 Manrope,sans-serif;color:rgba(32,26,29,.72)">You'll get an email once QAO approves the account.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:minmax(212px,272px) minmax(0,1fr);min-height:100vh">
+  <aside style="background:linear-gradient(180deg,#4A0E1F 0%,#3A0B18 100%);padding:26px 0 26px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:13px;padding:0 22px 26px">
+      <svg viewBox="0 0 100 100" width="34" height="34" style="display:block;overflow:visible" aria-hidden="true">
+        <g style="transform-origin:50px 50px;animation:polRoseSpin 150s linear infinite">
+          <path d="M50 50 L60 40 L84 16 L60 60 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L60 60 L84 84 L40 60 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L40 60 L16 84 L40 40 Z" fill="#9C6F1F" opacity=".9"></path>
+          <path d="M50 50 L40 40 L16 16 L60 40 Z" fill="#9C6F1F" opacity=".9"></path>
+        </g>
+        <g style="transform-origin:50px 50px;animation:polRoseBreathe 9s ease-in-out infinite">
+          <path d="M50 1 L64 40 L50 99 L36 40 Z" fill="#D9A43A"></path>
+          <path d="M1 50 L40 36 L99 50 L40 64 Z" fill="#C9973A"></path>
+          <circle cx="50" cy="50" r="16" fill="#7A1330"></circle>
+          <circle cx="50" cy="50" r="16" fill="none" stroke="#E8C66E" stroke-width="4" opacity=".85"></circle>
+        </g>
+      </svg>
+      <div>
+        <div style="font:600 21px/1 Fraunces,Georgia,serif;color:#F7F3EC">POLARIS</div>
+        <div style="margin-top:3px;font:500 11px/1 Manrope,sans-serif;color:rgba(247,243,236,.66)">CIT-U Quality Assurance</div>
+      </div>
+    </div>
+    <div style="flex:1;overflow:auto;padding-bottom:16px">
+      <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="3">
+        <div style="margin-bottom:24px">
+          <div style="padding:0 22px 9px;font:600 12px/1 Manrope,sans-serif;color:#C9973A">{{ g.label }}</div>
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+            <div onClick="{{ it.onClick }}" style="display:flex;align-items:center;gap:10px;cursor:pointer;background:{{ it.bg }}" style-hover="background:rgba(247,243,236,.07)">
+              <div style="width:3px;align-self:stretch;min-height:38px;background:{{ it.bar }}"></div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:{{ it.pad }}">
+                <span style="font:{{ it.font }} Manrope,sans-serif;color:{{ it.color }}">{{ it.label }}</span>
+                <span style="font:600 11px/1 Manrope,sans-serif;color:rgba(247,243,236,.8)">{{ it.meta }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin:0 16px;display:flex;flex-direction:column;gap:12px">
+      <div style="padding:14px 16px;border-radius:10px;background:rgba(247,243,236,.07)">
+        <div style="font:700 13px/1.2 Manrope,sans-serif;color:#F7F3EC">{{ userName }}</div>
+        <div style="margin-top:4px;font:500 11.5px/1.4 Manrope,sans-serif;color:rgba(247,243,236,.76)">{{ userRole }}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;padding:6px;border-radius:12px;background:rgba(247,243,236,.08)">
+      <sc-for list="{{ screenTabs }}" as="t" hint-placeholder-count="6">
+        <button onClick="{{ t.onClick }}" style="border:none;cursor:pointer;border-radius:8px;padding:6px 11px;font:600 11.5px/1 Manrope,sans-serif;color:{{ t.color }};background:{{ t.bg }}">{{ t.label }}</button>
+      </sc-for>
+    </div>
+    </div>
+  </aside>
+
+  <main style="background:#F7F3EC;min-width:0">
+    <header style="position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;padding:20px 36px;background:rgba(247,243,236,.94);border-bottom:1px solid rgba(74,14,31,.12);backdrop-filter:blur(6px)">
+      <div>
+        <div style="font:600 27px/1.15 Fraunces,Georgia,serif;letter-spacing:-.01em;color:#201A1D">{{ pageTitle }}</div>
+        <div style="margin-top:4px;font:500 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ pageSub }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <input placeholder="Search documents and units" style="width:260px;padding:9px 13px;font-size:13.5px;background:#FFFCF7;border:1px solid rgba(74,14,31,.2);border-radius:8px">
+        <div style="padding:8px 13px;border-radius:8px;background:rgba(74,14,31,.07);font:600 12.5px/1.2 Manrope,sans-serif;color:#4A0E1F">SY 2025–2026</div>
+      </div>
+    </header>
+
+    <sc-if value="{{ isQao }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:30px 36px 56px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px">
+        <div style="background:#FFFCF7;padding:24px 26px;border:1px solid rgba(74,14,31,.14);border-radius:14px">
+          <div style="font:600 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">Submission rate</div>
+          <div style="margin-top:12px;display:flex;align-items:baseline;gap:8px">
+            <span style="font:600 56px/1 Fraunces,Georgia,serif;letter-spacing:-.02em;color:#7A1330">78</span>
+            <span style="font:600 22px/1 Fraunces,Georgia,serif;color:rgba(122,19,48,.55)">%</span>
+          </div>
+          <div style="margin-top:14px;height:6px;border-radius:3px;background:rgba(74,14,31,.1);overflow:hidden"><div style="width:78%;height:100%;background:linear-gradient(90deg,#7A1330,#B8892B)"></div></div>
+          <div style="margin-top:10px;font:500 12.5px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72)">28 of 36 units have submitted this school year</div>
+        </div>
+        <div style="background:#FFFCF7;padding:24px 26px;border:1px solid rgba(74,14,31,.14);border-radius:14px">
+          <div style="font:600 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">Documents, SY 2025–2026</div>
+          <div style="margin-top:12px;font:600 56px/1 Fraunces,Georgia,serif;letter-spacing:-.02em;color:#201A1D">1,284</div>
+          <div style="margin-top:14px;display:flex;gap:18px">
+            <div><div style="font:700 15px/1.2 Manrope,sans-serif;color:#7A1330">903</div><div style="font:500 12px/1.3 Manrope,sans-serif;color:rgba(32,26,29,.72)">Academics</div></div>
+            <div><div style="font:700 15px/1.2 Manrope,sans-serif;color:#8A6417">381</div><div style="font:500 12px/1.3 Manrope,sans-serif;color:rgba(32,26,29,.72)">Administration</div></div>
+          </div>
+        </div>
+        <div style="background:#FFFCF7;padding:24px 26px;border:1px solid rgba(74,14,31,.14);border-radius:14px">
+          <div style="font:600 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">Units with no submissions</div>
+          <div style="margin-top:12px;display:flex;align-items:baseline;gap:10px">
+            <span style="font:600 56px/1 Fraunces,Georgia,serif;letter-spacing:-.02em;color:#201A1D">8</span>
+            <span style="padding:4px 9px;border-radius:999px;background:rgba(122,19,48,.1);font:700 11.5px/1.3 Manrope,sans-serif;color:#7A1330">Needs follow-up</span>
+          </div>
+          <div style="margin-top:14px;font:500 12.5px/1.5 Manrope,sans-serif;color:rgba(32,26,29,.72)">Longest gap: Office of Alumni Affairs, 214 days</div>
+        </div>
+      </div>
+
+      <div style="margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:26px;align-items:start">
+        <section>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
+            <h2 style="margin:0;font:600 19px/1.2 Fraunces,Georgia,serif;color:#201A1D">Documents per unit</h2>
+            <div style="display:flex;align-items:center;gap:14px;font:500 12px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:2px;background:#7A1330"></span>Academics</span>
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:2px;background:#B8892B"></span>Administration</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ bars }}" as="b" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:minmax(96px,168px) minmax(60px,1fr) 46px;align-items:center;gap:12px">
+                <div style="font:500 12.5px/1.3 Manrope,sans-serif;color:#201A1D;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.short }}</div>
+                <div style="height:20px;background:rgba(74,14,31,.06);border-radius:3px;overflow:hidden"><div style="width:{{ b.pct }};height:100%;background:{{ b.color }};border-radius:3px"></div></div>
+                <div style="text-align:right;font:700 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ b.docs }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="border:1px solid rgba(74,14,31,.14);border-radius:14px;background:#FFFCF7;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid rgba(74,14,31,.1)">
+            <h2 style="margin:0;font:600 17px/1.2 Fraunces,Georgia,serif;color:#201A1D">Units</h2>
+            <div style="display:flex;gap:4px;padding:3px;border-radius:999px;background:rgba(74,14,31,.07)">
+              <sc-for list="{{ branchTabs }}" as="f" hint-placeholder-count="3">
+                <button onClick="{{ f.onClick }}" style="border:none;cursor:pointer;border-radius:999px;padding:6px 12px;font:600 12px/1 Manrope,sans-serif;color:{{ f.color }};background:{{ f.bg }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(110px,1fr) auto auto;gap:14px;padding:10px 20px;border-bottom:1px solid rgba(74,14,31,.1);font:600 11.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">
+            <div>Unit</div><div style="text-align:right">Documents</div><div style="text-align:right">Status</div>
+          </div>
+          <div style="max-height:392px;overflow:auto">
+            <sc-for list="{{ tableRows }}" as="r" hint-placeholder-count="9">
+              <div style="display:grid;grid-template-columns:minmax(110px,1fr) auto auto;gap:14px;align-items:center;padding:11px 20px;border-bottom:1px solid rgba(74,14,31,.07)">
+                <div style="min-width:0">
+                  <div style="font:600 13px/1.3 Manrope,sans-serif;color:#201A1D;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</div>
+                  <div style="font:500 11.5px/1.35 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ r.branch }}, last upload {{ r.last }}</div>
+                </div>
+                <div style="text-align:right;font:700 13px/1 Manrope,sans-serif;color:#201A1D">{{ r.docs }}</div>
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:7px">
+                  <span style="width:8px;height:8px;border-radius:50%;background:{{ r.dot }}"></span>
+                  <span style="font:600 12px/1 Manrope,sans-serif;color:{{ r.statusColor }}">{{ r.status }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+
+      <section style="margin-top:34px;border-top:2px solid rgba(74,14,31,.18);padding-top:22px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+          <h2 style="margin:0;font:600 19px/1.2 Fraunces,Georgia,serif;color:#201A1D">KPI framework</h2>
+          <span style="padding:3px 9px;border-radius:4px;border:1px solid rgba(31,92,82,.35);font:600 11px/1.4 Manrope,sans-serif;color:#1F5C52">Reference, not live data</span>
+        </div>
+        <p style="margin:0 0 18px;max-width:640px;font:400 13.5px/1.6 Manrope,sans-serif;color:rgba(32,26,29,.72)">The indicators QAO evaluates units against. Definitions are maintained by the Quality Assurance Office and updated at the start of each school year.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0;border:1px dashed rgba(74,14,31,.28);border-radius:12px;overflow:hidden;background:rgba(74,14,31,.02)">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="padding:18px 20px;border-right:1px dashed rgba(74,14,31,.18)">
+              <div style="font:700 12px/1 Manrope,sans-serif;color:#1F5C52">{{ k.code }}</div>
+              <div style="margin-top:8px;font:600 14.5px/1.3 Manrope,sans-serif;color:#201A1D">{{ k.name }}</div>
+              <div style="margin-top:7px;font:400 12.5px/1.55 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ k.desc }}</div>
+              <div style="margin-top:10px;font:600 12px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">Target {{ k.target }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isUnit }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:30px 36px 56px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px">
+        <div style="padding:22px 24px;border:1px solid rgba(74,14,31,.14);border-radius:14px;background:#FFFCF7">
+          <div style="font:600 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">Total documents</div>
+          <div style="margin-top:10px;font:600 50px/1 Fraunces,Georgia,serif;color:#201A1D">412</div>
+          <div style="margin-top:8px;font:500 12.5px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72)">Since SY 2021–2022</div>
+        </div>
+        <div style="padding:22px 24px;border:1px solid rgba(74,14,31,.14);border-radius:14px;background:#FFFCF7">
+          <div style="font:600 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">This school year</div>
+          <div style="margin-top:10px;font:600 50px/1 Fraunces,Georgia,serif;color:#7A1330">96</div>
+          <div style="margin-top:8px;font:500 12.5px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72)">Last upload 12 September 2026</div>
+        </div>
+        <div style="padding:22px 24px;border:1px solid rgba(74,14,31,.14);border-radius:14px;background:#FFFCF7">
+          <div style="font:600 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">Folders complete</div>
+          <div style="margin-top:10px;display:flex;align-items:baseline;gap:6px"><span style="font:600 50px/1 Fraunces,Georgia,serif;color:#1F5C52">7</span><span style="font:600 20px/1 Fraunces,Georgia,serif;color:rgba(32,26,29,.4)">/ 9</span></div>
+          <div style="margin-top:8px;font:500 12.5px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72)">2 folders still awaiting documents</div>
+        </div>
+      </div>
+
+      <section style="margin-top:32px">
+        <h2 style="margin:0 0 16px;font:600 19px/1.2 Fraunces,Georgia,serif;color:#201A1D">Folder submission status</h2>
+        <div style="border:1px solid rgba(74,14,31,.14);border-radius:14px;background:#FFFCF7;overflow:hidden">
+          <sc-for list="{{ folderStatus }}" as="f" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:minmax(130px,1fr) minmax(80px,.85fr) auto;gap:16px;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(74,14,31,.08)">
+              <div style="min-width:0">
+                <div style="font:600 14px/1.3 Manrope,sans-serif;color:#201A1D">{{ f.name }}</div>
+                <div style="font:500 11.5px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ f.count }} documents filed</div>
+              </div>
+              <div style="height:8px;border-radius:4px;background:rgba(74,14,31,.08);overflow:hidden"><div style="width:{{ f.pct }};height:100%;background:{{ f.barColor }}"></div></div>
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:{{ f.dot }}"></span><span style="font:600 12px/1 Manrope,sans-serif;color:{{ f.statusColor }}">{{ f.status }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="margin-top:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:26px;align-items:start">
+        <div>
+          <h2 style="margin:0 0 16px;font:600 19px/1.2 Fraunces,Georgia,serif;color:#201A1D">Recent activity</h2>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ activity }}" as="a" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:14px;padding:13px 18px;background:#FFFCF7;border:1px solid rgba(74,14,31,.1)">
+                <div style="width:6px;height:6px;border-radius:50%;background:{{ a.dot }}"></div>
+                <div style="flex:1;font:500 13.5px/1.4 Manrope,sans-serif;color:#201A1D">{{ a.text }}</div>
+                <div style="font:500 12px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ a.when }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="padding:20px 22px;border:1px dashed rgba(74,14,31,.28);border-radius:12px;background:rgba(74,14,31,.02)">
+          <div style="font:600 12px/1 Manrope,sans-serif;color:#1F5C52">Reference</div>
+          <div style="margin-top:9px;font:600 15px/1.3 Manrope,sans-serif;color:#201A1D">Deadline for SY 2025–2026</div>
+          <p style="margin:9px 0 0;font:400 13px/1.6 Manrope,sans-serif;color:rgba(32,26,29,.72)">Second-semester accreditation evidence closes 30 April 2026. Folders left incomplete after that date are reported to the Office of the Vice President for Academic Affairs.</p>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isRepo }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:30px 36px 56px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px">
+        <div style="display:flex;gap:10px">
+          <select style="padding:9px 12px;font-size:13.5px;background:#FFFCF7;border:1px solid rgba(74,14,31,.2);border-radius:8px;color:#201A1D"><option>SY 2025–2026</option><option>SY 2024–2025</option><option>SY 2023–2024</option></select>
+          <select style="padding:9px 12px;font-size:13.5px;background:#FFFCF7;border:1px solid rgba(74,14,31,.2);border-radius:8px;color:#201A1D"><option>All semesters</option><option>First semester</option><option>Second semester</option><option>Summer</option></select>
+        </div>
+        <button onClick="{{ startUpload }}" style="padding:11px 20px;border:none;border-radius:8px;cursor:pointer;background:#7A1330;color:#F7F3EC;font:700 13.5px/1 Manrope,sans-serif;box-shadow:inset 0 -2px 0 rgba(74,14,31,.55)">{{ uploadLabel }}</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:14px">
+        <sc-for list="{{ folders }}" as="f" hint-placeholder-count="6">
+          <div onClick="{{ f.onClick }}" style="cursor:pointer;padding:18px;border-radius:12px;border:1px solid {{ f.border }};background:{{ f.bg }}" style-hover="border-color:#7A1330">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between">
+              <div style="width:30px;height:24px;border-radius:3px 6px 6px 6px;background:{{ f.chip }}"></div>
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ f.dot }}"></span>
+            </div>
+            <div style="margin-top:14px;font:600 14px/1.35 Manrope,sans-serif;color:#201A1D">{{ f.name }}</div>
+            <div style="margin-top:5px;font:500 12px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ f.meta }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <section style="margin-top:32px;border:1px solid rgba(74,14,31,.14);border-radius:14px;background:#FFFCF7;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid rgba(74,14,31,.1)">
+          <h2 style="margin:0;font:600 17px/1.2 Fraunces,Georgia,serif;color:#201A1D">{{ openFolder }}</h2>
+          <div style="font:500 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ docCountLabel }}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(110px,1fr) 92px 164px;gap:14px;padding:10px 22px;border-bottom:1px solid rgba(74,14,31,.1);font:600 11.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">
+          <div>Document</div><div>Version</div><div style="text-align:right">Actions</div>
+        </div>
+        <sc-for list="{{ docs }}" as="d" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:minmax(110px,1fr) 92px 164px;gap:14px;align-items:center;padding:13px 22px;border-bottom:1px solid rgba(74,14,31,.07);background:{{ d.rowBg }};animation:{{ d.anim }}">
+            <div style="min-width:0">
+              <div style="font:600 13.5px/1.35 Manrope,sans-serif;color:{{ d.nameColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.name }}</div>
+              <div style="font:500 11.5px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.sub }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="padding:3px 7px;border-radius:4px;background:rgba(31,92,82,.1);font:700 11px/1.3 Manrope,sans-serif;color:#1F5C52">{{ d.version }}</span>
+              <span style="font:500 11px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ d.history }}</span>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px">
+              <sc-if value="{{ d.busy }}" hint-placeholder-val="{{ false }}">
+                <div style="width:132px;height:6px;border-radius:3px;background:rgba(74,14,31,.12);overflow:hidden"><div style="width:{{ d.progress }};height:100%;background:#B8892B;transition:width .35s linear"></div></div>
+              </sc-if>
+              <sc-if value="{{ d.idle }}" hint-placeholder-val="{{ true }}">
+                <button style="padding:6px 11px;border-radius:6px;border:1px solid rgba(74,14,31,.22);background:#F7F3EC;cursor:pointer;font:600 11.5px/1 Manrope,sans-serif;color:#4A0E1F">Versions</button>
+                <button onClick="{{ d.onArchive }}" style="padding:6px 11px;border-radius:6px;border:1px solid rgba(74,14,31,.22);background:#F7F3EC;cursor:pointer;font:600 11.5px/1 Manrope,sans-serif;color:#4A0E1F">{{ d.archiveLabel }}</button>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isApprovals }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:30px 36px 56px;max-width:1080px">
+      <div style="display:flex;align-items:center;gap:22px;padding:18px 24px;border-radius:12px;background:#FFFCF7;border:1px solid rgba(74,14,31,.14);margin-bottom:26px">
+        <div><div style="font:600 34px/1 Fraunces,Georgia,serif;color:#7A1330">{{ pendingCount }}</div><div style="margin-top:6px;font:600 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">Pending</div></div>
+        <div style="width:1px;height:42px;background:rgba(74,14,31,.14)"></div>
+        <div><div style="font:600 34px/1 Fraunces,Georgia,serif;color:#1F5C52">{{ approvedCount }}</div><div style="margin-top:6px;font:600 12.5px/1 Manrope,sans-serif;color:rgba(32,26,29,.72)">Approved today</div></div>
+        <div style="width:1px;height:42px;background:rgba(74,14,31,.14)"></div>
+        <p style="margin:0;max-width:420px;font:400 13px/1.6 Manrope,sans-serif;color:rgba(32,26,29,.72)">Approving grants upload access to the requested unit's folders only. Rejected requests are kept on file for audit.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <sc-for list="{{ requests }}" as="q" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:minmax(150px,1.7fr) minmax(125px,1fr) auto;gap:18px 20px;align-items:center;padding:18px 22px;border-radius:12px;background:#FFFCF7;border:1px solid {{ q.border }}">
+            <div style="display:flex;align-items:center;gap:14px;min-width:0">
+              <div style="width:40px;height:40px;flex:none;border-radius:50%;background:{{ q.avatarBg }};color:#F7F3EC;font:700 14px/40px Manrope,sans-serif;text-align:center">{{ q.initials }}</div>
+              <div style="min-width:0">
+                <div style="font:700 14.5px/1.3 Manrope,sans-serif;color:#201A1D">{{ q.name }}</div>
+                <div style="font:500 12.5px/1.45 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ q.email }} — ID {{ q.id }}</div>
+              </div>
+            </div>
+            <div>
+              <div style="font:600 13px/1.35 Manrope,sans-serif;color:#201A1D">{{ q.unit }}</div>
+              <div style="font:500 12px/1.4 Manrope,sans-serif;color:rgba(32,26,29,.72)">{{ q.branch }}, requested {{ q.when }}</div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:9px">
+              <sc-if value="{{ q.pending }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ q.onReject }}" style="padding:9px 15px;border-radius:7px;border:1px solid rgba(74,14,31,.25);background:transparent;cursor:pointer;font:600 12.5px/1 Manrope,sans-serif;color:#4A0E1F">Reject</button>
+                <button onClick="{{ q.onApprove }}" style="padding:9px 17px;border-radius:7px;border:none;cursor:pointer;background:#7A1330;color:#F7F3EC;font:700 12.5px/1 Manrope,sans-serif;box-shadow:inset 0 -2px 0 rgba(74,14,31,.55)">Approve</button>
+              </sc-if>
+              <sc-if value="{{ q.decided }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:7px;background:{{ q.badgeBg }};animation:polRise .28s ease-out">
+                  <span style="width:8px;height:8px;border-radius:50%;background:{{ q.badgeDot }}"></span>
+                  <span style="font:700 12.5px/1 Manrope,sans-serif;color:{{ q.badgeInk }}">{{ q.statusLabel }}</span>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+  </main>
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;initialScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;signup&quot;,&quot;qao&quot;,&quot;unit&quot;,&quot;repo&quot;,&quot;approvals&quot;],&quot;default&quot;:&quot;login&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const MAROON = '#7A1330', GOLD = '#B8892B', TEAL = '#1F5C52', INK = '#201A1D';
+
+const UNITS = [
+  { name: 'College of Engineering and Architecture', short: 'Engineering & Arch.', branch: 'Academics', docs: 186, status: 'Submitted', last: '12 Sep 2026' },
+  { name: 'College of Computer Studies', short: 'Computer Studies', branch: 'Academics', docs: 164, status: 'Submitted', last: '11 Sep 2026' },
+  { name: 'College of Management, Business and Accountancy', short: 'Management & Bus.', branch: 'Academics', docs: 142, status: 'Submitted', last: '09 Sep 2026' },
+  { name: 'College of Arts, Sciences and Education', short: 'Arts, Sci. & Educ.', branch: 'Academics', docs: 131, status: 'Submitted', last: '05 Sep 2026' },
+  { name: 'College of Nursing and Allied Health Sciences', short: 'Nursing & Allied H.', branch: 'Academics', docs: 118, status: 'Submitted', last: '02 Sep 2026' },
+  { name: 'College of Criminal Justice', short: 'Criminal Justice', branch: 'Academics', docs: 88, status: 'Submitted', last: '28 Aug 2026' },
+  { name: 'Office of the Registrar', short: 'Registrar', branch: 'Administration', docs: 97, status: 'Submitted', last: '10 Sep 2026' },
+  { name: 'Human Resources Department', short: 'Human Resources', branch: 'Administration', docs: 84, status: 'Submitted', last: '08 Sep 2026' },
+  { name: 'Library and Information Services', short: 'Library Services', branch: 'Administration', docs: 76, status: 'Submitted', last: '01 Sep 2026' },
+  { name: 'Office of Student Affairs', short: 'Student Affairs', branch: 'Administration', docs: 62, status: 'Submitted', last: '26 Aug 2026' },
+  { name: 'Guidance and Testing Center', short: 'Guidance & Testing', branch: 'Administration', docs: 41, status: 'Submitted', last: '19 Aug 2026' },
+  { name: 'Office of Alumni Affairs', short: 'Alumni Affairs', branch: 'Administration', docs: 0, status: 'No files', last: '214 days ago' },
+  { name: 'Office of External Relations', short: 'External Relations', branch: 'Administration', docs: 0, status: 'No files', last: '181 days ago' },
+];
+
+const PICKABLE = [
+  { name: 'Computer Engineering', parent: 'College of Engineering and Architecture', branch: 'Academics' },
+  { name: 'Civil Engineering', parent: 'College of Engineering and Architecture', branch: 'Academics' },
+  { name: 'Mechanical Engineering', parent: 'College of Engineering and Architecture', branch: 'Academics' },
+  { name: 'Information Technology', parent: 'College of Computer Studies', branch: 'Academics' },
+  { name: 'Computer Science', parent: 'College of Computer Studies', branch: 'Academics' },
+  { name: 'Accountancy', parent: 'College of Management, Business and Accountancy', branch: 'Academics' },
+  { name: 'Office of the Registrar', parent: 'Administration', branch: 'Administration' },
+  { name: 'Human Resources Department', parent: 'Administration', branch: 'Administration' },
+  { name: 'Library and Information Services', parent: 'Administration', branch: 'Administration' },
+  { name: 'Office of Student Affairs', parent: 'Administration', branch: 'Administration' },
+  { name: 'Guidance and Testing Center', parent: 'Administration', branch: 'Administration' },
+];
+
+class Component extends DCLogic {
+  state = {
+    screen: this.props.initialScreen || 'login',
+    branch: 'All',
+    signupBranch: 'Academics',
+    unitQuery: '',
+    pickedUnit: 'Information Technology',
+    openFolder: 'Accreditation evidence',
+    docs: [
+      { id: 1, name: 'ABET Criterion 3 — Student Outcomes Matrix.pdf', by: 'Uploaded by R. Villanueva', sem: 'First', date: '12 Sep 2026', version: 'v4', history: '3 earlier', archived: false },
+      { id: 2, name: 'Faculty Credentials Summary 2025–2026.xlsx', by: 'Uploaded by M. Abella', sem: 'First', date: '09 Sep 2026', version: 'v2', history: '1 earlier', archived: false },
+      { id: 3, name: 'Laboratory Utilization Report.pdf', by: 'Uploaded by J. Tampus', sem: 'First', date: '02 Sep 2026', version: 'v1', history: 'none', archived: false },
+      { id: 4, name: 'Curriculum Mapping — BSIT.docx', by: 'Uploaded by R. Villanueva', sem: 'Second', date: '21 Aug 2026', version: 'v3', history: '2 earlier', archived: false },
+      { id: 5, name: 'Student Feedback Consolidation.pdf', by: 'Uploaded by A. Dela Peña', sem: 'Second', date: '14 Aug 2026', version: 'v1', history: 'none', archived: true },
+    ],
+    uploading: null,
+    progress: 0,
+    requests: [
+      { id: 1, name: 'Maria Louise Abella', email: 'm.abella@cit.edu', idn: '21-4512-088', unit: 'Information Technology', branch: 'Academics', when: '2 hours ago', status: 'pending' },
+      { id: 2, name: 'Jerome Tampus', email: 'j.tampus@cit.edu', idn: '19-3390-410', unit: 'Office of the Registrar', branch: 'Administration', when: 'Yesterday', status: 'pending' },
+      { id: 3, name: 'Kristine Yap', email: 'k.yap@cit.edu', idn: '20-1187-256', unit: 'Civil Engineering', branch: 'Academics', when: 'Yesterday', status: 'pending' },
+      { id: 4, name: 'Arnel Dela Peña', email: 'a.delapena@cit.edu', idn: '18-7734-902', unit: 'Library and Information Services', branch: 'Administration', when: '2 days ago', status: 'pending' },
+      { id: 5, name: 'Faith Gonzaga', email: 'f.gonzaga@cit.edu', idn: '22-9021-533', unit: 'Guidance and Testing Center', branch: 'Administration', when: '3 days ago', status: 'pending' },
+    ],
+  };
+
+  componentWillUnmount() { clearInterval(this._t); }
+
+  go = (s) => () => this.setState({ screen: s });
+
+  startUpload = () => {
+    if (this.state.uploading) return;
+    const doc = { id: Date.now(), name: 'Program Self-Survey Form — Part II.pdf', by: 'Uploading by you', sem: 'First', date: '15 Sep 2026', version: 'v1', history: 'none', archived: false };
+    this.setState(s => ({ docs: [doc, ...s.docs], uploading: doc.id, progress: 8 }));
+    clearInterval(this._t);
+    this._t = setInterval(() => {
+      this.setState(s => {
+        const p = s.progress + 14;
+        if (p >= 100) { clearInterval(this._t); return { progress: 100, uploading: null }; }
+        return { progress: p };
+      });
+    }, 180);
+  };
+
+  renderVals() {
+    const { screen, branch } = this.state;
+    const isApp = ['qao', 'unit', 'repo', 'approvals'].includes(screen);
+
+    const tab = (id, label) => ({
+      label, onClick: this.go(id),
+      bg: screen === id ? '#F7F3EC' : 'transparent',
+      color: screen === id ? INK : 'rgba(247,243,236,.85)',
+    });
+
+    const navItem = (id, label, meta, indent) => ({
+      label, meta: meta || '',
+      onClick: this.go(id),
+      bg: screen === id ? 'rgba(247,243,236,.12)' : 'transparent',
+      bar: screen === id ? GOLD : 'transparent',
+      color: screen === id ? '#F7F3EC' : 'rgba(247,243,236,.84)',
+      font: (screen === id ? '700' : '500') + ' 13.5px/1.3',
+      pad: '10px 18px 10px ' + (indent || 0) + 'px',
+    });
+
+    const navGroups = [
+      { label: 'Quality Assurance Office', items: [navItem('qao', 'University dashboard', '36 units'), navItem('approvals', 'Account approvals', String(this.state.requests.filter(r => r.status === 'pending').length))] },
+      { label: 'Academics', items: [navItem('unit', 'Information Technology', '96'), { label: 'Computer Science', meta: '68', onClick: this.go('unit'), bg: 'transparent', bar: 'transparent', color: 'rgba(247,243,236,.82)', font: '500 13.5px/1.3', pad: '10px 18px 10px 0' }, { label: 'Civil Engineering', meta: '74', onClick: this.go('unit'), bg: 'transparent', bar: 'transparent', color: 'rgba(247,243,236,.82)', font: '500 13.5px/1.3', pad: '10px 18px 10px 0' }] },
+      { label: 'This unit', items: [navItem('repo', 'Document repository', '412')] },
+    ];
+
+    const filtered = branch === 'All' ? UNITS : UNITS.filter(u => u.branch === branch);
+    const max = Math.max.apply(null, UNITS.map(u => u.docs)) || 1;
+
+    const bars = UNITS.slice().sort((a, b) => b.docs - a.docs).slice(0, 10).map(u => ({
+      short: u.short, docs: u.docs,
+      pct: Math.max(1, Math.round((u.docs / max) * 100)) + '%',
+      color: u.branch === 'Academics' ? MAROON : GOLD,
+    }));
+
+    const tableRows = filtered.map(u => ({
+      name: u.name, branch: u.branch, docs: u.docs, last: u.last, status: u.status,
+      dot: u.docs > 0 ? TEAL : MAROON,
+      statusColor: u.docs > 0 ? TEAL : MAROON,
+    }));
+
+    const branchTabs = ['All', 'Academics', 'Administration'].map(b => ({
+      label: b, onClick: () => this.setState({ branch: b }),
+      bg: branch === b ? '#FFFCF7' : 'transparent',
+      color: branch === b ? INK : 'rgba(32,26,29,.72)',
+    }));
+
+    const q = this.state.unitQuery.toLowerCase();
+    const unitResults = PICKABLE.filter(u => u.branch === this.state.signupBranch && (u.name.toLowerCase().includes(q) || u.parent.toLowerCase().includes(q))).map(u => ({
+      name: u.name, parent: u.parent,
+      onClick: () => this.setState({ pickedUnit: u.name }),
+      bg: this.state.pickedUnit === u.name ? 'rgba(122,19,48,.07)' : '#FFFCF7',
+      dotBorder: this.state.pickedUnit === u.name ? MAROON : 'rgba(74,14,31,.3)',
+      dotFill: this.state.pickedUnit === u.name ? MAROON : 'transparent',
+    }));
+
+    const acad = this.state.signupBranch === 'Academics';
+    const docsVisible = this.state.docs;
+
+    const folders = [
+      { name: 'Accreditation evidence', meta: '96 documents, updated 12 Sep', done: true },
+      { name: 'Faculty records', meta: '58 documents, updated 09 Sep', done: true },
+      { name: 'Curriculum and syllabi', meta: '74 documents, updated 21 Aug', done: true },
+      { name: 'Student outcomes', meta: '44 documents, updated 18 Aug', done: true },
+      { name: 'Facilities and laboratories', meta: '31 documents, updated 02 Aug', done: true },
+      { name: 'Research and extension', meta: 'No documents this school year', done: false },
+    ].map(f => ({
+      name: f.name, meta: f.meta,
+      onClick: () => this.setState({ openFolder: f.name }),
+      border: this.state.openFolder === f.name ? MAROON : 'rgba(74,14,31,.14)',
+      bg: this.state.openFolder === f.name ? 'rgba(122,19,48,.05)' : '#FFFCF7',
+      chip: f.done ? 'rgba(122,19,48,.22)' : 'rgba(74,14,31,.1)',
+      dot: f.done ? TEAL : GOLD,
+    }));
+
+    return {
+      screenTabs: [tab('login', 'Login'), tab('signup', 'Signup'), tab('qao', 'QAO'), tab('unit', 'Unit'), tab('repo', 'Repository'), tab('approvals', 'Approvals')],
+      isLogin: screen === 'login', isSignup: screen === 'signup', isApp,
+      isQao: screen === 'qao', isUnit: screen === 'unit', isRepo: screen === 'repo', isApprovals: screen === 'approvals',
+      goLogin: this.go('login'), goSignup: this.go('signup'), goQao: this.go('qao'),
+      userName: screen === 'qao' || screen === 'approvals' ? 'Dr. Elena Ravelo' : 'Maria Louise Abella',
+      userRole: screen === 'qao' || screen === 'approvals' ? 'Administrator, Quality Assurance Office' : 'Unit coordinator, Information Technology',
+      pageTitle: { qao: 'University overview', unit: 'Information Technology', repo: 'Document repository', approvals: 'Account approvals' }[screen] || '',
+      pageSub: { qao: 'Submission activity across all colleges and offices', unit: 'Department dashboard, College of Computer Studies', repo: 'Information Technology, College of Computer Studies', approvals: 'Requests awaiting review by the Quality Assurance Office' }[screen] || '',
+      navGroups, bars, tableRows, branchTabs,
+      kpis: [
+        { code: 'KPI 01', name: 'Documentation completeness', desc: 'Share of required folders holding at least one current-year document.', target: '100%' },
+        { code: 'KPI 02', name: 'Submission timeliness', desc: 'Documents filed on or before the semestral cut-off date.', target: '95%' },
+        { code: 'KPI 03', name: 'Version currency', desc: 'Evidence revised within the last two school years.', target: '90%' },
+        { code: 'KPI 04', name: 'Audit readiness', desc: 'Units passing internal QAO spot-checks without findings.', target: '85%' },
+      ],
+      pickAcademics: () => this.setState({ signupBranch: 'Academics', pickedUnit: '', unitQuery: '' }),
+      pickAdmin: () => this.setState({ signupBranch: 'Administration', pickedUnit: '', unitQuery: '' }),
+      acadBg: acad ? 'rgba(122,19,48,.07)' : '#F7F3EC', acadBorder: acad ? MAROON : 'rgba(74,14,31,.18)',
+      acadInk: acad ? MAROON : INK, acadSub: acad ? 'rgba(122,19,48,.75)' : 'rgba(32,26,29,.72)',
+      admBg: acad ? '#F7F3EC' : 'rgba(122,19,48,.07)', admBorder: acad ? 'rgba(74,14,31,.18)' : MAROON,
+      admInk: acad ? INK : MAROON, admSub: acad ? 'rgba(32,26,29,.72)' : 'rgba(122,19,48,.75)',
+      unitQuery: this.state.unitQuery,
+      onUnitQuery: (e) => this.setState({ unitQuery: e.target.value }),
+      unitSearchPlaceholder: acad ? 'Search colleges and departments' : 'Search administrative offices',
+      unitResults,
+      unitSummary: this.state.pickedUnit ? 'Selected: ' + this.state.pickedUnit : 'No unit selected yet',
+      folders,
+      openFolder: this.state.openFolder,
+      docCountLabel: docsVisible.length + ' documents, archived items shown in grey',
+      uploadLabel: this.state.uploading ? 'Uploading…' : 'Upload document',
+      startUpload: this.startUpload,
+      docs: docsVisible.map(d => {
+        const busy = this.state.uploading === d.id;
+        return {
+          name: d.name, sub: (busy ? 'Uploading…' : d.by) + ' — ' + d.sem + ' semester, ' + d.date,
+          version: d.version, history: d.history,
+          busy, idle: !busy,
+          progress: this.state.progress + '%',
+          rowBg: d.archived ? 'rgba(74,14,31,.035)' : 'transparent',
+          nameColor: d.archived ? 'rgba(32,26,29,.72)' : INK,
+          anim: busy ? 'polRise .3s ease-out' : 'none',
+          archiveLabel: d.archived ? 'Restore' : 'Archive',
+          onArchive: () => this.setState(s => ({ docs: s.docs.map(x => x.id === d.id ? Object.assign({}, x, { archived: !x.archived }) : x) })),
+        };
+      }),
+      folderStatus: [
+        { name: 'Accreditation evidence', pct: '100%', count: '96 of 96', status: 'Complete' },
+        { name: 'Faculty records', pct: '100%', count: '58 of 58', status: 'Complete' },
+        { name: 'Curriculum and syllabi', pct: '86%', count: '64 of 74', status: 'In progress' },
+        { name: 'Student outcomes', pct: '72%', count: '32 of 44', status: 'In progress' },
+        { name: 'Facilities and laboratories', pct: '100%', count: '31 of 31', status: 'Complete' },
+        { name: 'Research and extension', pct: '0%', count: '0 of 12', status: 'No files' },
+      ].map(f => ({
+        name: f.name, pct: f.pct, count: f.count, status: f.status,
+        barColor: f.status === 'No files' ? 'rgba(122,19,48,.25)' : (f.status === 'Complete' ? TEAL : GOLD),
+        dot: f.status === 'No files' ? MAROON : (f.status === 'Complete' ? TEAL : GOLD),
+        statusColor: f.status === 'No files' ? MAROON : (f.status === 'Complete' ? TEAL : '#8A6417'),
+      })),
+      activity: [
+        { text: 'R. Villanueva uploaded ABET Criterion 3 — Student Outcomes Matrix (v4)', when: '12 Sep', dot: TEAL },
+        { text: 'M. Abella archived Student Feedback Consolidation', when: '10 Sep', dot: GOLD },
+        { text: 'QAO flagged Research and extension as awaiting documents', when: '08 Sep', dot: MAROON },
+        { text: 'J. Tampus uploaded Laboratory Utilization Report', when: '02 Sep', dot: TEAL },
+        { text: 'Folder Curriculum and syllabi reopened for second semester', when: '28 Aug', dot: GOLD },
+      ],
+      pendingCount: this.state.requests.filter(r => r.status === 'pending').length,
+      approvedCount: this.state.requests.filter(r => r.status === 'approved').length,
+      requests: this.state.requests.map(r => {
+        const set = (status) => () => this.setState(s => ({ requests: s.requests.map(x => x.id === r.id ? Object.assign({}, x, { status }) : x) }));
+        const approved = r.status === 'approved';
+        return {
+          name: r.name, email: r.email, id: r.idn, unit: r.unit, branch: r.branch, when: r.when,
+          initials: r.name.split(' ').map(p => p[0]).slice(0, 2).join(''),
+          avatarBg: r.branch === 'Academics' ? MAROON : '#8A6417',
+          border: r.status === 'pending' ? 'rgba(74,14,31,.14)' : (approved ? 'rgba(31,92,82,.35)' : 'rgba(74,14,31,.28)'),
+          pending: r.status === 'pending', decided: r.status !== 'pending',
+          statusLabel: approved ? 'Approved' : 'Rejected',
+          badgeBg: approved ? 'rgba(31,92,82,.1)' : 'rgba(122,19,48,.08)',
+          badgeDot: approved ? TEAL : MAROON,
+          badgeInk: approved ? TEAL : MAROON,
+          onApprove: set('approved'), onReject: set('rejected'),
+        };
+      }),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
