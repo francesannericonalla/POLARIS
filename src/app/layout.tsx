@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "POLARIS — CIT-U Quality Assurance Office",
+  title: "POLARIS",
   description: "Performance and Organization Leadership Analytics, Reporting, and Institutional Stewardship",
 };
 
