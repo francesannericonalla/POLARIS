@@ -329,7 +329,7 @@ export function FolderCoverageWithDrawer({
     <div className={compact ? "px-4 py-2 flex flex-col justify-between h-full" : "px-5 py-4 space-y-3.5"}>
       {visibleStats.map((s) => {
             const pct = s.total > 0 ? Math.round((s.submitted / s.total) * 100) : 0;
-            const barColor = pct >= 80 ? "#16a34a" : pct >= 50 ? "#B8892B" : pct > 0 ? "#ef4444" : "#e5e7eb";
+            const barColor = "#7A1330";
             const pendingCount = s.total - s.submitted;
             return (
               <button
@@ -346,7 +346,7 @@ export function FolderCoverageWithDrawer({
                   <span className="flex items-center gap-1 shrink-0">
                     <span
                       className="text-xs font-semibold tabular-nums transition-colors"
-                      style={{ color: pct === 0 ? "#9ca3af" : barColor }}
+                      style={{ color: pct === 0 ? "#9ca3af" : "#7A1330" }}
                     >
                       {s.submitted}
                       <span className="font-normal text-gray-300"> / {s.total}</span>

@@ -273,7 +273,7 @@ export default async function DashboardPage({
 
   const R = 36, CIRC = 2 * Math.PI * R;
   const rateOffset = CIRC - (submissionRate / 100) * CIRC;
-  const ringColor = submissionRate >= 80 ? "#16a34a" : submissionRate >= 50 ? "#B8892B" : "#ef4444";
+  const ringColor = "#7A1330";
 
   // Compliance Overview card stats
   const acadSummariesAll = allSummaries.filter((u) => u.branch === "academics");

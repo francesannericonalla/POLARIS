@@ -170,7 +170,7 @@ export function QAOAllOfficesTable({ summaries, schoolYear }: { summaries: Offic
             ) : (
               paginated.map((u, i) => {
                 const pct = u.totalFolders > 0 ? Math.round((u.foldersThisYear / u.totalFolders) * 100) : 0;
-                const barColor = pct >= 100 ? "#16a34a" : pct >= 50 ? "#B8892B" : pct > 0 ? "#ef4444" : "#e5e7eb";
+                const barColor = "#7A1330";
                 return (
                   <tr
                     key={u.id}
