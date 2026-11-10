@@ -221,6 +221,7 @@ export function FolderCoverageWithDrawer({
   accentColor,
   accentHex,
   schoolYear,
+  compact = false,
 }: {
   title: string;
   subtitle: string;
@@ -228,6 +229,7 @@ export function FolderCoverageWithDrawer({
   accentColor: string;
   accentHex: string;
   schoolYear: string;
+  compact?: boolean;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState<DrawerState | null>(null);
@@ -241,18 +243,9 @@ export function FolderCoverageWithDrawer({
     setDrawerOpen(true);
   }
 
-  return (
-    <>
-      <div className="card overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-3">
-          <span className={`w-2 h-2 rounded-full shrink-0 ${accentColor}`} />
-          <div>
-            <span className="text-sm font-semibold text-gray-800">{title}</span>
-            <span className="ml-2 text-xs text-gray-400">{subtitle}</span>
-          </div>
-        </div>
-        <div className="px-5 py-4 space-y-3.5">
-          {stats.map((s) => {
+  const rows = (
+    <div className={compact ? "px-3 py-2 space-y-3.5" : "px-5 py-4 space-y-3.5"}>
+      {stats.map((s) => {
             const pct = s.total > 0 ? Math.round((s.submitted / s.total) * 100) : 0;
             const barColor = pct >= 80 ? "#16a34a" : pct >= 50 ? "#B8892B" : pct > 0 ? "#ef4444" : "#e5e7eb";
             const pendingCount = s.total - s.submitted;
@@ -294,8 +287,25 @@ export function FolderCoverageWithDrawer({
               </button>
             );
           })}
+    </div>
+  );
+
+  return (
+    <>
+      {compact ? (
+        rows
+      ) : (
+        <div className="card overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-3">
+            <span className={`w-2 h-2 rounded-full shrink-0 ${accentColor}`} />
+            <div>
+              <span className="text-sm font-semibold text-gray-800">{title}</span>
+              <span className="ml-2 text-xs text-gray-400">{subtitle}</span>
+            </div>
+          </div>
+          {rows}
         </div>
-      </div>
+      )}
 
       <PendingDrawer
         open={drawerOpen}

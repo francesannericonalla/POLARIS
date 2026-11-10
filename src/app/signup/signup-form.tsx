@@ -1,7 +1,8 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { signup, type SignupState } from "@/lib/actions/auth-actions";
 import { SubmitButton } from "@/components/submit-button";
@@ -12,35 +13,111 @@ type Tree    = { academics: College[]; administration: Office[] };
 
 const initialState: SignupState = {};
 
-const FIELD: React.CSSProperties = {
-  width: "100%",
-  padding: "10px 13px",
-  fontSize: 14,
-  fontFamily: "var(--font-manrope)",
-  background: "#fafafa",
-  border: "1px solid rgba(74,14,31,.18)",
-  borderRadius: 7,
-  color: "#201A1D",
-  outline: "none",
-};
+/* ── Custom dropdown rendered via portal so it's never clipped ── */
+function CustomSelect({
+  name,
+  options,
+  value,
+  onChange,
+  placeholder,
+}: {
+  name?: string;
+  options: { id: string; name: string }[];
+  value: string;
+  onChange: (id: string) => void;
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0, maxHeight: 200 });
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const selected = options.find((o) => o.id === value);
 
-const LABEL: React.CSSProperties = {
-  display: "block",
-  font: "600 12px/1 var(--font-manrope),sans-serif",
-  color: "#4A0E1F",
-  marginBottom: 6,
-};
+  const openDropdown = useCallback(() => {
+    if (!triggerRef.current) return;
+    const r = triggerRef.current.getBoundingClientRect();
+    const maxH = 200;
+    const spaceBelow = window.innerHeight - r.bottom;
+    const spaceAbove = r.top;
+    const openUpward = spaceBelow < 120 && spaceAbove > spaceBelow;
+    const actualH = Math.min(maxH, openUpward ? spaceAbove - 8 : spaceBelow - 8);
+    setDropPos({
+      top: openUpward ? r.top - actualH : r.bottom + 4,
+      left: r.left,
+      width: r.width,
+      maxHeight: actualH,
+    });
+    setOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    function close(e: MouseEvent) {
+      if (triggerRef.current && triggerRef.current.contains(e.target as Node)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  const list = (
+    <ul
+      className="sf-portal-list"
+      style={{ top: dropPos.top, left: dropPos.left, width: dropPos.width, maxHeight: dropPos.maxHeight }}
+    >
+      {options.map((o) => (
+        <li
+          key={o.id}
+          className={`sf-portal-option${o.id === value ? " sf-portal-option--selected" : ""}`}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            onChange(o.id);
+            setOpen(false);
+          }}
+        >
+          {o.name}
+        </li>
+      ))}
+    </ul>
+  );
+
+  return (
+    <div className="sf-custom-select">
+      {name && <input type="hidden" name={name} value={value} />}
+      <button
+        type="button"
+        ref={triggerRef}
+        className={`sf-custom-trigger lf-input${open ? " sf-custom-trigger--open" : ""}`}
+        onClick={() => open ? setOpen(false) : openDropdown()}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className={selected ? "" : "sf-custom-placeholder"}>
+          {selected ? selected.name : placeholder}
+        </span>
+        <svg
+          className={`sf-custom-chevron${open ? " sf-custom-chevron--up" : ""}`}
+          width="12" height="12" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {open && typeof document !== "undefined" && createPortal(list, document.body)}
+    </div>
+  );
+}
 
 export default function SignupForm({ tree }: { tree: Tree }) {
   const [state, formAction] = useFormState(signup, initialState);
-  const [branch, setBranch]             = useState<"academics" | "administration" | "">("academics");
-  const [collegeId, setCollegeId]       = useState("");
-  const [unitId, setUnitId]             = useState("");
-  const [password, setPassword]         = useState("");
-  const [confirmPassword, setConfirm]   = useState("");
+  const [branch, setBranch]           = useState<"academics" | "administration">("academics");
+  const [collegeId, setCollegeId]     = useState("");
+  const [unitId, setUnitId]           = useState("");
+  const [password, setPassword]       = useState("");
+  const [confirmPassword, setConfirm] = useState("");
   const [passwordError, setPasswordErr] = useState("");
 
   const selectedCollege = tree.academics.find((c) => c.id === collegeId);
+  const acad = branch === "academics";
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     if (password !== confirmPassword) {
@@ -51,179 +128,114 @@ export default function SignupForm({ tree }: { tree: Tree }) {
     setPasswordErr("");
   }
 
-  const acad = branch === "academics";
-
   return (
     <form action={formAction} onSubmit={handleSubmit}>
 
-      {/* ── Personal info grid ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 16px" }}>
-
-        <div style={{ gridColumn: "1/-1" }}>
-          <label style={LABEL}>Full name</label>
-          <input name="full_name" required placeholder="Maria Louise Abella" style={FIELD} />
+      <div className="sf-grid">
+        <div className="sf-col-full">
+          <label htmlFor="sf-name" className="lf-label">Full name</label>
+          <input id="sf-name" name="full_name" required placeholder="Maria Louise Abella" className="lf-input" autoComplete="name" />
         </div>
-
         <div>
-          <label style={LABEL}>CIT-U email</label>
-          <input name="email" type="email" required placeholder="m.abella@cit.edu" style={FIELD} />
+          <label htmlFor="sf-email" className="lf-label">CIT-U email</label>
+          <input id="sf-email" name="email" type="email" required placeholder="m.abella@cit.edu" className="lf-input" autoComplete="email" />
         </div>
-
         <div>
-          <label style={LABEL}>ID number</label>
-          <input name="id_number" required placeholder="214512088" maxLength={9} inputMode="numeric" pattern="\d*" style={FIELD} />
+          <label htmlFor="sf-id" className="lf-label">ID number</label>
+          <input id="sf-id" name="id_number" required placeholder="214512088" maxLength={9} inputMode="numeric" pattern="\d*" className="lf-input" />
         </div>
-
         <div>
-          <label style={LABEL}>Password</label>
-          <input
-            name="password" type="password" required minLength={8}
-            placeholder="At least 8 characters"
-            style={FIELD}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <label htmlFor="sf-pw" className="lf-label">Password</label>
+          <input id="sf-pw" name="password" type="password" required minLength={8} placeholder="At least 8 characters" className="lf-input" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
         </div>
-
         <div>
-          <label style={LABEL}>Confirm password</label>
-          <input
-            type="password" required
-            placeholder="Repeat password"
-            style={FIELD}
-            value={confirmPassword}
-            onChange={(e) => setConfirm(e.target.value)}
-          />
-          {passwordError && (
-            <p style={{ marginTop: 6, fontSize: 12.5, color: "#7A1330", fontFamily: "var(--font-manrope)" }}>{passwordError}</p>
-          )}
+          <label htmlFor="sf-pw2" className="lf-label">Confirm password</label>
+          <input id="sf-pw2" type="password" required placeholder="Repeat password" className="lf-input" value={confirmPassword} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+          {passwordError && <p className="sf-field-error">{passwordError}</p>}
         </div>
       </div>
 
-      {/* ── Unit picker card ── */}
-      <div style={{ marginTop: 20, border: "1px solid rgba(74,14,31,.14)", borderRadius: 10, background: "#fafafa", overflow: "hidden" }}>
-
-        <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(74,14,31,.09)" }}>
-          <div style={{ font: "600 13.5px/1.2 var(--font-manrope),sans-serif", color: "#201A1D" }}>Your unit</div>
-          <div style={{ marginTop: 3, font: "400 12.5px/1.5 var(--font-manrope),sans-serif", color: "rgba(32,26,29,.55)" }}>
-            Pick a branch, then find your unit. This determines which folders you can upload to.
-          </div>
+      {/* ── Unit picker ── */}
+      <div className="sf-unit-card">
+        <div className="sf-unit-header">
+          <span className="sf-unit-title">Your unit</span>
+          <span className="sf-unit-hint">Pick a branch, then find your unit.</span>
         </div>
+        <div className="sf-unit-body">
 
-        <div style={{ padding: "14px 18px" }}>
-
-          {/* Branch toggle */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-            <button
-              type="button"
-              onClick={() => { setBranch("academics"); setCollegeId(""); setUnitId(""); }}
-              style={{
-                flex: 1, textAlign: "left", cursor: "pointer", padding: "11px 14px",
-                borderRadius: 8,
-                border: `1.5px solid ${acad ? "#7A1330" : "rgba(74,14,31,.16)"}`,
-                background: acad ? "rgba(122,19,48,.06)" : "#ffffff",
-              }}
-            >
-              <div style={{ font: "700 13px/1.2 var(--font-manrope),sans-serif", color: acad ? "#7A1330" : "#201A1D" }}>Academics</div>
-              <div style={{ marginTop: 3, font: "400 12px/1.4 var(--font-manrope),sans-serif", color: acad ? "rgba(122,19,48,.65)" : "rgba(32,26,29,.55)" }}>College, then department</div>
+          <div className="sf-toggle-row">
+            <button type="button" className={`sf-toggle-btn${acad ? " sf-toggle-btn--active" : ""}`} onClick={() => { setBranch("academics"); setCollegeId(""); setUnitId(""); }}>
+              <span className="sf-toggle-label">Academics</span>
+              <span className="sf-toggle-sub">College, then department</span>
             </button>
-            <button
-              type="button"
-              onClick={() => { setBranch("administration"); setCollegeId(""); setUnitId(""); }}
-              style={{
-                flex: 1, textAlign: "left", cursor: "pointer", padding: "11px 14px",
-                borderRadius: 8,
-                border: `1.5px solid ${!acad ? "#7A1330" : "rgba(74,14,31,.16)"}`,
-                background: !acad ? "rgba(122,19,48,.06)" : "#ffffff",
-              }}
-            >
-              <div style={{ font: "700 13px/1.2 var(--font-manrope),sans-serif", color: !acad ? "#7A1330" : "#201A1D" }}>Administration</div>
-              <div style={{ marginTop: 3, font: "400 12px/1.4 var(--font-manrope),sans-serif", color: !acad ? "rgba(122,19,48,.65)" : "rgba(32,26,29,.55)" }}>Office</div>
+            <button type="button" className={`sf-toggle-btn${!acad ? " sf-toggle-btn--active" : ""}`} onClick={() => { setBranch("administration"); setCollegeId(""); setUnitId(""); }}>
+              <span className="sf-toggle-label">Administration</span>
+              <span className="sf-toggle-sub">Office</span>
             </button>
           </div>
 
-          {/* Academics: college → department */}
-          {branch === "academics" && (
+          {acad && (
             <>
-              <label style={{ ...LABEL, marginTop: 2 }}>College</label>
-              <select
-                style={{ ...FIELD, marginBottom: 10 }}
+              <label className="lf-label">College</label>
+              <CustomSelect
+                options={tree.academics}
                 value={collegeId}
-                onChange={(e) => { setCollegeId(e.target.value); setUnitId(""); }}
-                required
-              >
-                <option value="">Select your college</option>
-                {tree.academics.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-
+                onChange={(id) => { setCollegeId(id); setUnitId(""); }}
+                placeholder="Select your college"
+              />
               {selectedCollege && (
                 <>
-                  <label style={LABEL}>Department</label>
-                  <select
-                    name="unit_id" style={FIELD} required
-                    value={unitId} onChange={(e) => setUnitId(e.target.value)}
-                  >
-                    <option value="">Select your department</option>
-                    {selectedCollege.departments.map((d) => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
-                    ))}
-                  </select>
+                  <label className="lf-label" style={{ marginTop: 10 }}>Department</label>
+                  <CustomSelect
+                    name="unit_id"
+                    options={selectedCollege.departments}
+                    value={unitId}
+                    onChange={setUnitId}
+                    placeholder="Select your department"
+                  />
                 </>
               )}
             </>
           )}
 
-          {/* Administration: office */}
-          {branch === "administration" && (
+          {!acad && (
             <>
-              <label style={LABEL}>Office</label>
-              <select
+              <label className="lf-label">Office</label>
+              <CustomSelect
                 name="unit_id"
-                style={FIELD}
-                required
+                options={tree.administration}
                 value={unitId}
-                onChange={(e) => setUnitId(e.target.value)}
-              >
-                <option value="">Select your office</option>
-                {tree.administration.map((o) => (
-                  <option key={o.id} value={o.id}>{o.name}</option>
-                ))}
-              </select>
+                onChange={setUnitId}
+                placeholder="Select your office"
+              />
             </>
           )}
 
-          {/* Summary banner — only shown once a unit is actually selected */}
           {unitId && (
-            <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 7, background: "rgba(31,92,82,.07)", font: "500 12.5px/1.45 var(--font-manrope),sans-serif", color: "#1F5C52" }}>
-              {`Selected: ${branch === "academics"
-                ? selectedCollege?.departments.find(d => d.id === unitId)?.name
-                : tree.administration.find(o => o.id === unitId)?.name ?? "—"}`}
+            <div className="sf-selected-banner">
+              Selected: <strong>
+                {acad
+                  ? selectedCollege?.departments.find((d) => d.id === unitId)?.name
+                  : tree.administration.find((o) => o.id === unitId)?.name ?? "—"}
+              </strong>
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Error ── */}
-      {state?.error && (
-        <p style={{ marginTop: 18, fontSize: 13.5, color: "#7A1330", background: "rgba(122,19,48,.07)", border: "1px solid rgba(122,19,48,.2)", borderRadius: 8, padding: "10px 14px", fontFamily: "var(--font-manrope)" }}>
-          {state.error}
-        </p>
-      )}
+      {state?.error && <p className="lf-banner lf-banner--error" style={{ marginTop: 16 }}>{state.error}</p>}
 
-      {/* ── Submit ── */}
-      <div style={{ marginTop: 20, display: "flex", alignItems: "center", gap: 16 }}>
-        <SubmitButton pendingText="Submitting…" className="pol-btn-primary" style={{ width: "auto", padding: "14px 28px" }}>
+      <div className="lf-divider" style={{ marginTop: 20 }} />
+      <div className="sf-footer">
+        <SubmitButton pendingText="Submitting…" className="lf-btn sf-submit-btn">
           Submit request
         </SubmitButton>
-        <p style={{ margin: 0, font: "400 13px/1.5 var(--font-manrope),sans-serif", color: "rgba(32,26,29,.6)" }}>
+        <p className="lf-footer" style={{ marginTop: 14 }}>
           Already have an account?{" "}
-          <Link href="/login" style={{ fontWeight: 600, color: "#7A1330" }}>Sign in</Link>
+          <Link href="/login" className="lf-link">Sign in</Link>
         </p>
       </div>
 
-      
     </form>
   );
 }

@@ -8,12 +8,16 @@ import {
   getUnitFolderStatsByFilter,
   getRecentActivity,
   currentSchoolYear,
+  buildSchoolYearOptions,
   type FolderStat,
   type RecentActivityItem,
 } from "@/lib/data/dashboard";
 import { AppShell } from "@/components/app-shell";
 import { OfficeDashboardFilterBar } from "./filter-bar";
-import { daysSince } from "@/lib/date-utils";
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
 export default async function OfficeDashboardPage({
   params,
@@ -45,57 +49,56 @@ export default async function OfficeDashboardPage({
   const currentSY = currentSchoolYear();
   const displaySY = sy || currentSY;
 
-  const totalDocs = folderStats.reduce((s, f) => s + f.activeDocumentCount, 0);
-  const thisYearDocs = folderStats.reduce((s, f) => s + f.thisYearCount, 0);
   const foldersSubmittedThisSY = folderStats.filter((f) => f.thisYearCount > 0).length;
   const submissionRate = folderStats.length > 0
     ? Math.round((foldersSubmittedThisSY / folderStats.length) * 100)
     : 0;
-
-  const lastUpload = folderStats.reduce((latest, f) => {
-    if (!f.lastUpdate) return latest;
-    if (!latest) return f.lastUpdate;
-    return f.lastUpdate > latest ? f.lastUpdate : latest;
-  }, null as string | null);
+  const filedFolders = foldersSubmittedThisSY;
+  const missingFolders = folderStats.filter((f) => f.thisYearCount === 0).length;
+  const rateColor = submissionRate === 100 ? "#16a34a" : "var(--ou-accent)";
 
   const parentUnit = unit.parent_id ? allUnits.find((u) => u.id === unit.parent_id) : null;
   const branchLabel = unit.branch === "academics" ? "Academics" : "Administration";
   const collegeLabel = parentUnit?.name ?? branchLabel;
 
   return (
-    <AppShell profile={profile} title="Office Dashboard" activeUnitId={unitId}>
-      <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-7">
+    <AppShell profile={profile} title="Office Dashboard" activeUnitId={unitId} activeHref={`/dashboard/office/${unitId}`}>
+      <div className="p-6 md:p-8 space-y-5" style={{ maxWidth: 1200, margin: "0 auto" }}>
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-          <Link href="/dashboard" className="hover:text-maroon transition-colors">Dashboard</Link>
-          <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-          </svg>
-          <span>{branchLabel}</span>
-          <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-          </svg>
-          <span className="text-gray-700 font-medium truncate">{unit.name}</span>
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">
-              {unit.branch === "academics" ? collegeLabel : "Administration"}
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-1.5 text-xs mb-2" style={{ color: "var(--ou-muted)" }}>
+              <Link href="/dashboard" className="transition-colors hover:underline" style={{ color: "var(--ou-muted)" }}>Dashboard</Link>
+              <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+              <span>{branchLabel}</span>
+              <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+              <span style={{ color: "var(--ou-subtext)" }} className="font-medium truncate">{unit.name}</span>
+            </div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-1.5 flex items-center gap-2" style={{ color: "var(--ou-accent)" }}>
+              <span className="w-0.5 h-4 rounded-full inline-block" style={{ background: "var(--ou-accent)" }} />
+              Compliance Dashboard
             </p>
-            <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-poppins)" }}>
+            <h1 className="font-poppins text-[26px] font-bold leading-tight" style={{ color: "var(--ou-heading)" }}>
               {unit.name}
             </h1>
+            <p className="text-[13px] mt-1" style={{ color: "var(--ou-subtext)" }}>
+              {unit.branch === "academics" ? collegeLabel : "Administration"} · SY {displaySY}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Suspense fallback={<div className="h-9 w-52 bg-gray-100 rounded-lg animate-pulse" />}>
               <OfficeDashboardFilterBar sy={sy ?? ""} sem={sem ?? ""} />
             </Suspense>
             <Link
               href={`/repository/${unitId}`}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-maroon hover:bg-maroon-dark rounded-lg px-4 py-2 transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-white rounded-xl px-4 py-2.5 transition-colors shrink-0"
+              style={{ background: "var(--ou-accent)" }}
             >
               Repository
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,232 +108,168 @@ export default async function OfficeDashboardPage({
           </div>
         </div>
 
-        {/* KPI strip */}
-        <div className="grid grid-cols-3 gap-4">
-          <StatCard
-            label="Total Documents"
-            value={totalDocs}
-            sub={sy ? `Filtered: SY ${sy}` : "All active files"}
-            color="maroon"
-          />
-          <StatCard
-            label={`Filed SY ${displaySY}`}
-            value={thisYearDocs}
-            sub={lastUpload ? `Last upload ${daysSince(lastUpload)}` : "No uploads yet"}
-            color="gold"
-          />
-          <StatCard
-            label="Folders Complete"
-            value={`${foldersSubmittedThisSY}/${folderStats.length}`}
-            sub={submissionRate === 100 ? "All done!" : `${submissionRate}% submitted`}
-            color={submissionRate === 100 ? "green" : submissionRate >= 50 ? "gold" : "red"}
-          />
-        </div>
+        {/* ── Top row: Compliance progress card + Filed/Missing cards ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px] gap-4">
 
-        {/* Submission status + activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+          {/* Compliance Progress card */}
+          <div className="rounded-2xl p-6" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <h2 className="text-[14px] font-bold mb-0.5" style={{ color: "var(--ou-accent)" }}>Compliance Progress</h2>
+            <p className="text-[12px] mb-5" style={{ color: "var(--ou-subtext)" }}>Overall folder completion for SY {displaySY}{sem ? ` · ${sem} Semester` : ""}</p>
 
-          {/* Folder status */}
-          <div className="lg:col-span-3 card divide-y divide-gray-50">
-            <div className="px-5 py-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-800">Submission Status</h2>
-              <span className="text-xs text-gray-400">{displaySY}{sem ? ` · ${sem} sem` : ""}</span>
-            </div>
-            <div className="px-5 py-4 space-y-5">
-              {folderStats.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">No folders configured.</p>
-              ) : (
-                folderStats.map((f) => <FolderProgressRow key={f.id} folder={f} unitId={unitId} />)
-              )}
-            </div>
-            {folderStats.length > 0 && (
-              <div className="px-5 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3 text-[11px] text-gray-400">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Filed</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full inline-block" style={{ background: "#c9a84c" }} />Outdated</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />Empty</span>
-                </div>
-                <span className="text-xs font-bold" style={{ color: submissionRate === 100 ? "#16a34a" : submissionRate >= 50 ? "#c9a84c" : "#ef4444" }}>
-                  {submissionRate}%
-                </span>
+            <div className="flex items-center gap-6">
+              {/* Folders count box */}
+              <div className="shrink-0 rounded-xl px-5 py-4 text-center" style={{ background: "rgba(121,19,47,0.06)", minWidth: 90 }}>
+                <p className="text-[28px] font-bold leading-none" style={{ color: "var(--ou-accent)" }}>
+                  {foldersSubmittedThisSY}/{folderStats.length}
+                </p>
+                <p className="text-[11px] font-medium mt-1" style={{ color: "var(--ou-subtext)" }}>Folders</p>
               </div>
-            )}
+
+              {/* Progress bar */}
+              <div className="flex-1 space-y-2">
+                <p className="text-[20px] font-bold" style={{ color: "var(--ou-heading)" }}>{submissionRate}% Complete</p>
+                <div className="relative h-[7px] rounded-full overflow-visible" style={{ background: "rgba(0,0,0,0.07)" }}>
+                  <div
+                    className="absolute left-0 top-0 h-full rounded-full"
+                    style={{ width: `${submissionRate}%`, background: rateColor, transition: "width 1.2s ease" }}
+                  />
+                  {submissionRate > 2 && submissionRate < 100 && (
+                    <div
+                      className="absolute"
+                      style={{
+                        left: `calc(${submissionRate}% - 14px)`,
+                        top: "50%",
+                        marginTop: -14,
+                        width: 28,
+                        height: 28,
+                        animation: "ou-star-pulse 2s ease-in-out infinite",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <circle cx="14" cy="14" r="12" fill={rateColor} opacity="0.12" />
+                        <path d="M14 1 L15.8 12.2 L27 14 L15.8 15.8 L14 27 L12.2 15.8 L1 14 L12.2 12.2 Z" fill={rateColor} />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <p className="text-[12px]" style={{ color: "var(--ou-subtext)" }}>
+                  {foldersSubmittedThisSY} of {folderStats.length} folders submitted
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Activity */}
-          <div className="lg:col-span-2 card divide-y divide-gray-50">
-            <div className="px-5 py-4">
-              <h2 className="text-sm font-semibold text-gray-800">Recent Activity</h2>
+          {/* Filed + Missing stat cards */}
+          <div className="flex lg:flex-col gap-4">
+            <div className="flex-1 rounded-2xl p-5 flex flex-col items-center justify-center text-center" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-2" style={{ color: "var(--ou-muted)" }}>Filed</p>
+              <p className="text-[36px] font-bold leading-none" style={{ color: "#16a34a" }}>{filedFolders}</p>
             </div>
-            <div className="px-5 py-4">
+            <div className="flex-1 rounded-2xl p-5 flex flex-col items-center justify-center text-center" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-2" style={{ color: "var(--ou-muted)" }}>Missing</p>
+              <p className="text-[36px] font-bold leading-none" style={{ color: "var(--ou-accent)" }}>{missingFolders}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bottom row: Folder Breakdown + Recent Submissions ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5">
+
+          {/* Folder Breakdown */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div className="px-6 py-5" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+              <h2 className="text-[15px] font-bold" style={{ color: "var(--ou-accent)" }}>Folder Breakdown</h2>
+              <p className="text-[12px] mt-0.5" style={{ color: "var(--ou-subtext)" }}>
+                Submission status of all required folders · SY {displaySY}{sem ? ` · ${sem} Semester` : ""}
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+                    <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>Folder</th>
+                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>Documents (This SY)</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>Status</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {folderStats.map((f) => {
+                    const status = f.thisYearCount > 0 ? "filed" : f.activeDocumentCount > 0 ? "outdated" : "missing";
+                    return (
+                      <tr key={f.id} className="ou-table-row transition-colors" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+                        <td className="px-6 py-4 text-[13px] font-medium" style={{ color: "var(--ou-heading)" }}>{f.name}</td>
+                        <td className="px-4 py-4 text-center text-[13px]" style={{ color: "var(--ou-heading)" }}>{f.thisYearCount}</td>
+                        <td className="px-4 py-4">
+                          {status === "filed" ? (
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1 rounded-full" style={{ background: "rgba(21,128,61,0.1)", color: "#15803d" }}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block shrink-0" />Filed
+                            </span>
+                          ) : status === "outdated" ? (
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1 rounded-full" style={{ background: "rgba(201,168,76,0.12)", color: "#92690e" }}>
+                              <span className="w-1.5 h-1.5 rounded-full inline-block shrink-0" style={{ background: "#c9a84c" }} />Outdated
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1 rounded-full" style={{ background: "rgba(121,19,47,0.08)", color: "var(--ou-accent)" }}>
+                              <span className="w-1.5 h-1.5 rounded-full inline-block shrink-0" style={{ background: "var(--ou-accent)" }} />Missing
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <Link
+                            href={`/repository/${unitId}/${f.id}`}
+                            className="inline-flex items-center gap-1 text-[13px] font-semibold transition-opacity hover:opacity-70"
+                            style={{ color: "var(--ou-accent)" }}
+                          >
+                            View
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Recent Submissions */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div className="px-6 py-5" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+              <h2 className="text-[15px] font-bold" style={{ color: "var(--ou-accent)" }}>Recent Submissions</h2>
+              <p className="text-[12px] mt-0.5" style={{ color: "var(--ou-subtext)" }}>Latest document uploads and updates</p>
+            </div>
+            <div className="divide-y" style={{ borderColor: "var(--ou-divider)" }}>
               {recentActivity.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">No activity yet.</p>
+                <p className="text-sm text-center py-10" style={{ color: "var(--ou-muted)" }}>No activity yet.</p>
               ) : (
-                <div className="space-y-4">
-                  {recentActivity.map((item) => <ActivityItem key={item.id} item={item} />)}
-                </div>
+                recentActivity.map((item) => <ActivityItem key={item.id} item={item} />)
               )}
             </div>
-            {recentActivity.length > 0 && (
-              <div className="px-5 py-3">
-                <Link href={`/repository/${unitId}`} className="text-xs font-semibold text-maroon hover:underline">
-                  View repository
-                </Link>
-              </div>
-            )}
           </div>
-        </div>
 
-        {/* Folder breakdown table */}
-        <div className="card overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-800">Folder Breakdown</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50/60 border-b border-gray-100">
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Folder</th>
-                  <th className="px-4 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">This SY</th>
-                  <th className="px-4 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">All-Time</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Last Upload</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-5 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {folderStats.map((f) => {
-                  const status = f.thisYearCount > 0 ? "complete" : f.activeDocumentCount > 0 ? "in-progress" : "no-files";
-                  return (
-                    <tr key={f.id} className="hover:bg-maroon/[0.018] transition-colors">
-                      <td className="px-5 py-3.5">
-                        <span className="font-medium text-gray-800">{f.name}</span>
-                      </td>
-                      <td className="px-4 py-3.5 text-center text-gray-700">{f.thisYearCount}</td>
-                      <td className="px-4 py-3.5 text-center text-gray-400">{f.activeDocumentCount}</td>
-                      <td className="px-4 py-3.5 text-xs text-gray-400">{f.lastUpdate ? daysSince(f.lastUpdate) : "—"}</td>
-                      <td className="px-4 py-3.5">
-                        <StatusPill status={status} />
-                      </td>
-                      <td className="px-5 py-3.5 text-center">
-                        <Link
-                          href={`/repository/${unitId}/${f.id}`}
-                          className="inline-flex items-center justify-center w-16 text-xs font-semibold text-maroon border border-maroon/25 hover:bg-maroon hover:text-white hover:border-maroon rounded-md py-1 transition-colors"
-                        >
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
         </div>
-
       </div>
     </AppShell>
   );
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function StatCard({ label, value, sub, color }: {
-  label: string;
-  value: string | number;
-  sub: string;
-  color: "maroon" | "gold" | "green" | "red";
-}) {
-  const dot = { maroon: "bg-maroon", gold: "bg-gold", green: "bg-green-500", red: "bg-red-400" }[color];
-  return (
-    <div className="card p-5">
-      <div className="flex items-center gap-1.5 mb-4">
-        <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
-        <span className="text-xs font-medium text-gray-500">{label}</span>
-      </div>
-      <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
-      <p className="text-xs text-gray-400">{sub}</p>
-    </div>
-  );
-}
-
-function FolderProgressRow({ folder, unitId }: { folder: FolderStat; unitId: string }) {
-  const status = folder.thisYearCount > 0 ? "filed" : folder.activeDocumentCount > 0 ? "outdated" : "empty";
-  const bar = {
-    filed:    { color: "#22c55e", pct: 100 },
-    outdated: { color: "#c9a84c", pct: 40 },
-    empty:    { color: "#e5e7eb", pct: 0 },
-  }[status];
-
-  return (
-    <Link href={`/repository/${unitId}/${folder.id}`} className="block group">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-sm font-medium text-gray-700 group-hover:text-maroon transition-colors truncate mr-3">
-          {folder.name}
-        </span>
-        {status === "filed" ? (
-          <span className="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full shrink-0">Filed</span>
-        ) : status === "outdated" ? (
-          <span className="text-[10px] font-bold rounded-full px-2 py-0.5 shrink-0" style={{ color: "#92690e", background: "rgba(201,168,76,0.12)" }}>Outdated</span>
-        ) : (
-          <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full shrink-0">Empty</span>
-        )}
-      </div>
-      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${bar.pct}%`, background: bar.color }} />
-      </div>
-    </Link>
-  );
-}
-
-function StatusPill({ status }: { status: "complete" | "in-progress" | "no-files" }) {
-  if (status === "complete") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-green-600">
-        <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block shrink-0" />Filed
-      </span>
-    );
-  }
-  if (status === "in-progress") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs" style={{ color: "#b07d2a" }}>
-        <span className="w-1.5 h-1.5 rounded-full inline-block shrink-0" style={{ background: "#c9a84c" }} />Outdated
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block shrink-0" />Empty
-    </span>
-  );
-}
-
 function ActivityItem({ item }: { item: RecentActivityItem }) {
-  const isNew = item.version === 1;
   return (
-    <div className="flex items-start gap-3">
-      <div
-        className={`mt-0.5 w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${isNew ? "bg-green-50 text-green-600" : "bg-gold/10"}`}
-        style={!isNew ? { color: "#c9a84c" } : {}}
-      >
-        {isNew ? (
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-        ) : (
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        )}
-      </div>
+    <div className="px-6 py-4 flex items-start justify-between gap-3">
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800 truncate">{item.title}</p>
-        <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.folder_name} · {item.uploader_name}</p>
-        <p className="text-[11px] text-gray-300 mt-0.5">{daysSince(item.created_at)}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-semibold truncate" style={{ color: "var(--ou-heading)" }}>{item.title}</p>
+          <span className="text-[11px] font-medium shrink-0" style={{ color: "var(--ou-muted)" }}>v{item.version}</span>
+        </div>
+        <p className="text-[12px] mt-0.5 truncate" style={{ color: "var(--ou-subtext)" }}>{item.folder_name}</p>
+        <p className="text-[11px] mt-1" style={{ color: "var(--ou-muted)" }}>
+          {new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+        </p>
       </div>
-      {item.version > 1 && (
-        <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{item.version}</span>
-      )}
     </div>
   );
 }

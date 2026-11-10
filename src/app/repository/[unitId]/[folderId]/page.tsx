@@ -17,6 +17,7 @@ import { UploadModal } from "@/components/upload-modal";
 import { DownloadButton } from "@/components/download-button";
 import { ArchiveButton } from "@/components/archive-button";
 import { formatDate } from "@/lib/date-utils";
+import { DocumentSearchView, type SearchableDoc } from "./document-search-view";
 
 export default async function FolderPage({
   params,
@@ -110,9 +111,28 @@ export default async function FolderPage({
           />
         </div>
 
-        {/* Document list */}
-        <div className="card overflow-hidden">
-          {visibleDocuments.length === 0 ? (
+        {/* Document list with search */}
+        {(() => {
+          const searchableDocs: SearchableDoc[] = visibleDocuments.map((doc) => {
+            const history = versionHistories.get(doc.id) ?? [];
+            return {
+              id: doc.id,
+              searchText: `${doc.title} ${doc.file_name}`,
+              node: (
+                <DocRow
+                  key={doc.id}
+                  doc={doc}
+                  history={history}
+                  folderId={folderId}
+                  schoolYears={schoolYears}
+                  canUpload={canUpload}
+                  isArchived={activeTab === "archived"}
+                />
+              ),
+            };
+          });
+
+          const emptyNode = (
             <div className="p-14 text-center">
               <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -126,25 +146,16 @@ export default async function FolderPage({
                 <p className="text-xs text-gray-300 mt-1">Use the Upload button to add the first file.</p>
               )}
             </div>
-          ) : (
-            <div className="divide-y divide-gray-50">
-              {visibleDocuments.map((doc) => {
-                const history = versionHistories.get(doc.id) ?? [];
-                return (
-                  <DocRow
-                    key={doc.id}
-                    doc={doc}
-                    history={history}
-                    folderId={folderId}
-                    schoolYears={schoolYears}
-                    canUpload={canUpload}
-                    isArchived={activeTab === "archived"}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </div>
+          );
+
+          return (
+            <DocumentSearchView
+              docs={searchableDocs}
+              total={visibleDocuments.length}
+              emptyNode={emptyNode}
+            />
+          );
+        })()}
 
       </div>
     </AppShell>
