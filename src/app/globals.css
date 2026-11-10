@@ -767,3 +767,60 @@ body {
 .card {
   @apply bg-white border border-gray-100 rounded-xl shadow-sm;
 }
+
+/* ── Office-user theme tokens ── */
+:root {
+  --ou-bg:                #f0f2f5;
+  --ou-sidebar-bg:        #ffffff;
+  --ou-sidebar-border:    rgba(0,0,0,0.07);
+  --ou-sidebar-divider:   rgba(0,0,0,0.06);
+  --ou-sidebar-nav-inactive: #64748b;
+  --ou-sidebar-nav-icon:  #94a3b8;
+  --ou-heading:           #1a1a2e;
+  --ou-subtext:           #64748b;
+  --ou-muted:             #94a3b8;
+  --ou-accent:            #7A1330;
+  --ou-pill-bg:           rgba(122,19,48,0.08);
+  --ou-card-bg:           #ffffff;
+  --ou-card-border:       rgba(0,0,0,0.06);
+  --ou-row-hover:         rgba(122,19,48,0.025);
+  --ou-divider:           rgba(0,0,0,0.05);
+  --ou-toggle-bg:         #f1f5f9;
+  --ou-toggle-text:       #64748b;
+}
+
+.dark {
+  --ou-bg:                #111113;
+  --ou-sidebar-bg:        #18181b;
+  --ou-sidebar-border:    rgba(255,255,255,0.07);
+  --ou-sidebar-divider:   rgba(255,255,255,0.06);
+  --ou-sidebar-nav-inactive: #8892a4;
+  --ou-sidebar-nav-icon:  #6b7a90;
+  --ou-heading:           #f0f2f7;
+  --ou-subtext:           #a8b0c2;
+  --ou-muted:             #6b7a90;
+  --ou-accent:            #e05070;
+  --ou-pill-bg:           rgba(224,80,112,0.12);
+  --ou-card-bg:           #1c1c1f;
+  --ou-card-border:       rgba(255,255,255,0.08);
+  --ou-row-hover:         rgba(255,255,255,0.04);
+  --ou-divider:           rgba(255,255,255,0.07);
+  --ou-toggle-bg:         rgba(255,255,255,0.08);
+  --ou-toggle-text:       #a8b0c2;
+}
+
+/* Office-user card override in dark mode */
+.dark .ou-main .card {
+  background: var(--ou-card-bg);
+  border-color: var(--ou-card-border);
+}
+
+/* Row hover via CSS so server components can use it */
+.ou-table-row:hover {
+  background: var(--ou-row-hover);
+}
+
+@keyframes ou-star-pulse {
+  0%, 100% { transform: scale(0.85); filter: drop-shadow(0 0 2px rgba(121,19,47,0.4)); opacity: 0.85; }
+  50%       { transform: scale(1.15); filter: drop-shadow(0 0 6px rgba(121,19,47,0.7)) drop-shadow(0 0 12px rgba(180,60,90,0.4)); opacity: 1; }
+}

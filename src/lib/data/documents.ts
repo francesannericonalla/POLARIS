@@ -191,6 +191,30 @@ export async function getVersionHistoriesForFolder(
   return result;
 }
 
+export async function getSemestersPerFolderThisSY(
+  unitId: string,
+  schoolYear: string
+): Promise<Record<string, string[]>> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("documents")
+    .select("folder_id, semester")
+    .eq("unit_id", unitId)
+    .eq("is_latest", true)
+    .eq("archived", false)
+    .eq("school_year", schoolYear);
+
+  if (error) throw error;
+
+  const result: Record<string, string[]> = {};
+  for (const row of data as { folder_id: string; semester: string }[]) {
+    const list = result[row.folder_id] ?? [];
+    if (!list.includes(row.semester)) list.push(row.semester);
+    result[row.folder_id] = list;
+  }
+  return result;
+}
+
 export async function getDistinctSchoolYears(unitId: string): Promise<string[]> {
   const admin = createAdminClient();
   // Use distinct at the query level to avoid fetching all rows + deduping in JS
