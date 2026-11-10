@@ -264,11 +264,11 @@ export type PendingOffice = {
   type: "department" | "office";
 };
 
-export async function getPendingOfficesForFolder(
+export const getPendingOfficesForFolder = unstable_cache(async (
   folderName: string,
   branch: "academics" | "administration",
   schoolYear?: string
-): Promise<PendingOffice[]> {
+): Promise<PendingOffice[]> => {
   const admin = createAdminClient();
   const sy = schoolYear || currentSchoolYear();
 
@@ -307,7 +307,10 @@ export async function getPendingOfficesForFolder(
     .filter((u) => !submitted.has(u.id))
     .map((u) => ({ id: u.id, name: u.name, type: u.type as "department" | "office" }))
     .sort((a, b) => a.name.localeCompare(b.name));
-}
+},
+["pending-offices-for-folder"],
+{ revalidate: 300, tags: ["documents", "units"] }
+);
 
 export type RecentActivityItem = {
   id: string;
@@ -320,24 +323,28 @@ export type RecentActivityItem = {
   uploader_name: string;
 };
 
-export async function getRecentActivity(unitId: string, limit = 6): Promise<RecentActivityItem[]> {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("documents")
-    .select("id, title, school_year, semester, version, created_at, folders(name), profiles!documents_uploaded_by_fkey(full_name)")
-    .eq("unit_id", unitId)
-    .eq("archived", false)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+export const getRecentActivity = unstable_cache(
+  async (unitId: string, limit = 6): Promise<RecentActivityItem[]> => {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("documents")
+      .select("id, title, school_year, semester, version, created_at, folders(name), profiles!documents_uploaded_by_fkey(full_name)")
+      .eq("unit_id", unitId)
+      .eq("archived", false)
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
-  return ((data ?? []) as any[]).map((row) => ({
-    id: row.id,
-    title: row.title,
-    folder_name: row.folders?.name ?? "Unknown folder",
-    school_year: row.school_year,
-    semester: row.semester,
-    version: row.version,
-    created_at: row.created_at,
-    uploader_name: row.profiles?.full_name ?? "Unknown",
-  }));
-}
+    return ((data ?? []) as any[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      folder_name: row.folders?.name ?? "Unknown folder",
+      school_year: row.school_year,
+      semester: row.semester,
+      version: row.version,
+      created_at: row.created_at,
+      uploader_name: row.profiles?.full_name ?? "Unknown",
+    }));
+  },
+  ["recent-activity"],
+  { revalidate: 60, tags: ["documents"] }
+);

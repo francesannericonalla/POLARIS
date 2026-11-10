@@ -1,20 +1,28 @@
 import Link from "next/link";
 import { LayoutDashboard, FolderOpen, LogOut } from "lucide-react";
 import { logout } from "@/lib/actions/auth-actions";
+import { NotificationBell } from "@/components/notification-bell";
+import { getNotificationsForUser, getUnreadCount } from "@/lib/data/notifications";
 
-export function OfficeUserSidebar({
+export async function OfficeUserSidebar({
+  userId,
   unitId,
   unitName,
   userName,
   idNumber,
   activeHref,
 }: {
+  userId: string;
   unitId: string;
   unitName?: string | null;
   userName: string;
   idNumber?: string | null;
   activeHref?: string;
 }) {
+  const [notifications, unread] = await Promise.all([
+    getNotificationsForUser(userId).catch(() => []),
+    getUnreadCount(userId).catch(() => 0),
+  ]);
   const trimmed = (userName ?? "").trim();
   const words = trimmed ? trimmed.split(/\s+/) : ["?"];
   const initials =
@@ -104,6 +112,7 @@ export function OfficeUserSidebar({
               </p>
             )}
           </div>
+          <NotificationBell initialNotifications={notifications} initialUnread={unread} />
         </div>
 
         <form action={logout}>

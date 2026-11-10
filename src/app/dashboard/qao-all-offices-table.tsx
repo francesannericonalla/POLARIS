@@ -2,7 +2,31 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search, Download } from "lucide-react";
+
+function exportToCSV(summaries: OfficeSummary[], schoolYear: string) {
+  const headers = ["Office / Department", "Unit", "Required Folders", "Filed", "Compliance %", "Status"];
+  const rows = summaries.map((u) => {
+    const pct = u.totalFolders > 0 ? Math.round((u.foldersThisYear / u.totalFolders) * 100) : 0;
+    const status = u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders ? "Filed" : u.foldersThisYear > 0 ? "Partial" : "Pending";
+    return [
+      `"${u.name.replace(/"/g, '""')}"`,
+      u.branch === "academics" ? "Academics" : "Administration",
+      u.totalFolders,
+      u.foldersThisYear,
+      `${pct}%`,
+      status,
+    ].join(",");
+  });
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `compliance-report-SY${schoolYear.replace(/\//g, "-")}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 type OfficeSummary = {
   id: string;
@@ -44,10 +68,13 @@ function statusOf(u: OfficeSummary): "filed" | "partial" | "pending" {
   return "pending";
 }
 
-export function QAOAllOfficesTable({ summaries }: { summaries: OfficeSummary[] }) {
+const PAGE_SIZE = 5;
+
+export function QAOAllOfficesTable({ summaries, schoolYear }: { summaries: OfficeSummary[]; schoolYear: string }) {
   const [search, setSearch] = useState("");
   const [unitFilter, setUnitFilter] = useState<"all" | "academics" | "administration">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "filed" | "partial" | "pending">("all");
+  const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => {
     return summaries.filter((u) => {
@@ -57,6 +84,10 @@ export function QAOAllOfficesTable({ summaries }: { summaries: OfficeSummary[] }
       return true;
     });
   }, [summaries, search, unitFilter, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const paginated = filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
   return (
     <div className="p-5">
@@ -69,7 +100,7 @@ export function QAOAllOfficesTable({ summaries }: { summaries: OfficeSummary[] }
             type="text"
             placeholder="Search office or department..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
             className="w-full pl-8 pr-3 py-2 text-[13px] rounded-xl border bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)] text-gray-700 placeholder-gray-400"
             style={{ borderColor: "#e5e7eb" }}
           />
@@ -79,7 +110,7 @@ export function QAOAllOfficesTable({ summaries }: { summaries: OfficeSummary[] }
         <div className="relative">
           <select
             value={unitFilter}
-            onChange={(e) => setUnitFilter(e.target.value as typeof unitFilter)}
+            onChange={(e) => { setUnitFilter(e.target.value as typeof unitFilter); setPage(0); }}
             className="appearance-none pl-3.5 pr-7 py-2 text-[13px] font-medium rounded-xl border bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)] text-gray-700 cursor-pointer"
             style={{ borderColor: "#e5e7eb" }}
           >
@@ -94,7 +125,7 @@ export function QAOAllOfficesTable({ summaries }: { summaries: OfficeSummary[] }
         <div className="relative">
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+            onChange={(e) => { setStatusFilter(e.target.value as typeof statusFilter); setPage(0); }}
             className="appearance-none pl-3.5 pr-7 py-2 text-[13px] font-medium rounded-xl border bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)] text-gray-700 cursor-pointer"
             style={{ borderColor: "#e5e7eb" }}
           >
@@ -105,6 +136,16 @@ export function QAOAllOfficesTable({ summaries }: { summaries: OfficeSummary[] }
           </select>
           <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
         </div>
+
+        {/* Export button */}
+        <button
+          onClick={() => exportToCSV(filtered, schoolYear)}
+          className="ml-auto inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold rounded-xl border transition-colors hover:bg-[rgba(122,19,48,0.05)]"
+          style={{ borderColor: "#7A1330", color: "#7A1330" }}
+        >
+          <Download size={14} />
+          Export Excel
+        </button>
       </div>
 
       {/* Table */}
@@ -129,14 +170,14 @@ export function QAOAllOfficesTable({ summaries }: { summaries: OfficeSummary[] }
                 </td>
               </tr>
             ) : (
-              filtered.map((u, i) => {
+              paginated.map((u, i) => {
                 const pct = u.totalFolders > 0 ? Math.round((u.foldersThisYear / u.totalFolders) * 100) : 0;
                 const barColor = pct >= 100 ? "#16a34a" : pct >= 50 ? "#B8892B" : pct > 0 ? "#ef4444" : "#e5e7eb";
                 return (
                   <tr
                     key={u.id}
                     className="group transition-colors hover:bg-[#fafbfc]"
-                    style={i < filtered.length - 1 ? { borderBottom: "1px solid #f5f6f8" } : {}}
+                    style={i < paginated.length - 1 ? { borderBottom: "1px solid #f5f6f8" } : {}}
                   >
                     {/* Name */}
                     <td className="px-5 py-3.5">
@@ -216,10 +257,33 @@ export function QAOAllOfficesTable({ summaries }: { summaries: OfficeSummary[] }
         </table>
       </div>
 
-      {/* Footer count */}
-      <p className="text-[12px] mt-3 px-1" style={{ color: "#9ca3af" }}>
-        Showing {filtered.length} of {summaries.length} offices
-      </p>
+      {/* Pagination */}
+      <div className="flex items-center justify-between mt-3 px-1">
+        <p className="text-[12px]" style={{ color: "#9ca3af" }}>
+          Showing {filtered.length === 0 ? 0 : safePage * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE + PAGE_SIZE, filtered.length)} of {filtered.length} offices
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={safePage === 0}
+            className="px-3 py-1.5 text-[12px] font-medium rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+            style={{ borderColor: "#e5e7eb", color: "#374151" }}
+          >
+            Prev
+          </button>
+          <span className="text-[12px] font-medium" style={{ color: "#6b7280" }}>
+            {safePage + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={safePage >= totalPages - 1}
+            className="px-3 py-1.5 text-[12px] font-medium rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+            style={{ borderColor: "#e5e7eb", color: "#374151" }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

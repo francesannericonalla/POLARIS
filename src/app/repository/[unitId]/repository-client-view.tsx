@@ -207,7 +207,7 @@ export function RepositoryClientView({ folders, unitId, sy, syOptions }: Props) 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [semesterFilter, setSemesterFilter] = useState("all");
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list">("list");
 
   const filtered = useMemo(() => {
     let r = folders;

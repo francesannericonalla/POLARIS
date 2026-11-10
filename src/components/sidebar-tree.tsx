@@ -96,8 +96,9 @@ export function SidebarTree({
   light?: boolean;
 }) {
   const adminHasActive = administration.some((o) => o.id === activeUnitId);
+  const academicsHasActive = academics.some((c) => c.departments.some((d) => d.id === activeUnitId));
 
-  const [academicsOpen, setAcademicsOpen] = useState<boolean>(true);
+  const [academicsOpen, setAcademicsOpen] = useState<boolean>(academicsHasActive);
   const [adminOpen, setAdminOpen] = useState<boolean>(adminHasActive);
 
   const sectionLabelStyle = light

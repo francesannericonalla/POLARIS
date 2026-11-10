@@ -5,6 +5,8 @@ import { getCurrentProfile } from "@/lib/auth";
 import { canUploadToUnit, canAccessUnitRepository } from "@/lib/permissions";
 import { getFolderById, BUCKET } from "@/lib/data/documents";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/lib/data/notifications";
+import { sendEmail, documentUploadedHtml } from "@/lib/email";
 
 const ALLOWED_TYPES = [
   "application/pdf",
@@ -113,6 +115,28 @@ export async function uploadDocument(_prev: UploadState, formData: FormData): Pr
     target_type: "document",
     target_id: inserted.id,
   });
+
+  // Notify all QAO users about the new upload
+  const { data: unitRow } = await admin.from("units").select("name").eq("id", folder.unit_id).single();
+  const { data: qaoUsers } = await admin.from("profiles").select("id, email").eq("role", "qao").eq("status", "approved");
+  if (qaoUsers && qaoUsers.length > 0) {
+    const unitName = (unitRow as any)?.name ?? "Unknown Office";
+    const folderName = folder.name;
+    const uploaderName = profile.full_name ?? "Someone";
+    await Promise.all(
+      qaoUsers.map((qao: any) =>
+        Promise.all([
+          createNotification(qao.id, "document_uploaded", "New Document Uploaded",
+            `${uploaderName} from ${unitName} uploaded "${title}" in ${folderName}.`,
+            { unit_id: folder.unit_id, folder_id: folderId }
+          ),
+          sendEmail(qao.email, `New Document: ${title} — ${unitName}`,
+            documentUploadedHtml(uploaderName, unitName, title, folderName)
+          ),
+        ])
+      )
+    );
+  }
 
   // Revalidate both the folder page and any dashboards showing doc counts.
   revalidatePath(`/repository/${folder.unit_id}/${folderId}`);

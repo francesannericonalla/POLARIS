@@ -21,6 +21,9 @@ import { FolderCoverageWithDrawer } from "./folder-coverage-drawer";
 import { FolderCoverageTabbed } from "./folder-coverage-tabbed";
 import { CollegeComplianceList, type CollegeRow } from "./college-drawer";
 import { QAOAllOfficesTable } from "./qao-all-offices-table";
+import { DeadlineManager } from "./deadline-manager";
+import { DeadlineBanner } from "./deadline-banner";
+import { getDeadlinesForSchoolYear } from "@/lib/data/deadlines";
 
 export default async function DashboardPage({
   searchParams,
@@ -30,7 +33,7 @@ export default async function DashboardPage({
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
   if (profile.status !== "approved") redirect("/pending");
-  if (profile.role === "system_admin") redirect("/admin/approvals");
+  if (profile.role === "system_admin") redirect("/admin/accounts");
 
   const defaultSY = currentSchoolYear();
 
@@ -41,9 +44,10 @@ export default async function DashboardPage({
     const sy = (await searchParams as { sy?: string }).sy;
     const displaySY = sy || defaultSY;
 
-    const [folderStats, recentActivity] = await Promise.all([
+    const [folderStats, recentActivity, deadlines] = await Promise.all([
       getUnitFolderStatsByFilter(profile.unit_id, { schoolYear: displaySY }),
       getRecentActivity(profile.unit_id, 5),
+      getDeadlinesForSchoolYear(displaySY),
     ]);
 
     const totalDocs = folderStats.reduce((s, f) => s + f.activeDocumentCount, 0);
@@ -83,6 +87,11 @@ export default async function DashboardPage({
               <OfficeUserSYFilter sy={sy ?? ""} syOptions={syOptions} />
             </Suspense>
           </div>
+
+          {/* ── Deadline banner ── */}
+          {deadlines.length > 0 && (
+            <DeadlineBanner deadlines={deadlines} schoolYear={displaySY} />
+          )}
 
           {/* ── Top row: Compliance progress card + Filed/Missing cards ── */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px] gap-4">
@@ -246,10 +255,11 @@ export default async function DashboardPage({
   const activeSY = sy || defaultSY;
   const syOptions = buildSchoolYearOptions();
 
-  const [allSummaries, folderStats, allUnits] = await Promise.all([
+  const [allSummaries, folderStats, allUnits, qaoDeadlines] = await Promise.all([
     getUnitSummaries(validBranch, activeSY),
     getFolderSubmissionStats(activeSY),
     getAllUnits(),
+    getDeadlinesForSchoolYear(activeSY),
   ]);
 
   const totalUnits = allSummaries.length;
@@ -486,13 +496,23 @@ export default async function DashboardPage({
 
         </div>
 
+        {/* ── Deadline Manager ── */}
+        <DeadlineManager
+          schoolYear={activeSY}
+          deadlines={{
+            "1st": qaoDeadlines.find((d) => d.semester === "1st") ?? null,
+            "2nd": qaoDeadlines.find((d) => d.semester === "2nd") ?? null,
+            "Summer": qaoDeadlines.find((d) => d.semester === "Summer") ?? null,
+          }}
+        />
+
         {/* ── All Offices ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: "1px solid #f1f5f9" }}>
             <h2 className="text-[15px] font-bold text-slate-800">All Offices</h2>
             <span className="text-[12px] font-semibold text-white px-2.5 py-0.5 rounded-full" style={{ background: "#7A1330" }}>{totalUnits} total</span>
           </div>
-          <QAOAllOfficesTable summaries={allSummaries} />
+          <QAOAllOfficesTable summaries={allSummaries} schoolYear={activeSY} />
         </div>
 
       </div>

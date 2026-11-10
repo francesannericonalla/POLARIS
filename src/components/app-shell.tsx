@@ -22,6 +22,7 @@ export async function AppShell({
     return (
       <div className="h-screen flex overflow-hidden ou-main" style={{ background: "var(--ou-bg)" }}>
         <OfficeUserSidebar
+          userId={profile.id}
           unitId={profile.unit_id}
           unitName={profile.unit_name}
           userName={profile.full_name}

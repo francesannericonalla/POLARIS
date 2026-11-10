@@ -14,6 +14,7 @@ import {
 } from "@/lib/data/dashboard";
 import { AppShell } from "@/components/app-shell";
 import { OfficeDashboardFilterBar } from "./filter-bar";
+import { ExportOfficeButton } from "./export-button";
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -95,6 +96,11 @@ export default async function OfficeDashboardPage({
             <Suspense fallback={<div className="h-9 w-52 bg-gray-100 rounded-lg animate-pulse" />}>
               <OfficeDashboardFilterBar sy={sy ?? ""} sem={sem ?? ""} />
             </Suspense>
+            <ExportOfficeButton
+              unitName={unit.name}
+              schoolYear={displaySY}
+              folders={folderStats}
+            />
             <Link
               href={`/repository/${unitId}`}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-white rounded-xl px-4 py-2.5 transition-colors shrink-0"

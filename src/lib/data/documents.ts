@@ -215,6 +215,47 @@ export async function getSemestersPerFolderThisSY(
   return result;
 }
 
+export type GlobalSearchResult = {
+  id: string;
+  title: string;
+  file_name: string;
+  school_year: string;
+  semester: string;
+  created_at: string;
+  unit_id: string;
+  unit_name: string;
+  folder_id: string;
+  folder_name: string;
+};
+
+export async function searchDocumentsGlobal(query: string): Promise<GlobalSearchResult[]> {
+  if (!query || query.trim().length < 2) return [];
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("documents")
+    .select("id, title, file_name, school_year, semester, created_at, unit_id, folder_id, units!documents_unit_id_fkey(name), folders!documents_folder_id_fkey(name)")
+    .ilike("title", `%${query.trim()}%`)
+    .eq("is_latest", true)
+    .eq("archived", false)
+    .order("created_at", { ascending: false })
+    .limit(30);
+
+  if (error) throw error;
+
+  return (data as any[]).map((row) => ({
+    id: row.id,
+    title: row.title,
+    file_name: row.file_name,
+    school_year: row.school_year,
+    semester: row.semester,
+    created_at: row.created_at,
+    unit_id: row.unit_id,
+    folder_id: row.folder_id,
+    unit_name: row.units?.name ?? "Unknown",
+    folder_name: row.folders?.name ?? "Unknown",
+  }));
+}
+
 export async function getDistinctSchoolYears(unitId: string): Promise<string[]> {
   const admin = createAdminClient();
   // Use distinct at the query level to avoid fetching all rows + deduping in JS

@@ -3,6 +3,9 @@ import { LayoutDashboard, ClipboardCheck, FolderOpen, LogOut } from "lucide-reac
 import type { LucideIcon } from "lucide-react";
 import { getAllUnits, buildUnitTree } from "@/lib/data/units";
 import { SidebarTree } from "@/components/sidebar-tree";
+import { GlobalSearchBar } from "@/components/global-search-bar";
+import { NotificationBell } from "@/components/notification-bell";
+import { getNotificationsForUser, getUnreadCount } from "@/lib/data/notifications";
 import { logout } from "@/lib/actions/auth-actions";
 import type { Profile } from "@/lib/auth";
 
@@ -23,7 +26,11 @@ export async function QaoSidebar({
   activeUnitId?: string;
   activeHref?: string;
 }) {
-  const units = await getAllUnits();
+  const [units, notifications, unread] = await Promise.all([
+    getAllUnits(),
+    getNotificationsForUser(profile.id).catch(() => []),
+    getUnreadCount(profile.id).catch(() => 0),
+  ]);
   const tree = buildUnitTree(units);
 
   const trimmed = (profile.full_name ?? "").trim();
@@ -51,6 +58,11 @@ export async function QaoSidebar({
         <p className="text-[11px] font-medium leading-snug" style={{ color: "var(--ou-muted)" }}>
           QAO Compliance &amp; Document Repository
         </p>
+      </div>
+
+      {/* ── Search ── */}
+      <div className="px-3 pt-3 pb-2.5" style={{ borderBottom: "1px solid var(--ou-sidebar-divider)" }}>
+        <GlobalSearchBar />
       </div>
 
       {/* ── Top nav links ── */}
@@ -107,6 +119,7 @@ export async function QaoSidebar({
               QAO
             </p>
           </div>
+          <NotificationBell initialNotifications={notifications} initialUnread={unread} />
         </div>
 
         <form action={logout}>
