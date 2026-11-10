@@ -1,11 +1,11 @@
 "use server";
 
-import { getPendingOfficesForFolder, type PendingOffice } from "@/lib/data/dashboard";
+import { getAllOfficesForFolder, type PendingOffice } from "@/lib/data/dashboard";
 
-export async function fetchPendingOffices(
+export async function fetchAllOfficesForFolder(
   folderName: string,
   branch: "academics" | "administration",
   schoolYear: string
 ): Promise<PendingOffice[]> {
-  return getPendingOfficesForFolder(folderName, branch, schoolYear);
+  return getAllOfficesForFolder(folderName, branch, schoolYear);
 }

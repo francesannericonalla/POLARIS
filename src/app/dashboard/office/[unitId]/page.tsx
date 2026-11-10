@@ -15,6 +15,7 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { OfficeDashboardFilterBar } from "./filter-bar";
 import { ExportOfficeButton } from "./export-button";
+import { FolderBreakdownTable } from "./folder-breakdown-table";
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -183,64 +184,12 @@ export default async function OfficeDashboardPage({
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5">
 
           {/* Folder Breakdown */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div className="px-6 py-5" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
-              <h2 className="text-[15px] font-bold" style={{ color: "var(--ou-accent)" }}>Folder Breakdown</h2>
-              <p className="text-[12px] mt-0.5" style={{ color: "var(--ou-subtext)" }}>
-                Submission status of all required folders · SY {displaySY}{sem ? ` · ${sem} Semester` : ""}
-              </p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--ou-divider)" }}>
-                    <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>Folder</th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>Documents (This SY)</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>Status</th>
-                    <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {folderStats.map((f) => {
-                    const status = f.thisYearCount > 0 ? "filed" : f.activeDocumentCount > 0 ? "outdated" : "missing";
-                    return (
-                      <tr key={f.id} className="ou-table-row transition-colors" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
-                        <td className="px-6 py-4 text-[13px] font-medium" style={{ color: "var(--ou-heading)" }}>{f.name}</td>
-                        <td className="px-4 py-4 text-center text-[13px]" style={{ color: "var(--ou-heading)" }}>{f.thisYearCount}</td>
-                        <td className="px-4 py-4">
-                          {status === "filed" ? (
-                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1 rounded-full" style={{ background: "rgba(21,128,61,0.1)", color: "#15803d" }}>
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block shrink-0" />Filed
-                            </span>
-                          ) : status === "outdated" ? (
-                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1 rounded-full" style={{ background: "rgba(201,168,76,0.12)", color: "#92690e" }}>
-                              <span className="w-1.5 h-1.5 rounded-full inline-block shrink-0" style={{ background: "#c9a84c" }} />Outdated
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1 rounded-full" style={{ background: "rgba(121,19,47,0.08)", color: "var(--ou-accent)" }}>
-                              <span className="w-1.5 h-1.5 rounded-full inline-block shrink-0" style={{ background: "var(--ou-accent)" }} />Missing
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <Link
-                            href={`/repository/${unitId}/${f.id}`}
-                            className="inline-flex items-center gap-1 text-[13px] font-semibold transition-opacity hover:opacity-70"
-                            style={{ color: "var(--ou-accent)" }}
-                          >
-                            View
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <FolderBreakdownTable
+            folderStats={folderStats}
+            unitId={unitId}
+            displaySY={displaySY}
+            sem={sem}
+          />
 
           {/* Recent Submissions */}
           <div className="rounded-2xl overflow-hidden" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>

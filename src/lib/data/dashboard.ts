@@ -262,9 +262,11 @@ export type PendingOffice = {
   id: string;
   name: string;
   type: "department" | "office";
+  folder_id: string | null;
+  submitted: boolean;
 };
 
-export const getPendingOfficesForFolder = unstable_cache(async (
+export const getAllOfficesForFolder = unstable_cache(async (
   folderName: string,
   branch: "academics" | "administration",
   schoolYear?: string
@@ -290,23 +292,47 @@ export const getPendingOfficesForFolder = unstable_cache(async (
       .eq("school_year", sy),
   ]);
 
-  // folder_id → unit_id, only for leaf units in this branch
+  // unit_id → folder_id, only for leaf units in this branch
+  const unitToFolder = new Map<string, string>();
+  for (const f of (folders ?? []) as { id: string; unit_id: string }[]) {
+    if (leafIds.has(f.unit_id)) unitToFolder.set(f.unit_id, f.id);
+  }
+
+  // folder_id → unit_id for submitted lookup
   const folderToUnit = new Map<string, string>();
   for (const f of (folders ?? []) as { id: string; unit_id: string }[]) {
     if (leafIds.has(f.unit_id)) folderToUnit.set(f.id, f.unit_id);
   }
 
   // Which units have submitted to this folder this SY?
-  const submitted = new Set<string>();
+  const submittedUnits = new Set<string>();
   for (const d of (docs ?? []) as { folder_id: string }[]) {
     const uid = folderToUnit.get(d.folder_id);
-    if (uid) submitted.add(uid);
+    if (uid) submittedUnits.add(uid);
   }
 
   return leafUnits
-    .filter((u) => !submitted.has(u.id))
-    .map((u) => ({ id: u.id, name: u.name, type: u.type as "department" | "office" }))
+    .map((u) => ({
+      id: u.id,
+      name: u.name,
+      type: u.type as "department" | "office",
+      folder_id: unitToFolder.get(u.id) ?? null,
+      submitted: submittedUnits.has(u.id),
+    }))
     .sort((a, b) => a.name.localeCompare(b.name));
+},
+["all-offices-for-folder"],
+{ revalidate: 300, tags: ["documents", "units"] }
+);
+
+/** @deprecated use getAllOfficesForFolder */
+export const getPendingOfficesForFolder = unstable_cache(async (
+  folderName: string,
+  branch: "academics" | "administration",
+  schoolYear?: string
+): Promise<PendingOffice[]> => {
+  const all = await getAllOfficesForFolder(folderName, branch, schoolYear);
+  return all.filter((o) => !o.submitted);
 },
 ["pending-offices-for-folder"],
 { revalidate: 300, tags: ["documents", "units"] }
@@ -321,14 +347,59 @@ export type RecentActivityItem = {
   version: number;
   created_at: string;
   uploader_name: string;
+  storage_path: string;
+  mime_type: string;
 };
+
+export type RecentUploadItem = {
+  id: string;
+  title: string;
+  folder_name: string;
+  folder_id: string;
+  unit_id: string;
+  unit_name: string;
+  school_year: string;
+  semester: string;
+  version: number;
+  created_at: string;
+  uploader_name: string;
+};
+
+export const getRecentUploadsAllUnits = unstable_cache(
+  async (limit = 8): Promise<RecentUploadItem[]> => {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("documents")
+      .select("id, title, school_year, semester, version, created_at, unit_id, folder_id, folders(name), units!documents_unit_id_fkey(name), profiles!documents_uploaded_by_fkey(full_name)")
+      .eq("is_latest", true)
+      .eq("archived", false)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    return ((data ?? []) as any[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      folder_name: row.folders?.name ?? "Unknown folder",
+      folder_id: row.folder_id,
+      unit_id: row.unit_id,
+      unit_name: row.units?.name ?? "Unknown office",
+      school_year: row.school_year,
+      semester: row.semester,
+      version: row.version,
+      created_at: row.created_at,
+      uploader_name: row.profiles?.full_name ?? "Unknown",
+    }));
+  },
+  ["recent-uploads-all-units"],
+  { revalidate: 60, tags: ["documents"] }
+);
 
 export const getRecentActivity = unstable_cache(
   async (unitId: string, limit = 6): Promise<RecentActivityItem[]> => {
     const admin = createAdminClient();
     const { data } = await admin
       .from("documents")
-      .select("id, title, school_year, semester, version, created_at, folders(name), profiles!documents_uploaded_by_fkey(full_name)")
+      .select("id, title, school_year, semester, version, created_at, storage_path, mime_type, folders(name), profiles!documents_uploaded_by_fkey(full_name)")
       .eq("unit_id", unitId)
       .eq("archived", false)
       .order("created_at", { ascending: false })
@@ -343,6 +414,8 @@ export const getRecentActivity = unstable_cache(
       version: row.version,
       created_at: row.created_at,
       uploader_name: row.profiles?.full_name ?? "Unknown",
+      storage_path: row.storage_path,
+      mime_type: row.mime_type,
     }));
   },
   ["recent-activity"],

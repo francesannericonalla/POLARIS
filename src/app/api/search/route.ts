@@ -13,6 +13,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  const results = await searchDocumentsGlobal(q);
+  const results = await searchDocumentsGlobal(q, { role: profile.role, unitId: profile.unit_id ?? undefined });
   return NextResponse.json({ results });
 }

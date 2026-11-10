@@ -24,7 +24,7 @@ export function FolderCoverageTabbed({
   return (
     <div className="flex flex-col h-full">
       {/* Tabs */}
-      <div className="flex items-center gap-1.5 px-5 py-3" style={{ borderBottom: "1px solid #f1f5f9" }}>
+      <div className="flex items-center gap-1.5 px-4 py-2.5" style={{ borderBottom: "1px solid #f1f5f9" }}>
         {hasAcademics && (
           <button
             onClick={() => setTab("academics")}
@@ -58,22 +58,22 @@ export function FolderCoverageTabbed({
         </span>
       </div>
 
-      {/* Folder rows — uses FolderCoverageWithDrawer in compact mode (no card shell) */}
-      <div className="flex-1 overflow-y-auto">
-        {hasData ? (
-          <FolderCoverageWithDrawer
-            title=""
-            subtitle=""
-            stats={activeStats}
-            accentColor=""
-            accentHex={tab === "academics" ? "#7A1330" : "#B8892B"}
-            schoolYear={schoolYear}
-            compact
-          />
-        ) : (
-          <p className="text-sm text-slate-400 text-center py-10">No data available.</p>
-        )}
-      </div>
+      {/* Folder rows */}
+      {hasData ? (
+        <div className="flex-1 min-h-0">
+        <FolderCoverageWithDrawer
+          title=""
+          subtitle=""
+          stats={activeStats}
+          accentColor=""
+          accentHex={tab === "academics" ? "#7A1330" : "#B8892B"}
+          schoolYear={schoolYear}
+          compact
+        />
+        </div>
+      ) : (
+        <p className="text-sm text-slate-400 text-center py-10">No data available.</p>
+      )}
     </div>
   );
 }

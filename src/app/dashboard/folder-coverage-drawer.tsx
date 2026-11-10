@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { fetchPendingOffices } from "./actions";
+import { useRouter } from "next/navigation";
+import { fetchAllOfficesForFolder } from "./actions";
 import type { PendingOffice } from "@/lib/data/dashboard";
 import type { FolderSubmissionStat } from "@/lib/data/dashboard";
 
@@ -27,9 +28,17 @@ function CheckIcon() {
   );
 }
 
+function ChevronRightIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3,2 7,5 3,8" />
+    </svg>
+  );
+}
+
 // ── Drawer panel ─────────────────────────────────────────────────────────────
 
-function PendingDrawer({
+function OfficeListDrawer({
   open,
   drawer,
   schoolYear,
@@ -44,15 +53,16 @@ function PendingDrawer({
   totalCount: number;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [offices, setOffices] = useState<PendingOffice[]>([]);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "submitted" | "not_submitted">("all");
   const searchRef = useRef<HTMLInputElement>(null);
   const prevDrawer = useRef<DrawerState | null>(null);
 
   useEffect(() => {
     if (!open || !drawer) return;
-    // Only re-fetch if the drawer target changed
     if (
       prevDrawer.current?.folderName === drawer.folderName &&
       prevDrawer.current?.branch === drawer.branch
@@ -60,8 +70,9 @@ function PendingDrawer({
     prevDrawer.current = drawer;
     setOffices([]);
     setSearch("");
+    setFilter("all");
     startTransition(async () => {
-      const result = await fetchPendingOffices(drawer.folderName, drawer.branch, schoolYear);
+      const result = await fetchAllOfficesForFolder(drawer.folderName, drawer.branch, schoolYear);
       setOffices(result);
     });
   }, [open, drawer, schoolYear]);
@@ -71,19 +82,33 @@ function PendingDrawer({
     else setSearch("");
   }, [open]);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  const filtered = search.trim()
-    ? offices.filter((o) => o.name.toLowerCase().includes(search.toLowerCase()))
-    : offices;
+  const filtered = offices.filter((o) => {
+    if (filter === "submitted" && !o.submitted) return false;
+    if (filter === "not_submitted" && o.submitted) return false;
+    if (search.trim() && !o.name.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
 
   const pendingCount = totalCount - submittedCount;
   const accentColor = drawer?.branch === "academics" ? "#7A1330" : "#B8892B";
+
+  function handleOfficeClick(office: PendingOffice) {
+    if (!office.folder_id) return;
+    onClose();
+    router.push(`/repository/${office.id}/${office.folder_id}`);
+  }
+
+  const filterTabs: { key: "all" | "submitted" | "not_submitted"; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "not_submitted", label: "Not Submitted" },
+    { key: "submitted", label: "Submitted" },
+  ];
 
   return (
     <>
@@ -103,13 +128,13 @@ function PendingDrawer({
       <div
         className="fixed top-0 right-0 h-full z-50 flex flex-col bg-white shadow-2xl transition-transform duration-250 ease-in-out"
         style={{
-          width: 340,
+          width: 360,
           transform: open ? "translateX(0)" : "translateX(100%)",
           borderLeft: "1px solid #e5e7eb",
         }}
         aria-modal="true"
         role="dialog"
-        aria-label={drawer ? `Pending offices for ${drawer.folderName}` : "Pending offices"}
+        aria-label={drawer ? `Offices for ${drawer.folderName}` : "Offices"}
       >
         {/* Header */}
         <div className="px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
@@ -144,8 +169,27 @@ function PendingDrawer({
           </div>
         </div>
 
-        {/* Search */}
-        <div className="px-4 py-3 border-b border-gray-50 shrink-0">
+        {/* Filter tabs + Search */}
+        <div className="px-4 pt-3 pb-2 border-b border-gray-50 shrink-0 space-y-2.5">
+          {/* Filter toggle */}
+          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-gray-100">
+            {filterTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setFilter(tab.key)}
+                className="flex-1 text-[11px] font-semibold py-1.5 rounded-md transition-all"
+                style={
+                  filter === tab.key
+                    ? { background: "#fff", color: accentColor, boxShadow: "0 1px 3px rgba(0,0,0,0.12)" }
+                    : { color: "#6b7280" }
+                }
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
           <input
             ref={searchRef}
             type="text"
@@ -162,15 +206,20 @@ function PendingDrawer({
           {pending ? (
             <div className="flex flex-col gap-2 pt-2">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" style={{ opacity: 1 - i * 0.12 }} />
+                <div key={i} className="h-9 bg-gray-100 rounded-lg animate-pulse" style={{ opacity: 1 - i * 0.12 }} />
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               {search ? (
                 <>
-                  <p className="text-sm font-medium text-gray-500">No match for "{search}"</p>
+                  <p className="text-sm font-medium text-gray-500">No match for &ldquo;{search}&rdquo;</p>
                   <p className="text-xs text-gray-400 mt-1">Try a different name</p>
+                </>
+              ) : filter === "submitted" ? (
+                <>
+                  <p className="text-sm font-medium text-gray-500">No submissions yet</p>
+                  <p className="text-xs text-gray-400 mt-1">No offices have submitted this folder.</p>
                 </>
               ) : (
                 <>
@@ -182,19 +231,48 @@ function PendingDrawer({
             </div>
           ) : (
             <ul className="space-y-1">
-              {filtered.map((office) => (
-                <li
-                  key={office.id}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
-                >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ background: accentColor, opacity: 0.5 }}
-                  />
-                  <span className="text-xs text-gray-700 leading-snug flex-1 min-w-0">{office.name}</span>
-                  <span className="text-[10px] text-gray-400 shrink-0 capitalize">{office.type}</span>
-                </li>
-              ))}
+              {filtered.map((office) => {
+                const canNavigate = !!office.folder_id;
+                return (
+                  <li key={office.id}>
+                    <button
+                      onClick={() => handleOfficeClick(office)}
+                      disabled={!canNavigate}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left group"
+                      style={canNavigate ? { cursor: "pointer" } : { cursor: "default" }}
+                      onMouseEnter={(e) => canNavigate && ((e.currentTarget as HTMLElement).style.background = "#f9fafb")}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "")}
+                    >
+                      {/* Status indicator */}
+                      {office.submitted ? (
+                        <span className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center shrink-0 text-green-600">
+                          <CheckIcon />
+                        </span>
+                      ) : (
+                        <span
+                          className="w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{ background: accentColor, opacity: 0.5 }}
+                        />
+                      )}
+
+                      {/* Name + type */}
+                      <span className="flex-1 min-w-0">
+                        <span className="text-xs text-gray-700 leading-snug block truncate">{office.name}</span>
+                      </span>
+
+                      {/* Type badge */}
+                      <span className="text-[10px] text-gray-400 shrink-0 capitalize">{office.type}</span>
+
+                      {/* Arrow — only if navigable */}
+                      {canNavigate && (
+                        <span className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <ChevronRightIcon />
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -203,8 +281,13 @@ function PendingDrawer({
         {!pending && filtered.length > 0 && (
           <div className="px-5 py-3 border-t border-gray-100 shrink-0">
             <p className="text-[11px] text-gray-400">
-              {search ? `${filtered.length} of ${offices.length} shown` : `${offices.length} pending`}
+              {search || filter !== "all"
+                ? `${filtered.length} of ${offices.length} shown`
+                : `${offices.length} office${offices.length !== 1 ? "s" : ""} total`}
             </p>
+            {filter === "all" && !search && (
+              <p className="text-[10px] text-gray-300 mt-0.5">Click an office to view its repository</p>
+            )}
           </div>
         )}
       </div>
@@ -234,8 +317,7 @@ export function FolderCoverageWithDrawer({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState<DrawerState | null>(null);
   const [activeStat, setActiveStat] = useState<FolderSubmissionStat | null>(null);
-
-  const branch = stats[0]?.branch ?? "academics";
+  const visibleStats = stats;
 
   function openDrawer(stat: FolderSubmissionStat) {
     setActiveStat(stat);
@@ -244,8 +326,8 @@ export function FolderCoverageWithDrawer({
   }
 
   const rows = (
-    <div className={compact ? "px-3 py-2 space-y-3.5" : "px-5 py-4 space-y-3.5"}>
-      {stats.map((s) => {
+    <div className={compact ? "px-4 py-2 flex flex-col justify-between h-full" : "px-5 py-4 space-y-3.5"}>
+      {visibleStats.map((s) => {
             const pct = s.total > 0 ? Math.round((s.submitted / s.total) * 100) : 0;
             const barColor = pct >= 80 ? "#16a34a" : pct >= 50 ? "#B8892B" : pct > 0 ? "#ef4444" : "#e5e7eb";
             const pendingCount = s.total - s.submitted;
@@ -253,11 +335,11 @@ export function FolderCoverageWithDrawer({
               <button
                 key={s.folder_name}
                 onClick={() => openDrawer(s)}
-                className="w-full text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 rounded-lg px-2 py-1.5 -mx-2 hover:bg-black/[0.03] transition-colors"
+                className="w-full text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 rounded-lg px-2 py-1.5 hover:bg-black/[0.03] transition-colors"
                 style={{ "--tw-ring-color": accentHex + "60" } as React.CSSProperties}
                 title={`${pendingCount} office${pendingCount !== 1 ? "s" : ""} pending — click to view`}
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-medium text-gray-700 truncate mr-2 group-hover:text-gray-900 transition-colors">
                     {s.folder_name}
                   </span>
@@ -293,7 +375,7 @@ export function FolderCoverageWithDrawer({
   return (
     <>
       {compact ? (
-        rows
+        <div className="h-full">{rows}</div>
       ) : (
         <div className="card overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-3">
@@ -307,7 +389,7 @@ export function FolderCoverageWithDrawer({
         </div>
       )}
 
-      <PendingDrawer
+      <OfficeListDrawer
         open={drawerOpen}
         drawer={activeDrawer}
         schoolYear={schoolYear}

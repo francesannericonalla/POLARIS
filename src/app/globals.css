@@ -17,6 +17,16 @@ body {
 
 * { box-sizing: border-box; }
 
+/* ── Global scrollbar — thin & subtle ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+*::-webkit-scrollbar { width: 4px; height: 4px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.22); }
+
 /* ── POLARIS animations ── */
 @keyframes polDrift {
   0%   { transform: translate3d(0, 0, 0); }

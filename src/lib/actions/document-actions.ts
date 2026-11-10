@@ -116,21 +116,32 @@ export async function uploadDocument(_prev: UploadState, formData: FormData): Pr
     target_id: inserted.id,
   });
 
-  // Notify all QAO users about the new upload
+  // Notify QAO users + other users in the same unit (excluding the uploader)
   const { data: unitRow } = await admin.from("units").select("name").eq("id", folder.unit_id).single();
-  const { data: qaoUsers } = await admin.from("profiles").select("id, email").eq("role", "qao").eq("status", "approved");
-  if (qaoUsers && qaoUsers.length > 0) {
-    const unitName = (unitRow as any)?.name ?? "Unknown Office";
-    const folderName = folder.name;
-    const uploaderName = profile.full_name ?? "Someone";
+  const [{ data: qaoUsers }, { data: sameUnitUsers }] = await Promise.all([
+    admin.from("profiles").select("id, email").eq("role", "qao").eq("status", "approved"),
+    admin.from("profiles").select("id, email").eq("unit_id", folder.unit_id).eq("status", "approved").neq("id", profile.id),
+  ]);
+
+  const unitName = (unitRow as any)?.name ?? "Unknown Office";
+  const folderName = folder.name;
+  const uploaderName = profile.full_name ?? "Someone";
+
+  // Merge recipients, deduplicate by id, exclude the uploader
+  const recipientMap = new Map<string, { id: string; email: string }>();
+  for (const u of [...(qaoUsers ?? []), ...(sameUnitUsers ?? [])]) {
+    if ((u as any).id !== profile.id) recipientMap.set((u as any).id, u as any);
+  }
+
+  if (recipientMap.size > 0) {
     await Promise.all(
-      qaoUsers.map((qao: any) =>
+      [...recipientMap.values()].map((u) =>
         Promise.all([
-          createNotification(qao.id, "document_uploaded", "New Document Uploaded",
+          createNotification(u.id, "document_uploaded", "New Document Uploaded",
             `${uploaderName} from ${unitName} uploaded "${title}" in ${folderName}.`,
             { unit_id: folder.unit_id, folder_id: folderId }
           ),
-          sendEmail(qao.email, `New Document: ${title} — ${unitName}`,
+          sendEmail(u.email, `New Document: ${title} — ${unitName}`,
             documentUploadedHtml(uploaderName, unitName, title, folderName)
           ),
         ])
@@ -192,6 +203,70 @@ export async function restoreDocument(documentId: string) {
   revalidatePath(`/repository/${doc.unit_id}`);
   revalidatePath(`/dashboard`);
   revalidatePath(`/dashboard/office/${doc.unit_id}`);
+}
+
+export async function bulkArchiveDocuments(documentIds: string[]) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.status !== "approved") throw new Error("Not authorized.");
+
+  const admin = createAdminClient();
+  const { data: docs } = await admin
+    .from("documents")
+    .select("id, unit_id, folder_id")
+    .in("id", documentIds);
+
+  if (!docs) throw new Error("Documents not found.");
+
+  const unitIds = [...new Set(docs.map((d: any) => d.unit_id))];
+  for (const uid of unitIds) {
+    if (!canAccessUnitRepository(profile, uid)) throw new Error("Not authorized for one or more documents.");
+  }
+
+  await admin.from("documents").update({ archived: true }).in("id", documentIds);
+
+  for (const doc of docs as { id: string; unit_id: string; folder_id: string }[]) {
+    await admin.from("audit_log").insert({
+      actor_id: profile.id,
+      action: "archive_document",
+      target_type: "document",
+      target_id: doc.id,
+    });
+    revalidatePath(`/repository/${doc.unit_id}/${doc.folder_id}`);
+    revalidatePath(`/repository/${doc.unit_id}`);
+  }
+  revalidatePath("/dashboard");
+}
+
+export async function bulkRestoreDocuments(documentIds: string[]) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.status !== "approved") throw new Error("Not authorized.");
+
+  const admin = createAdminClient();
+  const { data: docs } = await admin
+    .from("documents")
+    .select("id, unit_id, folder_id")
+    .in("id", documentIds);
+
+  if (!docs) throw new Error("Documents not found.");
+
+  const unitIds = [...new Set(docs.map((d: any) => d.unit_id))];
+  for (const uid of unitIds) {
+    if (!canAccessUnitRepository(profile, uid)) throw new Error("Not authorized.");
+  }
+
+  await admin.from("documents").update({ archived: false }).in("id", documentIds);
+
+  for (const doc of docs as { id: string; unit_id: string; folder_id: string }[]) {
+    await admin.from("audit_log").insert({
+      actor_id: profile.id,
+      action: "restore_document",
+      target_type: "document",
+      target_id: doc.id,
+    });
+    revalidatePath(`/repository/${doc.unit_id}/${doc.folder_id}`);
+    revalidatePath(`/repository/${doc.unit_id}`);
+  }
+  revalidatePath("/dashboard");
 }
 
 export async function getSignedDownloadUrl(storagePath: string): Promise<string | null> {

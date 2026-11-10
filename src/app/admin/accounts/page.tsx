@@ -17,18 +17,20 @@ export default async function AccountsPage() {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f6f8]">
+    <div className="min-h-screen flex h-screen overflow-hidden bg-[#f5f6f8]">
       <AdminNavbar
         userName={profile.full_name}
         role={profile.role}
         idNumber={profile.id_number}
         unitName={profile.unit_name}
       />
-      <AccountManagementClient
-        allProfiles={allProfiles}
-        pendingProfiles={pendingProfiles}
-        currentUserId={profile.id}
-      />
+      <main className="flex-1 overflow-y-auto">
+        <AccountManagementClient
+          allProfiles={allProfiles}
+          pendingProfiles={pendingProfiles}
+          currentUserId={profile.id}
+        />
+      </main>
     </div>
   );
 }

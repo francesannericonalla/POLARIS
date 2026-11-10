@@ -5,14 +5,13 @@ import Link from "next/link";
 import { ChevronDown, Search, Download } from "lucide-react";
 
 function exportToCSV(summaries: OfficeSummary[], schoolYear: string) {
-  const headers = ["Office / Department", "Unit", "Required Folders", "Filed", "Compliance %", "Status"];
+  const headers = ["Office / Department", "Unit", "Filed", "Compliance %", "Status"];
   const rows = summaries.map((u) => {
     const pct = u.totalFolders > 0 ? Math.round((u.foldersThisYear / u.totalFolders) * 100) : 0;
     const status = u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders ? "Filed" : u.foldersThisYear > 0 ? "Partial" : "Pending";
     return [
       `"${u.name.replace(/"/g, '""')}"`,
       u.branch === "academics" ? "Academics" : "Administration",
-      u.totalFolders,
       u.foldersThisYear,
       `${pct}%`,
       status,
@@ -155,7 +154,6 @@ export function QAOAllOfficesTable({ summaries, schoolYear }: { summaries: Offic
             <tr style={{ background: "#fafbfc", borderBottom: "1px solid #f0f2f5" }}>
               <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Office / Department</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Unit</th>
-              <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Required Folders</th>
               <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Filed</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Compliance</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Status</th>
@@ -165,7 +163,7 @@ export function QAOAllOfficesTable({ summaries, schoolYear }: { summaries: Offic
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-[13px] text-gray-400">
+                <td colSpan={6} className="px-5 py-10 text-center text-[13px] text-gray-400">
                   No offices match your filters.
                 </td>
               </tr>
@@ -200,11 +198,6 @@ export function QAOAllOfficesTable({ summaries, schoolYear }: { summaries: Offic
                       >
                         {u.branch === "academics" ? "Academics" : "Administration"}
                       </span>
-                    </td>
-
-                    {/* Required Folders */}
-                    <td className="px-4 py-3.5 text-center tabular-nums text-[13px] text-gray-600">
-                      {u.totalFolders}
                     </td>
 
                     {/* Filed */}

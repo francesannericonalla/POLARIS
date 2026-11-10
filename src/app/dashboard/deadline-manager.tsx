@@ -170,7 +170,7 @@ function SemRow({
 
 export function DeadlineManager({ schoolYear, deadlines }: Props) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 h-full">
       <div className="flex items-center gap-2 mb-3">
         <CalendarDays size={16} style={{ color: "#7A1330" }} />
         <h3 className="text-[14px] font-bold text-slate-800">Submission Deadlines</h3>

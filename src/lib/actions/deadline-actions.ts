@@ -54,6 +54,13 @@ export async function upsertDeadline(
 
   if (error) throw new Error(error.message);
 
+  await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    action: "upsert_deadline",
+    target_type: "compliance_deadline",
+    meta: { school_year: schoolYear, semester, deadline_date: deadlineDate },
+  });
+
   // Notify all office users
   const { data: officeUsers } = await admin
     .from("profiles")
@@ -91,5 +98,13 @@ export async function deleteDeadline(schoolYear: string, semester: "1st" | "2nd"
     .eq("semester", semester);
 
   if (error) throw new Error(error.message);
+
+  await admin.from("audit_log").insert({
+    actor_id: profile.id,
+    action: "delete_deadline",
+    target_type: "compliance_deadline",
+    meta: { school_year: schoolYear, semester },
+  });
+
   revalidatePath("/dashboard");
 }

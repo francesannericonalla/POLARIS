@@ -228,32 +228,50 @@ export type GlobalSearchResult = {
   folder_name: string;
 };
 
-export async function searchDocumentsGlobal(query: string): Promise<GlobalSearchResult[]> {
+export async function searchDocumentsGlobal(
+  query: string,
+  opts: { role?: string; unitId?: string } = {}
+): Promise<GlobalSearchResult[]> {
   if (!query || query.trim().length < 2) return [];
   const admin = createAdminClient();
-  const { data, error } = await admin
+
+  let q = admin
     .from("documents")
-    .select("id, title, file_name, school_year, semester, created_at, unit_id, folder_id, units!documents_unit_id_fkey(name), folders!documents_folder_id_fkey(name)")
+    .select("id, title, file_name, school_year, semester, created_at, unit_id, folder_id, units!documents_unit_id_fkey(name), folders!documents_folder_id_fkey(name, is_qao_exclusive)")
     .ilike("title", `%${query.trim()}%`)
     .eq("is_latest", true)
     .eq("archived", false)
     .order("created_at", { ascending: false })
     .limit(30);
 
+  // Office users only see their own unit's documents
+  if (opts.role === "office_user" && opts.unitId) {
+    q = q.eq("unit_id", opts.unitId);
+  }
+
+  const { data, error } = await q;
   if (error) throw error;
 
-  return (data as any[]).map((row) => ({
-    id: row.id,
-    title: row.title,
-    file_name: row.file_name,
-    school_year: row.school_year,
-    semester: row.semester,
-    created_at: row.created_at,
-    unit_id: row.unit_id,
-    folder_id: row.folder_id,
-    unit_name: row.units?.name ?? "Unknown",
-    folder_name: row.folders?.name ?? "Unknown",
-  }));
+  return (data as any[])
+    .filter((row) => {
+      // For non-QAO users, hide QAO-exclusive folder contents
+      if (opts.role !== "qao") {
+        if (row.folders?.is_qao_exclusive) return false;
+      }
+      return true;
+    })
+    .map((row) => ({
+      id: row.id,
+      title: row.title,
+      file_name: row.file_name,
+      school_year: row.school_year,
+      semester: row.semester,
+      created_at: row.created_at,
+      unit_id: row.unit_id,
+      folder_id: row.folder_id,
+      unit_name: row.units?.name ?? "Unknown",
+      folder_name: row.folders?.name ?? "Unknown",
+    }));
 }
 
 export async function getDistinctSchoolYears(unitId: string): Promise<string[]> {

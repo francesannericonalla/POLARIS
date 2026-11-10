@@ -1,29 +1,30 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { CheckCircle2, Inbox } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 import {
   getUnitSummaries,
   getUnitFolderStatsByFilter,
   getRecentActivity,
   getFolderSubmissionStats,
+  getRecentUploadsAllUnits,
   currentSchoolYear,
   buildSchoolYearOptions,
   type FolderStat,
   type FolderSubmissionStat,
   type RecentActivityItem,
+  type RecentUploadItem,
 } from "@/lib/data/dashboard";
-import { getAllUnits } from "@/lib/data/units";
 import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
 import { OfficeUserSYFilter } from "./office-user-sy-filter";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
-import { FolderCoverageWithDrawer } from "./folder-coverage-drawer";
 import { FolderCoverageTabbed } from "./folder-coverage-tabbed";
-import { CollegeComplianceList, type CollegeRow } from "./college-drawer";
 import { QAOAllOfficesTable } from "./qao-all-offices-table";
 import { DeadlineManager } from "./deadline-manager";
 import { DeadlineBanner } from "./deadline-banner";
 import { getDeadlinesForSchoolYear } from "@/lib/data/deadlines";
+import { DocumentPreviewButton } from "@/components/document-preview-button";
 
 export default async function DashboardPage({
   searchParams,
@@ -255,11 +256,11 @@ export default async function DashboardPage({
   const activeSY = sy || defaultSY;
   const syOptions = buildSchoolYearOptions();
 
-  const [allSummaries, folderStats, allUnits, qaoDeadlines] = await Promise.all([
+  const [allSummaries, folderStats, qaoDeadlines, recentUploads] = await Promise.all([
     getUnitSummaries(validBranch, activeSY),
     getFolderSubmissionStats(activeSY),
-    getAllUnits(),
     getDeadlinesForSchoolYear(activeSY),
+    getRecentUploadsAllUnits(5),
   ]);
 
   const totalUnits = allSummaries.length;
@@ -269,27 +270,6 @@ export default async function DashboardPage({
   const withSubmissions = allSummaries.filter((u) => u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders).length;
   const withAnySubmission = allSummaries.filter((u) => u.foldersThisYear > 0).length;
   const noAnySubmission = allSummaries.filter((u) => u.foldersThisYear === 0).length;
-
-  // College rollup — group departments by parent college
-  const summaryById = new Map(allSummaries.map((u) => [u.id, u]));
-  const colleges = allUnits.filter((u) => u.type === "college").sort((a, b) => a.sort_order - b.sort_order);
-  const collegeRows = colleges.map((college) => {
-    const depts = allUnits.filter((u) => u.parent_id === college.id && u.type === "department");
-    const deptSummaries = depts.map((d) => summaryById.get(d.id)).filter(Boolean) as typeof allSummaries;
-    const filed = deptSummaries.filter((u) => u.totalFolders > 0 && u.foldersThisYear >= u.totalFolders).length;
-    return {
-      id: college.id,
-      name: college.name,
-      filed,
-      total: deptSummaries.length,
-      departments: deptSummaries.map((u) => ({
-        id: u.id,
-        name: u.name,
-        foldersThisYear: u.foldersThisYear,
-        totalFolders: u.totalFolders,
-      })),
-    };
-  }).filter((c) => c.total > 0);
 
   const R = 36, CIRC = 2 * Math.PI * R;
   const rateOffset = CIRC - (submissionRate / 100) * CIRC;
@@ -373,11 +353,7 @@ export default async function DashboardPage({
           {/* Fully Filed */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(21,128,61,0.08)" }}>
-              {/* Clipboard with checkmark */}
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#16a34a" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
-              </svg>
+              <CheckCircle2 className="w-6 h-6" style={{ color: "#16a34a" }} strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
               <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Fully Filed</p>
@@ -391,11 +367,7 @@ export default async function DashboardPage({
           {/* No Submissions Yet */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: noAnySubmission > 0 ? "rgba(239,68,68,0.08)" : "rgba(21,128,61,0.08)" }}>
-              {/* Hourglass / clock indicating pending */}
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke={noAnySubmission > 0 ? "#ef4444" : "#16a34a"} strokeWidth={1.8}>
-                <circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
-              </svg>
+              <Inbox className="w-6 h-6" style={{ color: noAnySubmission > 0 ? "#ef4444" : "#16a34a" }} strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
               <p className="text-[12px] font-semibold text-slate-500 mb-0.5">No Submissions Yet</p>
@@ -407,35 +379,35 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        {/* ── Middle: Compliance Overview + Folder Coverage ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* ── Row 1: Compliance Overview + Submission Deadlines ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
 
           {/* Compliance Overview */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 py-3.5" style={{ borderBottom: "1px solid #f1f5f9" }}>
               <h2 className="text-[15px] font-bold text-slate-800">
                 Compliance Overview
                 <span className="ml-2 text-[12px] font-normal text-slate-400">SY {activeSY}</span>
               </h2>
             </div>
-            <div className="p-6 flex flex-col gap-5 flex-1">
+            <div className="px-5 py-5 flex flex-col gap-5">
 
               {/* Academics row */}
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(122,19,48,0.07)" }}>
-                    <svg className="w-4.5 h-4.5" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#7A1330" strokeWidth={2}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(122,19,48,0.07)" }}>
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#7A1330" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[14px] font-semibold text-slate-800">Academics</span>
-                      <span className="text-[13px] font-bold tabular-nums" style={{ color: acadPct >= 80 ? "#16a34a" : acadPct >= 50 ? "#B8892B" : "#7A1330" }}>{acadPct}%</span>
-                    </div>
-                    <p className="text-[12px] text-slate-400">Colleges and academic departments</p>
+                    <span className="text-[13px] font-semibold text-slate-800">Academics</span>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Colleges and academic departments</p>
                   </div>
-                  <span className="text-[13px] font-semibold tabular-nums text-slate-600 shrink-0">{acadFiled} / {acadSummariesAll.length}</span>
+                  <div className="text-right shrink-0">
+                    <span className="text-[12px] font-semibold tabular-nums text-slate-500">{acadFiled} / {acadSummariesAll.length}</span>
+                    <p className="text-[13px] font-bold tabular-nums mt-0.5" style={{ color: "#7A1330" }}>{acadPct}%</p>
+                  </div>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{ width: `${acadPct}%`, background: "#7A1330" }} />
@@ -445,47 +417,54 @@ export default async function DashboardPage({
               <div className="border-t border-gray-100" />
 
               {/* Administration row */}
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(184,137,43,0.08)" }}>
-                    <svg className="w-4.5 h-4.5" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#B8892B" strokeWidth={2}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(122,19,48,0.07)" }}>
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#7A1330" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[14px] font-semibold text-slate-800">Administration</span>
-                      <span className="text-[13px] font-bold tabular-nums" style={{ color: adminPct >= 80 ? "#16a34a" : adminPct >= 50 ? "#B8892B" : "#7A1330" }}>{adminPct}%</span>
-                    </div>
-                    <p className="text-[12px] text-slate-400">Standalone offices and administrative units</p>
+                    <span className="text-[13px] font-semibold text-slate-800">Administration</span>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Standalone offices and administrative units</p>
                   </div>
-                  <span className="text-[13px] font-semibold tabular-nums text-slate-600 shrink-0">{adminFiled} / {adminSummariesAll.length}</span>
+                  <div className="text-right shrink-0">
+                    <span className="text-[12px] font-semibold tabular-nums text-slate-500">{adminFiled} / {adminSummariesAll.length}</span>
+                    <p className="text-[13px] font-bold tabular-nums mt-0.5" style={{ color: "#7A1330" }}>{adminPct}%</p>
+                  </div>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${adminPct}%`, background: "#B8892B" }} />
+                  <div className="h-full rounded-full transition-all" style={{ width: `${adminPct}%`, background: "#7A1330" }} />
                 </div>
-              </div>
-
-              <div className="border-t border-gray-100" />
-
-              {/* College rollup */}
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">By College</p>
-                <CollegeComplianceList collegeRows={collegeRows as CollegeRow[]} schoolYear={activeSY} />
               </div>
 
             </div>
           </div>
 
-          {/* Folder Coverage — tabbed, drawer preserved */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col" style={{ minHeight: 420 }}>
-            <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9" }}>
+          {/* Submission Deadlines */}
+          <DeadlineManager
+            schoolYear={activeSY}
+            deadlines={{
+              "1st": qaoDeadlines.find((d) => d.semester === "1st") ?? null,
+              "2nd": qaoDeadlines.find((d) => d.semester === "2nd") ?? null,
+              "Summer": qaoDeadlines.find((d) => d.semester === "Summer") ?? null,
+            }}
+          />
+
+        </div>
+
+        {/* ── Row 2: Folder Coverage + Recent Uploads ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+
+          {/* Folder Coverage */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+            <div className="px-5 py-3.5 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid #f1f5f9" }}>
               <h2 className="text-[15px] font-bold text-slate-800">
                 Folder Coverage
                 <span className="ml-2 text-[12px] font-normal text-slate-400">SY {activeSY}</span>
               </h2>
             </div>
-            <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               <FolderCoverageTabbed
                 academicsStats={showAcademics ? academicsStats : []}
                 adminStats={showAdmin ? adminFolderStats : []}
@@ -494,17 +473,52 @@ export default async function DashboardPage({
             </div>
           </div>
 
-        </div>
+          {/* Recent Uploads */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <h2 className="text-[15px] font-bold text-slate-800">Recent Uploads</h2>
+              <span className="text-[12px] text-slate-400">Across all offices</span>
+            </div>
+            {recentUploads.length === 0 ? (
+              <p className="px-6 py-10 text-sm text-center text-slate-400">No documents uploaded yet.</p>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {recentUploads.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/repository/${item.unit_id}/${item.folder_id}`}
+                    className="flex items-start gap-4 px-6 py-3.5 hover:bg-gray-50/60 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(122,19,48,0.07)" }}>
+                      <svg className="w-4 h-4" style={{ color: "#7A1330" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[13px] font-semibold text-slate-800 truncate">{item.title}</span>
+                        {item.version > 1 && (
+                          <span className="text-[11px] font-medium text-maroon bg-maroon/[0.06] border border-maroon/15 px-1.5 py-0.5 rounded shrink-0">
+                            v{item.version}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[12px] text-slate-400 mt-0.5">
+                        <span className="font-medium text-slate-500">{item.unit_name}</span>
+                        {" · "}{item.folder_name}{" · "}{item.uploader_name}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-[11px] text-slate-400">{qaoTimeAgo(item.created_at)}</p>
+                      <p className="text-[11px] text-slate-300 mt-0.5">{item.school_year} · {item.semester === "N/A" ? "Full Year" : `${item.semester} sem`}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* ── Deadline Manager ── */}
-        <DeadlineManager
-          schoolYear={activeSY}
-          deadlines={{
-            "1st": qaoDeadlines.find((d) => d.semester === "1st") ?? null,
-            "2nd": qaoDeadlines.find((d) => d.semester === "2nd") ?? null,
-            "Summer": qaoDeadlines.find((d) => d.semester === "Summer") ?? null,
-          }}
-        />
+        </div>
 
         {/* ── All Offices ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -586,6 +600,15 @@ function OUFolderRow({ folder, unitId }: { folder: FolderStat; unitId: string })
   );
 }
 
+function qaoTimeAgo(dateStr: string): string {
+  const secs = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (secs < 60) return "just now";
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  if (secs < 604800) return `${Math.floor(secs / 86400)}d ago`;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 function OUActivityItem({ item }: { item: RecentActivityItem }) {
   return (
     <div className="px-6 py-4 flex items-start justify-between gap-3">
@@ -597,6 +620,12 @@ function OUActivityItem({ item }: { item: RecentActivityItem }) {
         <p className="text-[12px] mt-0.5 truncate" style={{ color: "var(--ou-subtext)" }}>{item.folder_name}</p>
         <p className="text-[11px] mt-1" style={{ color: "var(--ou-muted)" }}>{ouFormatDate(item.created_at)}</p>
       </div>
+      <DocumentPreviewButton
+        storagePath={item.storage_path}
+        mimeType={item.mime_type}
+        title={item.title}
+        className="shrink-0 inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-gray-400 hover:text-maroon border border-gray-200 hover:border-maroon/30 rounded-lg px-2.5 py-1 transition-colors hover:bg-maroon/[0.03] disabled:opacity-40"
+      />
     </div>
   );
 }

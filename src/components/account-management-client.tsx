@@ -164,12 +164,14 @@ export function AccountManagementClient({
   allProfiles,
   pendingProfiles,
   currentUserId,
+  defaultTab = "accounts",
 }: {
   allProfiles: ProfileRow[];
   pendingProfiles: ProfileRow[];
   currentUserId: string;
+  defaultTab?: "accounts" | "requests";
 }) {
-  const [tab, setTab] = useState<"accounts" | "requests">("accounts");
+  const [tab, setTab] = useState<"accounts" | "requests">(defaultTab);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -219,7 +221,7 @@ export function AccountManagementClient({
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f6f8]">
+    <div className="bg-[#f5f6f8]">
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Page header */}
         <div className="mb-7">
