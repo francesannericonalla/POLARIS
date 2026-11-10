@@ -25,20 +25,34 @@ function CollegeAccordion({
   college,
   activeUnitId,
   linkPrefix,
+  light = false,
 }: {
   college: College;
   activeUnitId?: string;
   linkPrefix: string;
+  light?: boolean;
 }) {
   const hasActive = college.departments.some((d) => d.id === activeUnitId);
   const [open, setOpen] = useState(hasActive);
+
+  const collegeLabelStyle = light
+    ? { color: "#64748b", fontSize: 12.5, fontWeight: 500 }
+    : { color: "rgba(255,255,255,0.55)", fontSize: 12.5, fontWeight: 500 };
+  const collegeHover = light ? "hover:bg-slate-50" : "hover:bg-white/[0.05]";
+  const deptActive = light
+    ? "text-[#7A1330] font-semibold bg-[rgba(122,19,48,0.07)]"
+    : "text-white font-bold bg-white/[0.13]";
+  const deptInactive = light
+    ? "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+    : "text-white/60 hover:text-white/85 hover:bg-white/[0.05]";
+  const activeBorder = light ? "#7A1330" : GOLD;
 
   return (
     <div>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-2 transition-colors text-left hover:bg-white/[0.05]"
-        style={{ color: "rgba(255,255,255,0.55)", fontSize: 12.5, fontWeight: 500 }}
+        className={`w-full flex items-center justify-between px-4 py-2 transition-colors text-left ${collegeHover}`}
+        style={collegeLabelStyle}
       >
         <span className="truncate flex-1 min-w-0">{college.name}</span>
         <ChevronIcon open={open} />
@@ -54,11 +68,9 @@ function CollegeAccordion({
                 href={`${linkPrefix}/${dept.id}`}
                 title={dept.name}
                 className={`flex items-center pl-8 pr-4 py-2 w-full transition-colors text-[12.5px] truncate ${
-                  active
-                    ? "text-white font-bold bg-white/[0.13]"
-                    : "text-white/60 hover:text-white/85 hover:bg-white/[0.05]"
+                  active ? deptActive : deptInactive
                 }`}
-                style={{ borderLeft: active ? `2px solid ${GOLD}` : "2px solid transparent" }}
+                style={{ borderLeft: active ? `2px solid ${activeBorder}` : "2px solid transparent" }}
               >
                 <span className="truncate">{dept.name}</span>
               </Link>
@@ -75,16 +87,31 @@ export function SidebarTree({
   administration,
   activeUnitId,
   linkPrefix = "/repository",
+  light = false,
 }: {
   academics: College[];
   administration: Office[];
   activeUnitId?: string;
   linkPrefix?: string;
+  light?: boolean;
 }) {
   const adminHasActive = administration.some((o) => o.id === activeUnitId);
 
   const [academicsOpen, setAcademicsOpen] = useState<boolean>(true);
   const [adminOpen, setAdminOpen] = useState<boolean>(adminHasActive);
+
+  const sectionLabelStyle = light
+    ? { color: "#94a3b8", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em" }
+    : { color: GOLD, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" };
+
+  const sectionHover = light ? "hover:bg-slate-50" : "hover:bg-white/[0.04]";
+  const deptActive = light
+    ? "text-[#7A1330] font-semibold bg-[rgba(122,19,48,0.07)]"
+    : "text-white font-bold bg-white/[0.13]";
+  const deptInactive = light
+    ? "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+    : "text-white/60 hover:text-white/85 hover:bg-white/[0.05]";
+  const activeBorder = light ? "#7A1330" : GOLD;
 
   return (
     <div className="pb-8">
@@ -92,8 +119,8 @@ export function SidebarTree({
       {/* ── Academics ── */}
       <button
         onClick={() => setAcademicsOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-2 transition-colors hover:bg-white/[0.04]"
-        style={{ color: GOLD, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" }}
+        className={`w-full flex items-center justify-between px-4 py-2 transition-colors text-left ${sectionHover}`}
+        style={sectionLabelStyle}
       >
         <span className="flex items-center gap-2">
           <GraduationCap className="w-[15px] h-[15px] shrink-0 opacity-75" />
@@ -110,6 +137,7 @@ export function SidebarTree({
               college={college}
               activeUnitId={activeUnitId}
               linkPrefix={linkPrefix}
+              light={light}
             />
           ))}
         </div>
@@ -118,8 +146,8 @@ export function SidebarTree({
       {/* ── Administration ── */}
       <button
         onClick={() => setAdminOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-2 transition-colors hover:bg-white/[0.04]"
-        style={{ color: GOLD, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" }}
+        className={`w-full flex items-center justify-between px-4 py-2 transition-colors text-left ${sectionHover}`}
+        style={sectionLabelStyle}
       >
         <span className="flex items-center gap-2">
           <Building2 className="w-[15px] h-[15px] shrink-0 opacity-75" />
@@ -138,11 +166,9 @@ export function SidebarTree({
                 href={`${linkPrefix}/${office.id}`}
                 title={office.name}
                 className={`flex items-center pl-8 pr-4 py-2 w-full transition-colors text-[12.5px] ${
-                  active
-                    ? "text-white font-bold bg-white/[0.13]"
-                    : "text-white/60 hover:text-white/85 hover:bg-white/[0.05]"
+                  active ? deptActive : deptInactive
                 }`}
-                style={{ borderLeft: active ? `2px solid ${GOLD}` : "2px solid transparent" }}
+                style={{ borderLeft: active ? `2px solid ${activeBorder}` : "2px solid transparent" }}
               >
                 <span className="truncate">{office.name}</span>
               </Link>

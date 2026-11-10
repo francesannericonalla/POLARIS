@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { LayoutDashboard, FolderOpen, LogOut } from "lucide-react";
 import { logout } from "@/lib/actions/auth-actions";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export function OfficeUserSidebar({
   unitId,
@@ -106,8 +105,6 @@ export function OfficeUserSidebar({
             )}
           </div>
         </div>
-
-        <ThemeToggle />
 
         <form action={logout}>
           <button

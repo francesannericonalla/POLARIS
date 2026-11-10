@@ -1,6 +1,7 @@
 import type { Profile } from "@/lib/auth";
 import { Topbar } from "@/components/topbar";
 import { OfficeUserSidebar } from "@/components/office-user-sidebar";
+import { QaoSidebar } from "@/components/qao-sidebar";
 import { Sidebar } from "@/components/sidebar";
 
 export async function AppShell({
@@ -32,7 +33,17 @@ export async function AppShell({
     );
   }
 
-  // qao: sidebar + plain topbar (logo + profile only)
+  // qao: same white sidebar style as office_user, with QAO nav links + unit tree
+  if (profile.role === "qao") {
+    return (
+      <div className="h-screen flex overflow-hidden ou-main" style={{ background: "var(--ou-bg)" }}>
+        <QaoSidebar profile={profile} activeUnitId={activeUnitId} activeHref={activeHref} />
+        <main className="flex-1 overflow-y-auto" style={{ background: "var(--ou-bg)" }}>{children}</main>
+      </div>
+    );
+  }
+
+  // system_admin / fallback: topbar + dark sidebar
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <Topbar

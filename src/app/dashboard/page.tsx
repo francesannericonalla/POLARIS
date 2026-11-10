@@ -15,9 +15,10 @@ import {
 import { getAllUnits } from "@/lib/data/units";
 import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
-import { DashboardFilterBar } from "./dashboard-filter-bar";
 import { OfficeUserSYFilter } from "./office-user-sy-filter";
+import { DashboardFilterBar } from "./dashboard-filter-bar";
 import { FolderCoverageWithDrawer } from "./folder-coverage-drawer";
+import { FolderCoverageTabbed } from "./folder-coverage-tabbed";
 import { CollegeComplianceList, type CollegeRow } from "./college-drawer";
 import { QAOAllOfficesTable } from "./qao-all-offices-table";
 
@@ -240,7 +241,7 @@ export default async function DashboardPage({
   }
 
   // ── QAO: university-wide dashboard ──────────────────────────────────────────
-  const { branch, sy, search } = await searchParams;
+  const { branch, sy } = await searchParams;
   const validBranch = branch === "academics" || branch === "administration" ? branch : undefined;
   const activeSY = sy || defaultSY;
   const syOptions = buildSchoolYearOptions();
@@ -304,180 +305,192 @@ export default async function DashboardPage({
   const showAdmin     = !validBranch || validBranch === "administration";
 
   return (
-    <AppShell profile={profile} title="University Dashboard">
-      <div className="p-6 md:p-8 space-y-5" style={{ maxWidth: 1400, margin: "0 auto" }}>
+    <AppShell profile={profile} title="University Dashboard" activeHref="/dashboard">
+      <div className="p-6 md:p-8 space-y-6" style={{ maxWidth: 1400, margin: "0 auto" }}>
 
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">QAO Dashboard</p>
-            <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-poppins)" }}>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-1.5 flex items-center gap-2" style={{ color: "#7A1330" }}>
+              <span className="w-0.5 h-4 rounded-full inline-block" style={{ background: "#7A1330" }} />
+              QAO Dashboard
+            </p>
+            <h1 className="font-poppins text-[26px] font-bold leading-tight text-slate-900">
               University Overview
             </h1>
+            <p className="text-[13px] text-slate-500 mt-0.5">Overall compliance status of all offices and departments.</p>
           </div>
-          <Suspense fallback={<div className="h-9 w-72 bg-gray-100 rounded-lg animate-pulse" />}>
-            <DashboardFilterBar sy={activeSY} branch={branch ?? ""} search={search ?? ""} syOptions={syOptions} />
+          <Suspense fallback={<div className="h-9 w-64 bg-gray-100 rounded-lg animate-pulse" />}>
+            <DashboardFilterBar
+              sy={activeSY}
+              branch={branch ?? ""}
+              search=""
+              syOptions={syOptions}
+              hideSearch
+            />
           </Suspense>
         </div>
 
-        {/* KPI strip */}
+        {/* ── Summary Cards ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-          {/* Submission rate */}
-          <div className="card p-5">
-            <div className="flex items-center gap-1.5 mb-4">
-              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: ringColor }} />
-              <span className="text-xs font-medium text-gray-500">Submission Rate</span>
+          {/* Submission Rate — icon LEFT, ring RIGHT */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
+            {/* Icon badge */}
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(122,19,48,0.07)" }}>
+              {/* Stacked layers icon matching reference */}
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#7A1330" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
             </div>
-            <div className="flex items-end gap-4">
-              <p className="text-3xl font-bold text-gray-900">{submissionRate}%</p>
-              <div className="relative w-10 h-10 mb-0.5 shrink-0">
-                <svg width="40" height="40" viewBox="0 0 88 88" className="-rotate-90">
-                  <circle cx="44" cy="44" r={R} fill="none" stroke="#f0f0f0" strokeWidth="10" />
-                  <circle cx="44" cy="44" r={R} fill="none" stroke={ringColor} strokeWidth="10" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={rateOffset} />
-                </svg>
-              </div>
+            {/* Text */}
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Submission Rate</p>
+              <p className="text-[28px] font-bold leading-none text-slate-900">{submissionRate}%</p>
+              <p className="text-[12px] text-slate-400 mt-1">
+                {withAnySubmission === 0 ? "No offices have started" : `${withAnySubmission} of ${totalUnits} offices have started`}
+              </p>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
-              {withAnySubmission === 0
-                ? "No offices have submitted yet"
-                : `${withAnySubmission} of ${totalUnits} offices have started`}
-            </p>
+            {/* Ring on the right */}
+            <div className="relative shrink-0 w-14 h-14">
+              <svg width="56" height="56" viewBox="0 0 88 88" className="-rotate-90">
+                <circle cx="44" cy="44" r={R} fill="none" stroke="#f0f0f0" strokeWidth="9" />
+                <circle cx="44" cy="44" r={R} fill="none" stroke={ringColor} strokeWidth="9" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={rateOffset} />
+              </svg>
+            </div>
           </div>
 
-          {/* Fully filed offices */}
-          <div className="card p-5">
-            <div className="flex items-center gap-1.5 mb-4">
-              <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
-              <span className="text-xs font-medium text-gray-500">Fully Filed · SY {activeSY}</span>
+          {/* Fully Filed */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(21,128,61,0.08)" }}>
+              {/* Clipboard with checkmark */}
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#16a34a" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+              </svg>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{withSubmissions}</p>
-            <p className="text-xs text-gray-400">
-              {withSubmissions === totalUnits
-                ? "All offices have completed all folders"
-                : `of ${totalUnits} offices completed all folders`}
-            </p>
+            <div className="min-w-0">
+              <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Fully Filed</p>
+              <p className="text-[28px] font-bold leading-none text-slate-900">{withSubmissions}</p>
+              <p className="text-[12px] text-slate-400 mt-1">
+                {withSubmissions === totalUnits ? "All offices completed" : `of ${totalUnits} offices completed all folders`}
+              </p>
+            </div>
           </div>
 
-          {/* Pending offices */}
-          <div className="card p-5">
-            <div className="flex items-center gap-1.5 mb-4">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${noAnySubmission > 0 ? "bg-red-400" : "bg-green-500"}`} />
-              <span className="text-xs font-medium text-gray-500">No Submissions Yet</span>
+          {/* No Submissions Yet */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: noAnySubmission > 0 ? "rgba(239,68,68,0.08)" : "rgba(21,128,61,0.08)" }}>
+              {/* Hourglass / clock indicating pending */}
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke={noAnySubmission > 0 ? "#ef4444" : "#16a34a"} strokeWidth={1.8}>
+                <circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+              </svg>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{noAnySubmission}</p>
-            <p className="text-xs text-gray-400">
-              {noAnySubmission === 0 ? "All offices have submitted" : `${noAnySubmission} office${noAnySubmission !== 1 ? "s" : ""} haven't submitted anything`}
-            </p>
+            <div className="min-w-0">
+              <p className="text-[12px] font-semibold text-slate-500 mb-0.5">No Submissions Yet</p>
+              <p className="text-[28px] font-bold leading-none text-slate-900">{noAnySubmission}</p>
+              <p className="text-[12px] text-slate-400 mt-1">
+                {noAnySubmission === 0 ? "All offices have submitted" : `${noAnySubmission} office${noAnySubmission !== 1 ? "s" : ""} haven't submitted anything`}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Middle section: Compliance Overview + Folder Coverage */}
+        {/* ── Middle: Compliance Overview + Folder Coverage ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Compliance Overview */}
-          <div className="card overflow-hidden flex flex-col">
-            <div className="px-5 py-4 border-b border-gray-50">
-              <h2 className="text-sm font-semibold text-gray-800">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+            <div className="px-6 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <h2 className="text-[15px] font-bold text-slate-800">
                 Compliance Overview
-                <span className="ml-2 text-xs font-normal text-gray-400">SY {activeSY}</span>
+                <span className="ml-2 text-[12px] font-normal text-slate-400">SY {activeSY}</span>
               </h2>
             </div>
-            <div className="p-5 flex flex-col gap-5 flex-1">
+            <div className="p-6 flex flex-col gap-5 flex-1">
 
-              {/* Academics card */}
-              <div className="rounded-xl border border-gray-100 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "#7A1330" }} />
-                    <span className="text-sm font-semibold text-gray-800">Academics</span>
+              {/* Academics row */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(122,19,48,0.07)" }}>
+                    <svg className="w-4.5 h-4.5" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#7A1330" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                    </svg>
                   </div>
-                  <span className="text-xs font-bold tabular-nums" style={{ color: acadPct >= 80 ? "#16a34a" : acadPct >= 50 ? "#B8892B" : "#ef4444" }}>
-                    {acadPct}%
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[14px] font-semibold text-slate-800">Academics</span>
+                      <span className="text-[13px] font-bold tabular-nums" style={{ color: acadPct >= 80 ? "#16a34a" : acadPct >= 50 ? "#B8892B" : "#7A1330" }}>{acadPct}%</span>
+                    </div>
+                    <p className="text-[12px] text-slate-400">Colleges and academic departments</p>
+                  </div>
+                  <span className="text-[13px] font-semibold tabular-nums text-slate-600 shrink-0">{acadFiled} / {acadSummariesAll.length}</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{ width: `${acadPct}%`, background: "#7A1330" }} />
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-gray-400">
-                  <span>{acadFiled} fully filed · {acadStarted} started</span>
-                  <span className="tabular-nums">{acadFilled2} / {acadSlots} folders</span>
+              </div>
+
+              <div className="border-t border-gray-100" />
+
+              {/* Administration row */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(184,137,43,0.08)" }}>
+                    <svg className="w-4.5 h-4.5" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#B8892B" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[14px] font-semibold text-slate-800">Administration</span>
+                      <span className="text-[13px] font-bold tabular-nums" style={{ color: adminPct >= 80 ? "#16a34a" : adminPct >= 50 ? "#B8892B" : "#7A1330" }}>{adminPct}%</span>
+                    </div>
+                    <p className="text-[12px] text-slate-400">Standalone offices and administrative units</p>
+                  </div>
+                  <span className="text-[13px] font-semibold tabular-nums text-slate-600 shrink-0">{adminFiled} / {adminSummariesAll.length}</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${adminPct}%`, background: "#B8892B" }} />
                 </div>
               </div>
 
-              {/* Administration card */}
-              <div className="rounded-xl border border-gray-100 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "#B8892B" }} />
-                    <span className="text-sm font-semibold text-gray-800">Administration</span>
-                  </div>
-                  <span className="text-xs font-bold tabular-nums" style={{ color: adminPct >= 80 ? "#16a34a" : adminPct >= 50 ? "#B8892B" : "#ef4444" }}>
-                    {adminPct}%
-                  </span>
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${adminPct}%`, background: "#B8892B" }} />
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-gray-400">
-                  <span>{adminFiled} fully filed · {adminStarted} started</span>
-                  <span className="tabular-nums">{adminFilled2} / {adminSlots} folders</span>
-                </div>
-              </div>
+              <div className="border-t border-gray-100" />
 
               {/* College rollup */}
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">By College</p>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">By College</p>
                 <CollegeComplianceList collegeRows={collegeRows as CollegeRow[]} schoolYear={activeSY} />
               </div>
 
             </div>
           </div>
 
-          {/* Folder Coverage */}
-          <div className="card overflow-hidden flex flex-col">
-            <div className="px-5 py-4 border-b border-gray-50">
-              <h2 className="text-sm font-semibold text-gray-800">
+          {/* Folder Coverage — tabbed, drawer preserved */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col" style={{ minHeight: 420 }}>
+            <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <h2 className="text-[15px] font-bold text-slate-800">
                 Folder Coverage
-                <span className="ml-2 text-xs font-normal text-gray-400">SY {activeSY}</span>
+                <span className="ml-2 text-[12px] font-normal text-slate-400">SY {activeSY}</span>
               </h2>
             </div>
-            <div className="p-4 flex flex-col gap-4 flex-1 overflow-y-auto" style={{ maxHeight: 480 }}>
-              {showAcademics && academicsStats.length > 0 && (
-                <FolderCoverageWithDrawer
-                  title="Academics"
-                  subtitle={`${academicsStats[0]?.total ?? 0} departments`}
-                  stats={academicsStats}
-                  accentColor="bg-maroon"
-                  accentHex="#7A1330"
-                  schoolYear={activeSY}
-                />
-              )}
-              {showAdmin && adminFolderStats.length > 0 && (
-                <FolderCoverageWithDrawer
-                  title="Administration"
-                  subtitle={`${adminFolderStats[0]?.total ?? 0} offices`}
-                  stats={adminFolderStats}
-                  accentColor="bg-gold"
-                  accentHex="#B8892B"
-                  schoolYear={activeSY}
-                />
-              )}
-              {!showAcademics && !showAdmin && (
-                <p className="text-sm text-gray-400 text-center py-8">No data for the selected filter.</p>
-              )}
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <FolderCoverageTabbed
+                academicsStats={showAcademics ? academicsStats : []}
+                adminStats={showAdmin ? adminFolderStats : []}
+                schoolYear={activeSY}
+              />
             </div>
           </div>
 
         </div>
 
-        {/* All Offices */}
-        <div className="card overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-800">
-              All Offices
-              <span className="ml-2 text-xs font-normal text-gray-400">{totalUnits} total</span>
-            </h2>
+        {/* ── All Offices ── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: "1px solid #f1f5f9" }}>
+            <h2 className="text-[15px] font-bold text-slate-800">All Offices</h2>
+            <span className="text-[12px] font-semibold text-white px-2.5 py-0.5 rounded-full" style={{ background: "#7A1330" }}>{totalUnits} total</span>
           </div>
           <QAOAllOfficesTable summaries={allSummaries} />
         </div>
