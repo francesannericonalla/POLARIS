@@ -189,20 +189,21 @@ export async function getVersionHistoriesForFolder(
     profiles: undefined,
   })) as (DocumentRow & { is_latest: boolean })[];
 
-  // Group all versions by title (same title = same lineage)
-  const byTitle = new Map<string, DocumentRow[]>();
-  for (const row of rows) {
-    const list = byTitle.get(row.title) ?? [];
-    list.push(row);
-    byTitle.set(row.title, list);
-  }
+  // Build a lookup map by id for O(1) chain walking
+  const byId = new Map<string, DocumentRow & { is_latest: boolean }>();
+  for (const row of rows) byId.set(row.id, row);
 
-  // Map latest-version doc id → full history array
+  // Map latest-version doc id → full history by walking previous_version_id chain
   const result = new Map<string, DocumentRow[]>();
   for (const row of rows) {
-    if (row.is_latest) {
-      result.set(row.id, byTitle.get(row.title) ?? [row]);
+    if (!row.is_latest) continue;
+    const chain: DocumentRow[] = [];
+    let current: (DocumentRow & { is_latest: boolean }) | undefined = row;
+    while (current) {
+      chain.push(current);
+      current = current.previous_version_id ? byId.get(current.previous_version_id) : undefined;
     }
+    result.set(row.id, chain);
   }
   return result;
 }

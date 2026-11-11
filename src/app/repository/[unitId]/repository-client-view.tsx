@@ -26,10 +26,10 @@ type Props = {
 
 // ── Status config ──────────────────────────────────────────────────────────────
 
-const STATUS_META: Record<FolderStatus, { label: string; color: string; bg: string; dot: string }> = {
-  filed:   { label: "Filed",    color: "#15803d", bg: "rgba(21,128,61,0.09)",   dot: "#16a34a" },
-  outdated:{ label: "Outdated", color: "#92690e", bg: "rgba(201,168,76,0.12)",  dot: "#c9a84c" },
-  missing: { label: "Missing",  color: "#86112F", bg: "rgba(134,17,47,0.09)",   dot: "#86112F" },
+const STATUS_META: Record<FolderStatus, { label: string; color: string; bg: string; dot: string; darkColor: string; darkBg: string }> = {
+  filed:   { label: "Filed",    color: "#15803d", bg: "rgba(21,128,61,0.09)",  dot: "#16a34a", darkColor: "#4ade80", darkBg: "rgba(74,222,128,0.12)" },
+  outdated:{ label: "Outdated", color: "#92690e", bg: "rgba(201,168,76,0.12)", dot: "#c9a84c", darkColor: "#fbbf24", darkBg: "rgba(251,191,36,0.12)"  },
+  missing: { label: "Missing",  color: "#86112F", bg: "rgba(134,17,47,0.09)",  dot: "#86112F", darkColor: "var(--ou-accent)", darkBg: "var(--ou-pill-bg)" },
 };
 
 // ── Icons ──────────────────────────────────────────────────────────────────────
@@ -80,11 +80,15 @@ function IconChevronDown() {
 
 function FolderSvgIcon({ status }: { status: FolderStatus }) {
   const filed = status === "filed";
-  const color = filed ? "#16a34a" : "#86112F";
-  const bg    = filed ? "rgba(21,128,61,0.09)" : "rgba(134,17,47,0.08)";
   return (
-    <span className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: bg }}>
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth={1.6}>
+    <span
+      className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+      style={{ background: filed ? "rgba(21,128,61,0.09)" : "var(--ou-pill-bg)" }}
+    >
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24"
+        stroke={filed ? "#16a34a" : "var(--ou-accent)"}
+        strokeWidth={1.6}
+      >
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
       </svg>
     </span>
@@ -97,8 +101,16 @@ function StatusBadge({ status }: { status: FolderStatus }) {
   const m = STATUS_META[status];
   return (
     <span
-      className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-[3px] rounded-full whitespace-nowrap"
-      style={{ color: m.color, background: m.bg }}
+      className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-[3px] rounded-full whitespace-nowrap ou-status-badge"
+      data-status={status}
+      style={
+        {
+          color: m.color,
+          background: m.bg,
+          "--badge-dark-color": m.darkColor,
+          "--badge-dark-bg": m.darkBg,
+        } as React.CSSProperties
+      }
     >
       <span className="w-[5px] h-[5px] rounded-full inline-block shrink-0" style={{ background: m.dot }} />
       {m.label}
@@ -114,12 +126,17 @@ function StyledSelect({ value, onChange, children }: { value: string; onChange: 
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none pl-3.5 pr-8 h-10 text-[13px] font-medium rounded-xl border cursor-pointer focus:outline-none"
-        style={{ color: "#202938", background: "#fff", borderColor: "#E2E5EC", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
+        className="appearance-none pl-3.5 pr-8 h-10 text-[13px] font-medium rounded-xl border cursor-pointer focus:outline-none transition-colors"
+        style={{
+          color: "var(--ou-heading)",
+          background: "var(--ou-card-bg)",
+          borderColor: "var(--ou-card-border)",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        }}
       >
         {children}
       </select>
-      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#9ca3af" }}>
+      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--ou-muted)" }}>
         <IconChevronDown />
       </span>
     </div>
@@ -132,19 +149,23 @@ function GridCard({ folder, unitId }: { folder: FolderItem; unitId: string }) {
   return (
     <Link
       href={`/repository/${unitId}/${folder.id}`}
-      className="group flex items-center gap-4 bg-white rounded-2xl px-5 py-4 transition-all duration-150 hover:shadow-md"
-      style={{ border: "1px solid #E8EAF0", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+      className="group flex items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-150 hover:shadow-md"
+      style={{
+        background: "var(--ou-card-bg)",
+        border: "1px solid var(--ou-card-border)",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+      }}
     >
       <FolderSvgIcon status={folder.status} />
       <div className="flex-1 min-w-0">
-        <p className="text-[13.5px] font-semibold leading-snug truncate" style={{ color: "#202938" }}>{folder.name}</p>
-        <p className="text-[12px] mt-0.5" style={{ color: "#9ca3af" }}>
+        <p className="text-[13.5px] font-semibold leading-snug truncate" style={{ color: "var(--ou-heading)" }}>{folder.name}</p>
+        <p className="text-[12px] mt-0.5" style={{ color: "var(--ou-muted)" }}>
           {folder.totalCount} {folder.totalCount === 1 ? "file" : "files"}
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <StatusBadge status={folder.status} />
-        <span className="transition-transform duration-150 group-hover:translate-x-0.5" style={{ color: "#C4C9D4" }}>
+        <span className="transition-transform duration-150 group-hover:translate-x-0.5" style={{ color: "var(--ou-muted)" }}>
           <IconChevron />
         </span>
       </div>
@@ -158,25 +179,28 @@ function ListRow({ folder, unitId, isLast }: { folder: FolderItem; unitId: strin
   return (
     <Link
       href={`/repository/${unitId}/${folder.id}`}
-      className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-[#FAFBFC]"
-      style={isLast ? {} : { borderBottom: "1px solid #F0F2F5" }}
+      className="ou-table-row group flex items-center gap-4 px-5 py-3.5 transition-colors"
+      style={isLast ? {} : { borderBottom: "1px solid var(--ou-divider)" }}
     >
       <span
         className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: folder.status === "filed" ? "rgba(21,128,61,0.08)" : "rgba(134,17,47,0.07)" }}
+        style={{ background: folder.status === "filed" ? "rgba(21,128,61,0.08)" : "var(--ou-pill-bg)" }}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke={folder.status === "filed" ? "#16a34a" : "#86112F"} strokeWidth={1.6}>
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24"
+          stroke={folder.status === "filed" ? "#16a34a" : "var(--ou-accent)"}
+          strokeWidth={1.6}
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
         </svg>
       </span>
-      <p className="flex-1 text-[13px] font-medium truncate group-hover:text-[#79132F] transition-colors" style={{ color: "#202938" }}>
+      <p className="flex-1 text-[13px] font-medium truncate transition-colors" style={{ color: "var(--ou-heading)" }}>
         {folder.name}
       </p>
-      <span className="hidden sm:block text-[12.5px] tabular-nums w-20 text-center" style={{ color: "#788397" }}>
+      <span className="hidden sm:block text-[12.5px] tabular-nums w-20 text-center" style={{ color: "var(--ou-subtext)" }}>
         {folder.totalCount} {folder.totalCount === 1 ? "file" : "files"}
       </span>
       <span className="shrink-0"><StatusBadge status={folder.status} /></span>
-      <span className="hidden sm:flex items-center gap-1 text-[12px] font-semibold shrink-0" style={{ color: "#79132F" }}>
+      <span className="hidden sm:flex items-center gap-1 text-[12px] font-semibold shrink-0" style={{ color: "var(--ou-accent)" }}>
         View <IconChevron />
       </span>
     </Link>
@@ -188,13 +212,13 @@ function ListRow({ folder, unitId, isLast }: { folder: FolderItem; unitId: strin
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "rgba(134,17,47,0.07)" }}>
-        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="#86112F" strokeWidth={1.5}>
+      <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "var(--ou-pill-bg)" }}>
+        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="var(--ou-accent)" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
         </svg>
       </span>
-      <p className="text-[14px] font-semibold mb-1" style={{ color: "#202938" }}>No folders found</p>
-      <p className="text-[13px]" style={{ color: "#788397" }}>{message}</p>
+      <p className="text-[14px] font-semibold mb-1" style={{ color: "var(--ou-heading)" }}>No folders found</p>
+      <p className="text-[13px]" style={{ color: "var(--ou-subtext)" }}>{message}</p>
     </div>
   );
 }
@@ -230,7 +254,7 @@ export function RepositoryClientView({ folders, unitId, sy, syOptions }: Props) 
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-[480px]">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#A0A8B4" }}>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--ou-muted)" }}>
             <IconSearch />
           </span>
           <input
@@ -238,14 +262,19 @@ export function RepositoryClientView({ folders, unitId, sy, syOptions }: Props) 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search folders..."
-            className="w-full h-10 pl-10 pr-4 text-[13px] rounded-xl border focus:outline-none"
-            style={{ color: "#202938", borderColor: "#E2E5EC", background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}
+            className="w-full h-10 pl-10 pr-4 text-[13px] rounded-xl border focus:outline-none focus:ring-2 transition-colors"
+            style={{
+              color: "var(--ou-heading)",
+              borderColor: "var(--ou-card-border)",
+              background: "var(--ou-card-bg)",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+            }}
           />
         </div>
 
         {/* Filter label + dropdowns */}
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-medium hidden sm:block" style={{ color: "#788397" }}>Filter:</span>
+          <span className="text-[13px] font-medium hidden sm:block" style={{ color: "var(--ou-subtext)" }}>Filter:</span>
           <StyledSelect value={statusFilter} onChange={setStatusFilter}>
             <option value="all">All Statuses</option>
             <option value="filed">Filed</option>
@@ -271,13 +300,15 @@ export function RepositoryClientView({ folders, unitId, sy, syOptions }: Props) 
         {/* Grid / List toggle */}
         <div
           className="flex items-center rounded-xl overflow-hidden h-10"
-          style={{ border: "1px solid #E2E5EC", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+          style={{ border: "1px solid var(--ou-card-border)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
         >
           <button
             onClick={() => setView("grid")}
             title="Grid view"
             className="flex items-center justify-center w-10 h-full transition-colors"
-            style={view === "grid" ? { background: "#79132F", color: "#fff" } : { background: "#fff", color: "#9ca3af" }}
+            style={view === "grid"
+              ? { background: "#79132F", color: "#fff" }
+              : { background: "var(--ou-card-bg)", color: "var(--ou-muted)" }}
           >
             <IconGrid active={view === "grid"} />
           </button>
@@ -285,7 +316,9 @@ export function RepositoryClientView({ folders, unitId, sy, syOptions }: Props) 
             onClick={() => setView("list")}
             title="List view"
             className="flex items-center justify-center w-10 h-full transition-colors"
-            style={view === "list" ? { background: "#79132F", color: "#fff" } : { background: "#fff", color: "#9ca3af" }}
+            style={view === "list"
+              ? { background: "#79132F", color: "#fff" }
+              : { background: "var(--ou-card-bg)", color: "var(--ou-muted)" }}
           >
             <IconList active={view === "list"} />
           </button>
@@ -294,7 +327,10 @@ export function RepositoryClientView({ folders, unitId, sy, syOptions }: Props) 
 
       {/* ── Content ── */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-white" style={{ border: "1px solid #E8EAF0", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+        <div
+          className="rounded-2xl"
+          style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+        >
           <EmptyState message={emptyMessage} />
         </div>
       ) : view === "grid" ? (
@@ -302,13 +338,21 @@ export function RepositoryClientView({ folders, unitId, sy, syOptions }: Props) 
           {filtered.map((f) => <GridCard key={f.id} folder={f} unitId={unitId} />)}
         </div>
       ) : (
-        <div className="rounded-2xl bg-white overflow-hidden" style={{ border: "1px solid #E8EAF0", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+        >
           <div
             className="hidden sm:grid px-5 py-3"
-            style={{ gridTemplateColumns: "1fr 100px 130px 90px", gap: "1rem", background: "#FAFBFC", borderBottom: "1px solid #F0F2F5" }}
+            style={{
+              gridTemplateColumns: "1fr 100px 130px 90px",
+              gap: "1rem",
+              background: "var(--ou-toggle-bg)",
+              borderBottom: "1px solid var(--ou-divider)",
+            }}
           >
             {["Folder", "Documents", "Status", "Action"].map((col) => (
-              <span key={col} className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#A0A8B4" }}>{col}</span>
+              <span key={col} className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ou-muted)" }}>{col}</span>
             ))}
           </div>
           {filtered.map((f, i) => (
@@ -318,7 +362,7 @@ export function RepositoryClientView({ folders, unitId, sy, syOptions }: Props) 
       )}
 
       {filtered.length > 0 && (
-        <p className="text-[12px] text-center pb-2" style={{ color: "#C4C9D4" }}>
+        <p className="text-[12px] text-center pb-2" style={{ color: "var(--ou-muted)" }}>
           {filtered.length} of {folders.length} folder{folders.length !== 1 ? "s" : ""} · SY {sy}
         </p>
       )}

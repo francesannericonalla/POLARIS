@@ -32,7 +32,8 @@ export function OfficeDashboardFilterBar({ sy, sem }: { sy: string; sem: string 
       <select
         value={sy}
         onChange={(e) => update("sy", e.target.value)}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-gold/40 text-gray-700"
+        className="text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.2)]"
+        style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", color: "var(--ou-heading)" }}
       >
         <option value="">All school years</option>
         {years.map((y) => (
@@ -43,7 +44,8 @@ export function OfficeDashboardFilterBar({ sy, sem }: { sy: string; sem: string 
       <select
         value={sem}
         onChange={(e) => update("sem", e.target.value)}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-gold/40 text-gray-700"
+        className="text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.2)]"
+        style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", color: "var(--ou-heading)" }}
       >
         <option value="">All semesters</option>
         {SEMESTERS.map((s) => (

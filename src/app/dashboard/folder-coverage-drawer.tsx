@@ -340,27 +340,27 @@ export function FolderCoverageWithDrawer({
                 title={`${pendingCount} office${pendingCount !== 1 ? "s" : ""} pending — click to view`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-gray-700 truncate mr-2 group-hover:text-gray-900 transition-colors">
+                  <span className="text-xs font-medium truncate mr-2 transition-colors" style={{ color: "var(--ou-subtext)" }}>
                     {s.folder_name}
                   </span>
                   <span className="flex items-center gap-1 shrink-0">
                     <span
                       className="text-xs font-semibold tabular-nums transition-colors"
-                      style={{ color: pct === 0 ? "#9ca3af" : "#7A1330" }}
+                      style={{ color: pct === 0 ? "var(--ou-muted)" : "var(--ou-accent)" }}
                     >
                       {s.submitted}
-                      <span className="font-normal text-gray-300"> / {s.total}</span>
+                      <span className="font-normal" style={{ color: "var(--ou-muted)" }}> / {s.total}</span>
                     </span>
                     <svg
                       width="10" height="10" viewBox="0 0 10 10" fill="none"
                       stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
-                      className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 group-hover:translate-x-0 duration-150"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 group-hover:translate-x-0 duration-150" style={{ color: "var(--ou-muted)" }}
                     >
                       <polyline points="3,2 7,5 3,8" />
                     </svg>
                   </span>
                 </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 rounded-full overflow-hidden ou-progress-track" style={{ background: "var(--ou-toggle-bg, #f3f4f6)" }}>
                   <div
                     className="h-full rounded-full transition-all"
                     style={{ width: `${pct}%`, background: barColor }}

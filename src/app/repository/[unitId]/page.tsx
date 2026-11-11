@@ -56,13 +56,13 @@ export default async function UnitRepositoryPage({
 
         {/* ── Page header ── */}
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-1.5" style={{ color: "#A0A8B4" }}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-1.5" style={{ color: "var(--ou-muted)" }}>
             Document Repository
           </p>
           <h1 className="font-poppins text-[28px] font-bold leading-tight" style={{ color: "var(--ou-heading)" }}>
             {unit.name}
           </h1>
-          <p className="text-[13.5px] mt-1.5" style={{ color: "#788397" }}>
+          <p className="text-[13.5px] mt-1.5" style={{ color: "var(--ou-subtext)" }}>
             Manage and access your department&apos;s compliance documents.
           </p>
         </div>
@@ -74,10 +74,10 @@ export default async function UnitRepositoryPage({
         {exclusiveItems.length > 0 && (
           <div className="space-y-4 pt-2">
             <div className="flex items-center gap-3">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: "#A0A8B4" }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--ou-muted)" }}>
                 QAO-Exclusive Folders
               </p>
-              <div className="flex-1 h-px" style={{ background: "#E8EAF0" }} />
+              <div className="flex-1 h-px" style={{ background: "var(--ou-divider)" }} />
             </div>
             <RepositoryClientView folders={exclusiveItems} unitId={unitId} sy={sy} syOptions={syOptions} />
           </div>

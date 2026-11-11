@@ -22,7 +22,3 @@ export async function getDeadlinesForSchoolYear(schoolYear: string): Promise<Com
   return (data ?? []) as ComplianceDeadline[];
 }
 
-export async function getDeadlineForSchoolYear(schoolYear: string): Promise<ComplianceDeadline | null> {
-  const deadlines = await getDeadlinesForSchoolYear(schoolYear);
-  return deadlines[0] ?? null;
-}

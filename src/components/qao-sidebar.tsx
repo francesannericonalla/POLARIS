@@ -5,6 +5,7 @@ import { getAllUnits, buildUnitTree } from "@/lib/data/units";
 import { SidebarTree } from "@/components/sidebar-tree";
 import { GlobalSearchBar } from "@/components/global-search-bar";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getNotificationsForUser, getUnreadCount } from "@/lib/data/notifications";
 import { logout } from "@/lib/actions/auth-actions";
 import type { Profile } from "@/lib/auth";
@@ -53,7 +54,8 @@ export async function QaoSidebar({
       {/* ── Logo ── */}
       <div className="px-6 pt-7 pb-5" style={{ borderBottom: "1px solid var(--ou-sidebar-divider)" }}>
         <Link href="/dashboard" className="block mb-3">
-          <img src="/POLARIS-logo.png" alt="POLARIS" className="h-14 w-auto dark:brightness-90" />
+          <img src="/POLARIS-logo.png" alt="POLARIS" className="h-14 w-auto dark:hidden" />
+          <img src="/logo-dark-mode.png" alt="POLARIS" className="h-14 w-auto hidden dark:block" />
         </Link>
         <p className="text-[11px] font-medium leading-snug" style={{ color: "var(--ou-muted)" }}>
           QAO Compliance &amp; Document Repository
@@ -121,6 +123,8 @@ export async function QaoSidebar({
           </div>
           <NotificationBell initialNotifications={notifications} initialUnread={unread} />
         </div>
+
+        <ThemeToggle />
 
         <form action={logout}>
           <button

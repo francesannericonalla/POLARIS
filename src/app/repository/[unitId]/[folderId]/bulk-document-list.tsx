@@ -12,7 +12,7 @@ import type { DocumentRow } from "@/lib/data/documents";
 function VersionPill({ version }: { version: number }) {
   if (version === 1) {
     return (
-      <span className="text-[11px] font-medium text-gray-400 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded">
+      <span className="text-[11px] font-medium px-1.5 py-0.5 rounded" style={{ color: "var(--ou-muted)", background: "var(--ou-toggle-bg)", border: "1px solid var(--ou-card-border)" }}>
         v1
       </span>
     );
@@ -52,7 +52,6 @@ function VersionHistoryTable({ docId, version }: { docId: string; version: numbe
 
   async function handleToggle(e: React.SyntheticEvent<HTMLDetailsElement>) {
     const details = e.currentTarget;
-    // onToggle fires after the browser has updated `open`, so fetch when now open
     if (details.open && history === null && !loading) {
       setLoading(true);
       const rows = await fetchVersionHistoriesForDoc(docId);
@@ -69,29 +68,29 @@ function VersionHistoryTable({ docId, version }: { docId: string; version: numbe
         </svg>
         {version - 1} previous version{version - 1 !== 1 ? "s" : ""}
       </summary>
-      {loading && <p className="mt-2 text-xs text-gray-400 ml-1">Loading…</p>}
+      {loading && <p className="mt-2 text-xs ml-1" style={{ color: "var(--ou-muted)" }}>Loading…</p>}
       {history && history.length > 0 && (
-        <div className="mt-2 rounded-xl border border-gray-100 overflow-hidden">
+        <div className="mt-2 rounded-xl overflow-hidden" style={{ border: "1px solid var(--ou-card-border)" }}>
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Version</th>
-                <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Uploaded by</th>
-                <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Date</th>
-                <th className="px-3 py-2 text-right font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Download</th>
+              <tr style={{ background: "var(--ou-toggle-bg)", borderBottom: "1px solid var(--ou-divider)" }}>
+                <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-[10px]" style={{ color: "var(--ou-muted)" }}>Version</th>
+                <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-[10px]" style={{ color: "var(--ou-muted)" }}>Uploaded by</th>
+                <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-[10px]" style={{ color: "var(--ou-muted)" }}>Date</th>
+                <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-[10px]" style={{ color: "var(--ou-muted)" }}>Download</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody>
               {history.map((v, i) => (
-                <tr key={v.id} className={i === 0 ? "bg-maroon/[0.02]" : ""}>
+                <tr key={v.id} style={{ borderBottom: i < history.length - 1 ? "1px solid var(--ou-divider)" : undefined, background: i === 0 ? "var(--ou-pill-bg)" : "transparent" }}>
                   <td className="px-3 py-2">
-                    <span className={`font-semibold ${i === 0 ? "text-maroon" : "text-gray-500"}`}>
+                    <span className="font-semibold" style={{ color: i === 0 ? "var(--ou-accent)" : "var(--ou-subtext)" }}>
                       v{v.version}
-                      {i === 0 && <span className="ml-1 text-[10px] text-maroon/50 font-normal">(current)</span>}
+                      {i === 0 && <span className="ml-1 text-[10px] font-normal" style={{ color: "var(--ou-muted)" }}>(current)</span>}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-gray-500">{v.uploader_name ?? "—"}</td>
-                  <td className="px-3 py-2 text-gray-400">{formatDate(v.created_at)}</td>
+                  <td className="px-3 py-2" style={{ color: "var(--ou-subtext)" }}>{v.uploader_name ?? "—"}</td>
+                  <td className="px-3 py-2" style={{ color: "var(--ou-muted)" }}>{formatDate(v.created_at)}</td>
                   <td className="px-3 py-2 text-right">
                     <DownloadButton storagePath={v.storage_path} compact />
                   </td>
@@ -177,34 +176,38 @@ export function BulkDocumentList({
 
   if (documents.length === 0) {
     return (
-      <div className="p-14 text-center bg-white border border-gray-100 rounded-2xl shadow-sm">
-        <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div
+        className="p-14 text-center rounded-2xl"
+        style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)" }}
+      >
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "var(--ou-toggle-bg)" }}>
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--ou-muted)" }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
-        <p className="text-sm font-medium text-gray-400">
+        <p className="text-sm font-medium" style={{ color: "var(--ou-subtext)" }}>
           {isArchived ? "No archived documents." : "No documents yet for this filter."}
         </p>
         {!isArchived && canUpload && (
-          <p className="text-xs text-gray-300 mt-1">Use the Upload button to add the first file.</p>
+          <p className="text-xs mt-1" style={{ color: "var(--ou-muted)" }}>Use the Upload button to add the first file.</p>
         )}
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+    <div className="rounded-2xl overflow-hidden" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)" }}>
       {/* Bulk action bar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 px-5 py-2.5 bg-maroon/[0.04] border-b border-maroon/10">
-          <span className="text-sm font-semibold text-maroon">{selected.size} selected</span>
+        <div className="flex items-center gap-3 px-5 py-2.5" style={{ background: "var(--ou-pill-bg)", borderBottom: "1px solid var(--ou-divider)" }}>
+          <span className="text-sm font-semibold" style={{ color: "var(--ou-accent)" }}>{selected.size} selected</span>
           <div className="flex items-center gap-2 ml-auto">
             {bulkError && <span className="text-xs text-red-500">{bulkError}</span>}
             <button
               onClick={handleBulkDownload}
               disabled={isPending}
-              className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 border border-gray-200 hover:border-maroon/30 hover:text-maroon hover:bg-maroon/[0.03] rounded-lg px-3 py-1.5 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors disabled:opacity-40"
+              style={{ color: "var(--ou-subtext)", border: "1px solid var(--ou-card-border)", background: "var(--ou-card-bg)" }}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -216,15 +219,16 @@ export function BulkDocumentList({
               disabled={isPending}
               className={`flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors border disabled:opacity-40 ${
                 isArchived
-                  ? "text-green-700 border-green-200 hover:bg-green-50"
-                  : "text-red-600 border-red-200 hover:bg-red-50"
+                  ? "text-green-700 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-900 dark:hover:bg-green-900/20"
+                  : "text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-900 dark:hover:bg-red-900/20"
               }`}
             >
               {isPending ? "…" : isArchived ? "Restore All" : "Archive All"}
             </button>
             <button
               onClick={() => setSelected(new Set())}
-              className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 transition-colors"
+              className="text-xs px-2 py-1 transition-colors"
+              style={{ color: "var(--ou-muted)" }}
             >
               Clear
             </button>
@@ -233,27 +237,31 @@ export function BulkDocumentList({
       )}
 
       {/* Select-all header */}
-      <div className="flex items-center gap-3 px-5 py-2.5 border-b border-gray-100 bg-gray-50/40">
+      <div className="flex items-center gap-3 px-5 py-2.5" style={{ borderBottom: "1px solid var(--ou-divider)", background: "var(--ou-toggle-bg)" }}>
         <input
           type="checkbox"
           checked={allSelected}
           onChange={toggleAll}
-          className="w-4 h-4 rounded border-gray-300 accent-maroon cursor-pointer"
+          className="w-4 h-4 rounded accent-maroon cursor-pointer" style={{ borderColor: "var(--ou-card-border)" }}
         />
-        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
+        <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "var(--ou-muted)" }}>
           {documents.length} document{documents.length !== 1 ? "s" : ""}
         </span>
       </div>
 
-      <div className="divide-y divide-gray-50">
-        {documents.map((doc) => {
+      <div>
+        {documents.map((doc, idx) => {
           const hasHistory = doc.version > 1;
           const isSelected = selected.has(doc.id);
 
           return (
             <div
               key={doc.id}
-              className={`px-5 py-4 transition-colors ${isSelected ? "bg-maroon/[0.02]" : ""} ${isArchived ? "opacity-60" : ""}`}
+              className={`px-5 py-4 transition-colors ${isArchived ? "opacity-60" : ""}`}
+              style={{
+                background: isSelected ? "var(--ou-pill-bg)" : "transparent",
+                borderBottom: idx < documents.length - 1 ? "1px solid var(--ou-divider)" : undefined,
+              }}
             >
               <div className="flex items-start gap-4">
                 {/* Checkbox */}
@@ -265,29 +273,29 @@ export function BulkDocumentList({
                 />
 
                 {/* File type icon */}
-                <div className="w-9 h-9 rounded-xl bg-maroon/[0.06] text-maroon flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: "var(--ou-pill-bg)", color: "var(--ou-accent)" }}>
                   <FileIcon mimeType={doc.mime_type} />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-semibold text-gray-800 text-sm leading-snug">{doc.title}</span>
-                    <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md shrink-0">
+                    <span className="font-semibold text-sm leading-snug" style={{ color: "var(--ou-heading)" }}>{doc.title}</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-md shrink-0" style={{ color: "var(--ou-subtext)", background: "var(--ou-toggle-bg)" }}>
                       {doc.school_year} · {doc.semester === "N/A" ? "Full Year" : `${doc.semester} sem`}
                     </span>
                     <VersionPill version={doc.version} />
                     {isArchived && (
-                      <span className="text-[11px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200 shrink-0">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ color: "var(--ou-muted)", background: "var(--ou-toggle-bg)", border: "1px solid var(--ou-card-border)" }}>
                         Archived
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-400 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-xs flex-wrap" style={{ color: "var(--ou-muted)" }}>
                     <span className="truncate max-w-[200px]" title={doc.file_name}>{doc.file_name}</span>
-                    <span className="text-gray-200">·</span>
+                    <span style={{ color: "var(--ou-divider)", opacity: 0.5 }}>·</span>
                     <span>{doc.uploader_name}</span>
-                    <span className="text-gray-200">·</span>
+                    <span style={{ color: "var(--ou-divider)", opacity: 0.5 }}>·</span>
                     <span>{formatDate(doc.created_at)}</span>
                   </div>
                 </div>
@@ -298,6 +306,7 @@ export function BulkDocumentList({
                     storagePath={doc.storage_path}
                     mimeType={doc.mime_type}
                     title={doc.title}
+                    className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold hover:text-maroon rounded-lg px-3 py-1.5 transition-colors disabled:opacity-40 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-white/10 hover:border-maroon/30 hover:bg-maroon/[0.03] dark:hover:bg-maroon/10"
                   />
                   <DownloadButton storagePath={doc.storage_path} />
                   {!isArchived && canUpload && (
@@ -307,7 +316,7 @@ export function BulkDocumentList({
                       replacesId={doc.id}
                       replacesTitle={doc.title}
                       triggerLabel="New Version"
-                      triggerClassName="inline-flex items-center justify-center text-xs font-semibold text-gray-500 hover:text-maroon border border-gray-200 hover:border-maroon/30 rounded-lg px-3 py-1.5 transition-colors hover:bg-maroon/[0.03]"
+                      triggerClassName="inline-flex items-center justify-center text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-maroon border border-gray-200 dark:border-white/10 hover:border-maroon/30 rounded-lg px-3 py-1.5 transition-colors hover:bg-maroon/[0.03] dark:hover:bg-maroon/10"
                     />
                   )}
                   <ArchiveButton documentId={doc.id} archived={doc.archived} />

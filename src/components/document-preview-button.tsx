@@ -33,15 +33,16 @@ function PreviewModal({
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-        style={{ width: "min(900px, 95vw)", height: "min(85vh, 900px)" }}
+        className="relative rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        style={{ width: "min(900px, 95vw)", height: "min(85vh, 900px)", background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 shrink-0">
-          <span className="font-semibold text-sm text-gray-800 truncate flex-1" title={title}>{title}</span>
+        <div className="flex items-center gap-3 px-5 py-3 shrink-0" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+          <span className="font-semibold text-sm truncate flex-1" style={{ color: "var(--ou-heading)" }} title={title}>{title}</span>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors shrink-0"
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors shrink-0"
+            style={{ color: "var(--ou-muted)" }}
             aria-label="Close preview"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,7 +50,7 @@ function PreviewModal({
             </svg>
           </button>
         </div>
-        <div className="flex-1 overflow-hidden bg-gray-50">
+        <div className="flex-1 overflow-hidden" style={{ background: "var(--ou-bg)" }}>
           {mimeType === "application/pdf" ? (
             <iframe src={url} className="w-full h-full border-0" title={title} />
           ) : (
@@ -92,7 +93,8 @@ export function DocumentPreviewButton({
       <button
         onClick={handleClick}
         disabled={loading}
-        className={className ?? "inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-maroon border border-gray-200 hover:border-maroon/30 rounded-lg px-3 py-1.5 transition-colors hover:bg-maroon/[0.03] disabled:opacity-40"}
+        className={className ?? "inline-flex items-center justify-center gap-1.5 text-xs font-semibold hover:text-maroon border hover:border-maroon/30 rounded-lg px-3 py-1.5 transition-colors hover:bg-maroon/[0.03] dark:hover:bg-maroon/10 disabled:opacity-40"}
+        style={className ? {} : { color: "var(--ou-muted)", borderColor: "var(--ou-card-border)" }}
       >
         {loading ? (
           <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">

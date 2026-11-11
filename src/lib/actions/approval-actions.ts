@@ -90,9 +90,12 @@ export async function suspendAccount(userId: string) {
   if (userId === profile.id) throw new Error("Cannot suspend your own account.");
 
   const admin = createAdminClient();
+  const { data: target } = await admin.from("profiles").select("status").eq("id", userId).single();
+  if (!target || target.status !== "approved") throw new Error("Only approved accounts can be suspended.");
+
   const { error } = await admin
     .from("profiles")
-    .update({ status: "rejected" })
+    .update({ status: "suspended" })
     .eq("id", userId);
 
   if (error) throw error;
@@ -112,6 +115,9 @@ export async function reactivateAccount(userId: string) {
   if (!profile || profile.status !== "approved" || !isSystemAdmin(profile)) throw new Error("Not authorized.");
 
   const admin = createAdminClient();
+  const { data: target } = await admin.from("profiles").select("status").eq("id", userId).single();
+  if (!target || target.status !== "suspended") throw new Error("Only suspended accounts can be reactivated.");
+
   const { error } = await admin
     .from("profiles")
     .update({ status: "approved" })

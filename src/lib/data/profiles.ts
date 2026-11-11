@@ -6,13 +6,13 @@ export type ProfileRow = {
   email: string;
   full_name: string;
   role: "office_user" | "qao" | "system_admin";
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "suspended";
   unit_id: string | null;
   created_at: string;
   unit_name?: string;
 };
 
-export async function getProfilesByStatus(status: "pending" | "approved" | "rejected"): Promise<ProfileRow[]> {
+export async function getProfilesByStatus(status: "pending" | "approved" | "rejected" | "suspended"): Promise<ProfileRow[]> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("profiles")

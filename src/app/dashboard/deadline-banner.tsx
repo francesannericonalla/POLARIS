@@ -27,7 +27,7 @@ export function DeadlineBanner({ deadlines, schoolYear }: Props) {
   if (deadlines.length === 0) return null;
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #e8eaed" }}>
+    <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--ou-card-border)" }}>
       {deadlines.map((d, i) => {
         const days = daysLeft(d.deadline_date);
         const overdue = days < 0;
@@ -51,10 +51,10 @@ export function DeadlineBanner({ deadlines, schoolYear }: Props) {
             className="flex items-center gap-4 px-5 py-3.5"
             style={{
               background: bg,
-              borderBottom: i < deadlines.length - 1 ? "1px solid rgba(0,0,0,0.05)" : undefined,
+              borderBottom: i < deadlines.length - 1 ? "1px solid var(--ou-divider)" : undefined,
             }}
           >
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.6)" }}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>
               <Icon size={15} style={{ color }} />
             </div>
             <div className="flex-1 min-w-0">

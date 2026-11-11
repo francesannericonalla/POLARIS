@@ -94,4 +94,6 @@ export async function deleteNotification(userId: string, notificationId: string)
     .delete()
     .eq("id", notificationId)
     .eq("user_id", userId);
+  const { revalidateTag } = await import("next/cache");
+  revalidateTag(`notifications-${userId}`);
 }

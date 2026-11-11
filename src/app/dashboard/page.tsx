@@ -84,7 +84,7 @@ export default async function DashboardPage({
               </h1>
               <p className="text-[13px] mt-1" style={{ color: "var(--ou-subtext)" }}>SY {displaySY}</p>
             </div>
-            <Suspense fallback={<div className="h-9 w-36 bg-gray-100 rounded-lg animate-pulse" />}>
+            <Suspense fallback={<div className="h-9 w-36 rounded-lg animate-pulse" style={{ background: "var(--ou-toggle-bg, #f3f4f6)" }} />}>
               <OfficeUserSYFilter sy={sy ?? ""} syOptions={syOptions} />
             </Suspense>
           </div>
@@ -301,16 +301,16 @@ export default async function DashboardPage({
         {/* ── Header ── */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-1.5 flex items-center gap-2" style={{ color: "#7A1330" }}>
-              <span className="w-0.5 h-4 rounded-full inline-block" style={{ background: "#7A1330" }} />
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-1.5 flex items-center gap-2" style={{ color: "var(--ou-accent)" }}>
+              <span className="w-0.5 h-4 rounded-full inline-block" style={{ background: "var(--ou-accent)" }} />
               QAO Dashboard
             </p>
-            <h1 className="font-poppins text-[26px] font-bold leading-tight text-slate-900">
+            <h1 className="font-poppins text-[26px] font-bold leading-tight" style={{ color: "var(--ou-heading)" }}>
               University Overview
             </h1>
-            <p className="text-[13px] text-slate-500 mt-0.5">Overall compliance status of all offices and departments.</p>
+            <p className="text-[13px] mt-0.5" style={{ color: "var(--ou-subtext)" }}>Overall compliance status of all offices and departments.</p>
           </div>
-          <Suspense fallback={<div className="h-9 w-64 bg-gray-100 rounded-lg animate-pulse" />}>
+          <Suspense fallback={<div className="h-9 w-64 rounded-lg animate-pulse" style={{ background: "var(--ou-toggle-bg, #f3f4f6)" }} />}>
             <DashboardFilterBar
               sy={activeSY}
               branch={branch ?? ""}
@@ -325,7 +325,7 @@ export default async function DashboardPage({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
           {/* Submission Rate — icon LEFT, ring RIGHT */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
+          <div className="rounded-2xl ou-card p-5 flex items-center gap-5">
             {/* Icon badge */}
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(122,19,48,0.07)" }}>
               {/* Stacked layers icon matching reference */}
@@ -335,44 +335,44 @@ export default async function DashboardPage({
             </div>
             {/* Text */}
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Submission Rate</p>
-              <p className="text-[28px] font-bold leading-none text-slate-900">{submissionRate}%</p>
-              <p className="text-[12px] text-slate-400 mt-1">
+              <p className="text-[12px] font-semibold mb-0.5" style={{ color: "var(--ou-subtext)" }}>Submission Rate</p>
+              <p className="text-[28px] font-bold leading-none" style={{ color: "var(--ou-heading)" }}>{submissionRate}%</p>
+              <p className="text-[12px] mt-1" style={{ color: "var(--ou-muted)" }}>
                 {withAnySubmission === 0 ? "No offices have started" : `${withAnySubmission} of ${totalUnits} offices have started`}
               </p>
             </div>
             {/* Ring on the right */}
             <div className="relative shrink-0 w-14 h-14">
               <svg width="56" height="56" viewBox="0 0 88 88" className="-rotate-90">
-                <circle cx="44" cy="44" r={R} fill="none" stroke="#f0f0f0" strokeWidth="9" />
+                <circle cx="44" cy="44" r={R} fill="none" stroke="var(--ou-toggle-bg)" strokeWidth="9" />
                 <circle cx="44" cy="44" r={R} fill="none" stroke={ringColor} strokeWidth="9" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={rateOffset} />
               </svg>
             </div>
           </div>
 
           {/* Fully Filed */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
+          <div className="rounded-2xl ou-card p-5 flex items-center gap-5">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(21,128,61,0.08)" }}>
               <CheckCircle2 className="w-6 h-6" style={{ color: "#16a34a" }} strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <p className="text-[12px] font-semibold text-slate-500 mb-0.5">Fully Filed</p>
-              <p className="text-[28px] font-bold leading-none text-slate-900">{withSubmissions}</p>
-              <p className="text-[12px] text-slate-400 mt-1">
+              <p className="text-[12px] font-semibold mb-0.5" style={{ color: "var(--ou-subtext)" }}>Fully Filed</p>
+              <p className="text-[28px] font-bold leading-none" style={{ color: "var(--ou-heading)" }}>{withSubmissions}</p>
+              <p className="text-[12px] mt-1" style={{ color: "var(--ou-muted)" }}>
                 {withSubmissions === totalUnits ? "All offices completed" : `of ${totalUnits} offices completed all folders`}
               </p>
             </div>
           </div>
 
           {/* No Submissions Yet */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
+          <div className="rounded-2xl ou-card p-5 flex items-center gap-5">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: noAnySubmission > 0 ? "rgba(239,68,68,0.08)" : "rgba(21,128,61,0.08)" }}>
               <Inbox className="w-6 h-6" style={{ color: noAnySubmission > 0 ? "#ef4444" : "#16a34a" }} strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <p className="text-[12px] font-semibold text-slate-500 mb-0.5">No Submissions Yet</p>
-              <p className="text-[28px] font-bold leading-none text-slate-900">{noAnySubmission}</p>
-              <p className="text-[12px] text-slate-400 mt-1">
+              <p className="text-[12px] font-semibold mb-0.5" style={{ color: "var(--ou-subtext)" }}>No Submissions Yet</p>
+              <p className="text-[28px] font-bold leading-none" style={{ color: "var(--ou-heading)" }}>{noAnySubmission}</p>
+              <p className="text-[12px] mt-1" style={{ color: "var(--ou-muted)" }}>
                 {noAnySubmission === 0 ? "All offices have submitted" : `${noAnySubmission} office${noAnySubmission !== 1 ? "s" : ""} haven't submitted anything`}
               </p>
             </div>
@@ -383,11 +383,11 @@ export default async function DashboardPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
 
           {/* Compliance Overview */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-5 py-3.5" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <h2 className="text-[15px] font-bold text-slate-800">
+          <div className="rounded-2xl ou-card overflow-hidden">
+            <div className="px-5 py-3.5" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+              <h2 className="text-[15px] font-bold" style={{ color: "var(--ou-heading)" }}>
                 Compliance Overview
-                <span className="ml-2 text-[12px] font-normal text-slate-400">SY {activeSY}</span>
+                <span className="ml-2 text-[12px] font-normal" style={{ color: "var(--ou-muted)" }}>SY {activeSY}</span>
               </h2>
             </div>
             <div className="px-5 py-5 flex flex-col gap-5">
@@ -401,20 +401,20 @@ export default async function DashboardPage({
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-semibold text-slate-800">Academics</span>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Colleges and academic departments</p>
+                    <span className="text-[13px] font-semibold" style={{ color: "var(--ou-heading)" }}>Academics</span>
+                    <p className="text-[11px] mt-0.5" style={{ color: "var(--ou-muted)" }}>Colleges and academic departments</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[12px] font-semibold tabular-nums text-slate-500">{acadFiled} / {acadSummariesAll.length}</span>
+                    <span className="text-[12px] font-semibold tabular-nums" style={{ color: "var(--ou-subtext)" }}>{acadFiled} / {acadSummariesAll.length}</span>
                     <p className="text-[13px] font-bold tabular-nums mt-0.5" style={{ color: "#7A1330" }}>{acadPct}%</p>
                   </div>
                 </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--ou-toggle-bg)" }}>
                   <div className="h-full rounded-full transition-all" style={{ width: `${acadPct}%`, background: "#7A1330" }} />
                 </div>
               </div>
 
-              <div className="border-t border-gray-100" />
+              <div className="border-t" style={{ borderColor: "var(--ou-divider)" }} />
 
               {/* Administration row */}
               <div className="space-y-2">
@@ -425,15 +425,15 @@ export default async function DashboardPage({
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-semibold text-slate-800">Administration</span>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Standalone offices and administrative units</p>
+                    <span className="text-[13px] font-semibold" style={{ color: "var(--ou-heading)" }}>Administration</span>
+                    <p className="text-[11px] mt-0.5" style={{ color: "var(--ou-muted)" }}>Standalone offices and administrative units</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[12px] font-semibold tabular-nums text-slate-500">{adminFiled} / {adminSummariesAll.length}</span>
+                    <span className="text-[12px] font-semibold tabular-nums" style={{ color: "var(--ou-subtext)" }}>{adminFiled} / {adminSummariesAll.length}</span>
                     <p className="text-[13px] font-bold tabular-nums mt-0.5" style={{ color: "#7A1330" }}>{adminPct}%</p>
                   </div>
                 </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--ou-toggle-bg)" }}>
                   <div className="h-full rounded-full transition-all" style={{ width: `${adminPct}%`, background: "#7A1330" }} />
                 </div>
               </div>
@@ -457,11 +457,11 @@ export default async function DashboardPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
 
           {/* Folder Coverage */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="px-5 py-3.5 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <h2 className="text-[15px] font-bold text-slate-800">
+          <div className="rounded-2xl ou-card overflow-hidden flex flex-col">
+            <div className="px-5 py-3.5 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+              <h2 className="text-[15px] font-bold" style={{ color: "var(--ou-heading)" }}>
                 Folder Coverage
-                <span className="ml-2 text-[12px] font-normal text-slate-400">SY {activeSY}</span>
+                <span className="ml-2 text-[12px] font-normal" style={{ color: "var(--ou-muted)" }}>SY {activeSY}</span>
               </h2>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
@@ -474,20 +474,20 @@ export default async function DashboardPage({
           </div>
 
           {/* Recent Uploads */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <h2 className="text-[15px] font-bold text-slate-800">Recent Uploads</h2>
-              <span className="text-[12px] text-slate-400">Across all offices</span>
+          <div className="rounded-2xl ou-card overflow-hidden">
+            <div className="px-6 py-4 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+              <h2 className="text-[15px] font-bold" style={{ color: "var(--ou-heading)" }}>Recent Uploads</h2>
+              <span className="text-[12px]" style={{ color: "var(--ou-muted)" }}>Across all offices</span>
             </div>
             {recentUploads.length === 0 ? (
-              <p className="px-6 py-10 text-sm text-center text-slate-400">No documents uploaded yet.</p>
+              <p className="px-6 py-10 text-sm text-center" style={{ color: "var(--ou-muted)" }}>No documents uploaded yet.</p>
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y" style={{ borderColor: "var(--ou-divider)" }}>
                 {recentUploads.map((item) => (
                   <Link
                     key={item.id}
                     href={`/repository/${item.unit_id}/${item.folder_id}`}
-                    className="flex items-start gap-4 px-6 py-3.5 hover:bg-gray-50/60 transition-colors"
+                    className="ou-table-row flex items-start gap-4 px-6 py-3.5 transition-colors"
                   >
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(122,19,48,0.07)" }}>
                       <svg className="w-4 h-4" style={{ color: "#7A1330" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -496,21 +496,21 @@ export default async function DashboardPage({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[13px] font-semibold text-slate-800 truncate">{item.title}</span>
+                        <span className="text-[13px] font-semibold truncate" style={{ color: "var(--ou-heading)" }}>{item.title}</span>
                         {item.version > 1 && (
                           <span className="text-[11px] font-medium text-maroon bg-maroon/[0.06] border border-maroon/15 px-1.5 py-0.5 rounded shrink-0">
                             v{item.version}
                           </span>
                         )}
                       </div>
-                      <p className="text-[12px] text-slate-400 mt-0.5">
-                        <span className="font-medium text-slate-500">{item.unit_name}</span>
+                      <p className="text-[12px] mt-0.5" style={{ color: "var(--ou-muted)" }}>
+                        <span className="font-medium" style={{ color: "var(--ou-subtext)" }}>{item.unit_name}</span>
                         {" · "}{item.folder_name}{" · "}{item.uploader_name}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-[11px] text-slate-400">{qaoTimeAgo(item.created_at)}</p>
-                      <p className="text-[11px] text-slate-300 mt-0.5">{item.school_year} · {item.semester === "N/A" ? "Full Year" : `${item.semester} sem`}</p>
+                      <p className="text-[11px]" style={{ color: "var(--ou-muted)" }}>{qaoTimeAgo(item.created_at)}</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: "var(--ou-muted)" }}>{item.school_year} · {item.semester === "N/A" ? "Full Year" : `${item.semester} sem`}</p>
                     </div>
                   </Link>
                 ))}
@@ -521,9 +521,9 @@ export default async function DashboardPage({
         </div>
 
         {/* ── All Offices ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: "1px solid #f1f5f9" }}>
-            <h2 className="text-[15px] font-bold text-slate-800">All Offices</h2>
+        <div className="rounded-2xl ou-card overflow-hidden">
+          <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: "1px solid var(--ou-divider)" }}>
+            <h2 className="text-[15px] font-bold" style={{ color: "var(--ou-heading)" }}>All Offices</h2>
             <span className="text-[12px] font-semibold text-white px-2.5 py-0.5 rounded-full" style={{ background: "#7A1330" }}>{totalUnits} total</span>
           </div>
           <QAOAllOfficesTable summaries={allSummaries} schoolYear={activeSY} />
@@ -550,56 +550,6 @@ function ouFormatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function OUStatCard({ label, value, sub, color }: {
-  label: string;
-  value: string | number;
-  sub: string;
-  color: "maroon" | "gold" | "green" | "red";
-}) {
-  const dotStyle: React.CSSProperties = {
-    maroon: { background: "var(--ou-accent)" },
-    gold:   { background: "#c9a84c" },
-    green:  { background: "#16a34a" },
-    red:    { background: "#ef4444" },
-  }[color];
-
-  return (
-    <div className="rounded-2xl p-5" style={{ background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
-      <div className="flex items-center gap-1.5 mb-4">
-        <span className="w-2 h-2 rounded-full shrink-0" style={dotStyle} />
-        <span className="text-xs font-medium" style={{ color: "var(--ou-subtext)" }}>{label}</span>
-      </div>
-      <p className="text-3xl font-bold mb-1" style={{ color: "var(--ou-heading)" }}>{value}</p>
-      <p className="text-xs" style={{ color: "var(--ou-muted)" }}>{sub}</p>
-    </div>
-  );
-}
-
-function OUFolderRow({ folder, unitId }: { folder: FolderStat; unitId: string }) {
-  const status = folder.thisYearCount > 0 ? "filed" : folder.activeDocumentCount > 0 ? "outdated" : "empty";
-  const bar = { filed: { color: "#22c55e", pct: 100 }, outdated: { color: "#c9a84c", pct: 40 }, empty: { color: "#e5e7eb", pct: 0 } }[status];
-
-  return (
-    <Link href={`/repository/${unitId}/${folder.id}`} className="block group">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-sm font-medium transition-colors truncate mr-3" style={{ color: "var(--ou-heading)" }}>
-          {folder.name}
-        </span>
-        {status === "filed" ? (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ color: "#15803d", background: "rgba(21,128,61,0.09)" }}>Filed</span>
-        ) : status === "outdated" ? (
-          <span className="text-[10px] font-bold rounded-full px-2 py-0.5 shrink-0" style={{ color: "#92690e", background: "rgba(201,168,76,0.12)" }}>Outdated</span>
-        ) : (
-          <span className="text-[10px] font-bold rounded-full px-2 py-0.5 shrink-0" style={{ color: "var(--ou-muted)", background: "rgba(0,0,0,0.05)" }}>Empty</span>
-        )}
-      </div>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.06)" }}>
-        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${bar.pct}%`, background: bar.color }} />
-      </div>
-    </Link>
-  );
-}
-
 function qaoTimeAgo(dateStr: string): string {
   const secs = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
   if (secs < 60) return "just now";
@@ -624,7 +574,7 @@ function OUActivityItem({ item }: { item: RecentActivityItem }) {
         storagePath={item.storage_path}
         mimeType={item.mime_type}
         title={item.title}
-        className="shrink-0 inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-gray-400 hover:text-maroon border border-gray-200 hover:border-maroon/30 rounded-lg px-2.5 py-1 transition-colors hover:bg-maroon/[0.03] disabled:opacity-40"
+        className="shrink-0 inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-slate-500 hover:text-maroon border border-gray-200 dark:border-white/10 hover:border-maroon/30 rounded-lg px-2.5 py-1 transition-colors hover:bg-maroon/[0.03] dark:hover:bg-maroon/10 disabled:opacity-40"
       />
     </div>
   );

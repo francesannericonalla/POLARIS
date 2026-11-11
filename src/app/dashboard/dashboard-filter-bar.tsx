@@ -34,7 +34,7 @@ export function DashboardFilterBar({
       {/* Search */}
       {!hideSearch && (
         <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: "var(--ou-muted, #94a3b8)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -42,13 +42,18 @@ export function DashboardFilterBar({
             placeholder="Search office or department..."
             defaultValue={search}
             onChange={(e) => update({ search: e.target.value })}
-            className="pl-8 pr-3 py-2 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)] text-slate-700 placeholder-slate-400 w-56"
+            className="pl-8 pr-3 py-2 text-[13px] border rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)] w-56 placeholder-[color:var(--ou-muted,#94a3b8)]"
+            style={{
+              background: "var(--ou-input-bg, #fff)",
+              borderColor: "var(--ou-input-border, #e5e7eb)",
+              color: "var(--ou-heading, #334155)",
+            }}
           />
         </div>
       )}
 
       {/* Branch segmented control */}
-      <div className="flex rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div className="flex rounded-xl border overflow-hidden" style={{ borderColor: "var(--ou-input-border, #e5e7eb)", background: "var(--ou-input-bg, #fff)" }}>
         {([["", "All"], ["academics", "Academics"], ["administration", "Administration"]] as [string, string][]).map(([val, label]) => (
           <button
             key={val}
@@ -58,7 +63,7 @@ export function DashboardFilterBar({
             style={
               branch === val
                 ? { background: "#7A1330", color: "#fff" }
-                : { color: "#64748b" }
+                : { color: "var(--ou-subtext, #64748b)" }
             }
           >
             {label}
@@ -71,13 +76,18 @@ export function DashboardFilterBar({
         <select
           value={sy}
           onChange={(e) => update({ sy: e.target.value })}
-          className="appearance-none pl-3.5 pr-8 py-2 text-[13px] font-semibold border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)] text-slate-700"
+          className="appearance-none pl-3.5 pr-8 py-2 text-[13px] font-semibold border rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)]"
+          style={{
+            background: "var(--ou-input-bg, #fff)",
+            borderColor: "var(--ou-input-border, #e5e7eb)",
+            color: "var(--ou-heading, #334155)",
+          }}
         >
           {syOptions.map((y) => (
             <option key={y} value={y}>{`SY ${y}`}</option>
           ))}
         </select>
-        <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+        <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--ou-muted, #94a3b8)" }} />
       </div>
     </div>
   );

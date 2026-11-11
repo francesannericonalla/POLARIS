@@ -106,10 +106,10 @@ export function NotificationBell({ initialNotifications, initialUnread }: Props)
       <button
         ref={buttonRef}
         onClick={handleOpen}
-        className="relative flex items-center justify-center w-8 h-8 rounded-xl transition-colors hover:bg-slate-100"
+        className="relative flex items-center justify-center w-8 h-8 rounded-xl transition-colors hover:bg-[var(--ou-toggle-bg)]"
         title="Notifications"
       >
-        <Bell size={16} style={{ color: "#64748b" }} />
+        <Bell size={16} className="text-slate-500 dark:text-slate-400" />
         {unread > 0 && (
           <span
             className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center text-white"
@@ -122,16 +122,24 @@ export function NotificationBell({ initialNotifications, initialUnread }: Props)
 
       {open && (
         <div
-          className="rounded-2xl border bg-white shadow-xl overflow-hidden"
-          style={{ ...popupStyle, borderColor: "#e8eaed" }}
+          className="rounded-2xl border overflow-hidden"
+          style={{
+            ...popupStyle,
+            background: "var(--ou-card-bg)",
+            borderColor: "var(--ou-card-border)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.12)",
+          }}
         >
-          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid #f1f5f9" }}>
-            <span className="text-[13px] font-bold text-slate-800">Notifications</span>
+          <div
+            className="flex items-center justify-between px-4 py-3"
+            style={{ borderBottom: "1px solid var(--ou-divider)" }}
+          >
+            <span className="text-[13px] font-bold" style={{ color: "var(--ou-heading)" }}>Notifications</span>
             {notifications.length > 0 && (
               <button
                 onClick={handleClearAll}
                 className="text-[11px] font-semibold hover:underline"
-                style={{ color: "#7A1330" }}
+                style={{ color: "var(--ou-accent)" }}
               >
                 Clear all
               </button>
@@ -140,7 +148,7 @@ export function NotificationBell({ initialNotifications, initialUnread }: Props)
 
           <div className="overflow-y-auto" style={{ maxHeight: 360 }}>
             {notifications.length === 0 ? (
-              <p className="px-4 py-8 text-center text-[13px] text-slate-400">No notifications yet.</p>
+              <p className="px-4 py-8 text-center text-[13px]" style={{ color: "var(--ou-muted)" }}>No notifications yet.</p>
             ) : (
               notifications.map((n) => {
                 const href = notifHref(n);
@@ -150,8 +158,8 @@ export function NotificationBell({ initialNotifications, initialUnread }: Props)
                   onClick={() => { if (href) { setOpen(false); router.push(href); } }}
                   className="flex items-start gap-3 px-4 py-3 border-b last:border-0 transition-colors"
                   style={{
-                    borderColor: "#f8f9fa",
-                    background: n.read ? "transparent" : "rgba(122,19,48,0.03)",
+                    borderColor: "var(--ou-divider)",
+                    background: n.read ? "transparent" : "var(--ou-pill-bg)",
                     cursor: href ? "pointer" : "default",
                   }}
                 >
@@ -162,17 +170,18 @@ export function NotificationBell({ initialNotifications, initialUnread }: Props)
                     <NotifIcon type={n.type} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12.5px] font-semibold text-slate-800">{n.title}</p>
-                    <p className="text-[12px] text-slate-500 mt-0.5 leading-snug">{n.body}</p>
-                    <p className="text-[11px] text-slate-400 mt-1">{timeAgo(n.created_at)}</p>
+                    <p className="text-[12.5px] font-semibold" style={{ color: "var(--ou-heading)" }}>{n.title}</p>
+                    <p className="text-[12px] mt-0.5 leading-snug" style={{ color: "var(--ou-subtext)" }}>{n.body}</p>
+                    <p className="text-[11px] mt-1" style={{ color: "var(--ou-muted)" }}>{timeAgo(n.created_at)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     {!n.read && (
-                      <span className="w-2 h-2 rounded-full" style={{ background: "#7A1330" }} />
+                      <span className="w-2 h-2 rounded-full" style={{ background: "var(--ou-accent)" }} />
                     )}
                     <button
                       onClick={(e) => handleDismiss(e, n.id)}
-                      className="text-slate-300 hover:text-slate-500 transition-colors leading-none"
+                      className="transition-colors leading-none"
+                      style={{ color: "var(--ou-muted)" }}
                       title="Dismiss"
                     >
                       ×

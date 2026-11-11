@@ -63,11 +63,17 @@ export const getUnitSummaries = unstable_cache(
       folderToUnit.set(f.id, f.unit_id);
     }
 
+    // Track which folder_ids are non-QAO-exclusive for accurate foldersThisYear count
+    const nonExclusiveFolderIds = new Set<string>();
+    for (const f of (folders ?? []) as { id: string; unit_id: string }[]) {
+      nonExclusiveFolderIds.add(f.id);
+    }
+
     const byUnit = new Map<string, { count: number; thisYear: number; last: string | null; foldersThisYear: Set<string> }>();
     for (const d of docs as { unit_id: string; folder_id: string; created_at: string; school_year: string }[]) {
       const entry = byUnit.get(d.unit_id) ?? { count: 0, thisYear: 0, last: null, foldersThisYear: new Set() };
       entry.count += 1;
-      if (d.school_year === sy) {
+      if (d.school_year === sy && nonExclusiveFolderIds.has(d.folder_id)) {
         entry.thisYear += 1;
         entry.foldersThisYear.add(d.folder_id);
       }
@@ -401,6 +407,7 @@ export const getRecentActivity = unstable_cache(
       .from("documents")
       .select("id, title, school_year, semester, version, created_at, storage_path, mime_type, folders(name), profiles!documents_uploaded_by_fkey(full_name)")
       .eq("unit_id", unitId)
+      .eq("is_latest", true)
       .eq("archived", false)
       .order("created_at", { ascending: false })
       .limit(limit);

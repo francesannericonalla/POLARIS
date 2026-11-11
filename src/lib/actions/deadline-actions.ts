@@ -18,7 +18,7 @@ export async function upsertDeadline(
   label: string | null
 ) {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "qao") throw new Error("Unauthorized");
+  if (!profile || profile.status !== "approved" || profile.role !== "qao") throw new Error("Unauthorized");
 
   const admin = createAdminClient();
 
@@ -88,7 +88,7 @@ export async function upsertDeadline(
 
 export async function deleteDeadline(schoolYear: string, semester: "1st" | "2nd" | "Summer") {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "qao") throw new Error("Unauthorized");
+  if (!profile || profile.status !== "approved" || profile.role !== "qao") throw new Error("Unauthorized");
 
   const admin = createAdminClient();
   const { error } = await admin

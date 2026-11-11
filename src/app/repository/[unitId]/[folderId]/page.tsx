@@ -33,49 +33,46 @@ export default async function FolderPage({
   const { sy, sem, show } = await searchParams;
   const activeTab: "active" | "archived" = show === "archived" ? "archived" : "active";
 
-  const [allDocuments, schoolYears] = await Promise.all([
+  // Fetch unfiltered for accurate tab badge counts, filtered for the visible list.
+  const [allDocuments, visibleDocuments, schoolYears] = await Promise.all([
+    getDocumentsForFolder(folderId, { includeArchived: true }),
     getDocumentsForFolder(folderId, { schoolYear: sy, semester: sem, includeArchived: true }),
     getDistinctSchoolYears(unitId),
   ]);
 
-  const baseFiltered = allDocuments.filter((d) =>
-    activeTab === "archived" ? d.archived : !d.archived
-  );
-  const visibleDocuments = baseFiltered.filter((d) => {
-    if (sy && d.school_year !== sy) return false;
-    if (sem && d.semester !== sem) return false;
-    return true;
-  });
-
   const canUpload = canUploadToUnit(profile, unitId);
   const activeCount = allDocuments.filter((d) => !d.archived).length;
   const archivedCount = allDocuments.filter((d) => d.archived).length;
+
+  const displayDocuments = visibleDocuments.filter((d) =>
+    activeTab === "archived" ? d.archived : !d.archived
+  );
 
   return (
     <AppShell profile={profile} title={folder.name} activeUnitId={unitId} activeHref={`/repository/${unitId}`}>
       <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-5">
 
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-400">
+        <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--ou-muted)" }}>
           <Link href={`/repository/${unitId}`} className="hover:text-maroon transition-colors font-medium">
             {unit.name}
           </Link>
           <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
           </svg>
-          <span className="text-gray-700 font-semibold">{folder.name}</span>
+          <span className="font-semibold" style={{ color: "var(--ou-heading)" }}>{folder.name}</span>
         </div>
 
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">Folder</p>
-            <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-poppins)" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--ou-muted)" }}>Folder</p>
+            <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-poppins)", color: "var(--ou-heading)" }}>
               {folder.name}
             </h1>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Suspense fallback={<div className="h-8 w-48 bg-gray-100 rounded-lg animate-pulse" />}>
+            <Suspense fallback={<div className="h-8 w-48 rounded-lg animate-pulse" style={{ background: "var(--ou-toggle-bg, #f3f4f6)" }} />}>
               <FilterBar unitId={unitId} folderId={folderId} schoolYears={schoolYears} sy={sy} sem={sem} />
             </Suspense>
             {canUpload && (
@@ -107,7 +104,7 @@ export default async function FolderPage({
 
         {/* Document list with bulk actions */}
         <BulkDocumentList
-          documents={visibleDocuments}
+          documents={displayDocuments}
           folderId={folderId}
           schoolYears={schoolYears}
           canUpload={canUpload}
@@ -133,13 +130,16 @@ function TabLink({ href, active, label, count }: { href: string; active: boolean
     <Link
       href={href}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-        active ? "bg-maroon text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+        active ? "bg-maroon text-white" : "hover:bg-[var(--ou-toggle-bg)]"
       }`}
+      style={active ? {} : { color: "var(--ou-subtext)" }}
     >
       {label}
       <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${
-        active ? "bg-white/20 text-white" : "bg-gray-200 text-gray-500"
-      }`}>
+        active ? "bg-white/20 text-white" : "dark:bg-white/10"
+      }`}
+      style={active ? {} : { background: "var(--ou-toggle-bg)", color: "var(--ou-subtext)" }}
+      >
         {count}
       </span>
     </Link>

@@ -24,7 +24,7 @@ export function FolderCoverageTabbed({
   return (
     <div className="flex flex-col h-full">
       {/* Tabs */}
-      <div className="flex items-center gap-1.5 px-4 py-2.5" style={{ borderBottom: "1px solid #f1f5f9" }}>
+      <div className="flex items-center gap-1.5 px-4 py-2.5" style={{ borderBottom: "1px solid var(--ou-divider, #f1f5f9)" }}>
         {hasAcademics && (
           <button
             onClick={() => setTab("academics")}
@@ -32,7 +32,7 @@ export function FolderCoverageTabbed({
             style={
               tab === "academics"
                 ? { background: "#7A1330", color: "#fff" }
-                : { color: "#64748b" }
+                : { color: "var(--ou-subtext)" }
             }
           >
             Academics
@@ -45,13 +45,13 @@ export function FolderCoverageTabbed({
             style={
               tab === "administration"
                 ? { background: "#7A1330", color: "#fff" }
-                : { color: "#64748b" }
+                : { color: "var(--ou-subtext)" }
             }
           >
             Administration
           </button>
         )}
-        <span className="ml-auto text-[12px] text-slate-400">
+        <span className="ml-auto text-[12px]" style={{ color: "var(--ou-muted)" }}>
           {tab === "academics"
             ? `${academicsStats[0]?.total ?? 0} departments`
             : `${adminStats[0]?.total ?? 0} offices`}
@@ -72,7 +72,7 @@ export function FolderCoverageTabbed({
         />
         </div>
       ) : (
-        <p className="text-sm text-slate-400 text-center py-10">No data available.</p>
+        <p className="text-sm text-center py-10" style={{ color: "var(--ou-muted)" }}>No data available.</p>
       )}
     </div>
   );

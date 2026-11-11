@@ -10,7 +10,12 @@ export function OfficeUserSYFilter({ sy, syOptions }: { sy: string; syOptions: s
     <select
       value={sy}
       onChange={(e) => router.push(`${pathname}?sy=${e.target.value}`)}
-      className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-gold/40 text-gray-700"
+      className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-gold/40 transition-colors"
+      style={{
+        background: "var(--ou-card-bg)",
+        borderColor: "var(--ou-card-border)",
+        color: "var(--ou-heading)",
+      }}
     >
       {syOptions.map((y) => (
         <option key={y} value={y}>{y}</option>

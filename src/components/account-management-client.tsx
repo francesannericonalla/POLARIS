@@ -31,12 +31,14 @@ const STATUS_STYLES: Record<string, string> = {
   approved: "bg-green-50 text-green-700 border border-green-200",
   pending: "bg-amber-50 text-amber-700 border border-amber-200",
   rejected: "bg-red-50 text-red-600 border border-red-200",
+  suspended: "bg-orange-50 text-orange-700 border border-orange-200",
 };
 
 const STATUS_DOT: Record<string, string> = {
   approved: "bg-green-500",
   pending: "bg-amber-500",
   rejected: "bg-red-500",
+  suspended: "bg-orange-500",
 };
 
 const ITEMS_PER_PAGE = 6;
@@ -64,7 +66,7 @@ function ActionsMenu({
   }, []);
 
   const isAdmin = role === "system_admin";
-  const isSuspended = status === "rejected";
+  const isSuspended = status === "suspended";
   const isPending = status === "pending";
 
   return (
@@ -95,8 +97,8 @@ function ActionsMenu({
             </form>
           )}
 
-          {/* Promote / Revoke Admin — not for self, not for pending */}
-          {!isSelf && !isPending && !isAdmin && (
+          {/* Promote / Revoke Admin — not for self, not for pending, not for suspended */}
+          {!isSelf && !isPending && !isSuspended && !isAdmin && (
             <form action={promoteToAdmin.bind(null, profileId)}>
               <button
                 type="submit"
@@ -125,12 +127,10 @@ function ActionsMenu({
             </form>
           )}
 
-          {/* Suspend / Reactivate — not for self, not for pending */}
-          {!isSelf && !isPending && (
+          {/* Suspend / Reactivate — only for approved or suspended accounts, not self, not pending/rejected */}
+          {!isSelf && (status === "approved" || isSuspended) && (
             <>
-              {!isSelf && (isAdmin || status === "approved") && (
-                <div className="mx-3 my-1 border-t border-gray-100" />
-              )}
+              <div className="mx-3 my-1 border-t border-gray-100" />
               {!isSuspended ? (
                 <form action={suspendAccount.bind(null, profileId)}>
                   <button
@@ -327,6 +327,7 @@ export function AccountManagementClient({
                   <option value="approved">Approved</option>
                   <option value="pending">Pending</option>
                   <option value="rejected">Rejected</option>
+                  <option value="suspended">Suspended</option>
                 </select>
               </div>
 

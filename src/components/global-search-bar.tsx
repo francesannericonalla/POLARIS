@@ -68,10 +68,13 @@ export function GlobalSearchBar() {
   return (
     <div ref={containerRef} className="relative w-full">
       <div
-        className="flex items-center gap-2 px-3 py-2 rounded-xl border bg-white transition-all"
-        style={{ borderColor: open ? "#7A1330" : "#e5e7eb" }}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all"
+        style={{
+          background: "var(--ou-input-bg, #fff)",
+          borderColor: open ? "#7A1330" : "var(--ou-input-border, #e5e7eb)",
+        }}
       >
-        <Search size={14} className="shrink-0" style={{ color: "#9ca3af" }} />
+        <Search size={14} className="shrink-0" style={{ color: "var(--ou-muted, #9ca3af)" }} />
         <input
           ref={inputRef}
           type="text"
@@ -79,30 +82,35 @@ export function GlobalSearchBar() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setOpen(true)}
           placeholder="Search documents..."
-          className="flex-1 text-[13px] bg-transparent outline-none text-gray-700 placeholder-gray-400 min-w-0"
+          className="flex-1 text-[13px] bg-transparent outline-none min-w-0 placeholder-[color:var(--ou-muted,#9ca3af)]"
+          style={{ color: "var(--ou-heading, #374151)" }}
         />
         {query && (
           <button onClick={clear} className="shrink-0 hover:opacity-70 transition-opacity">
-            <X size={13} style={{ color: "#9ca3af" }} />
+            <X size={13} style={{ color: "var(--ou-muted, #9ca3af)" }} />
           </button>
         )}
         {loading && (
-          <span className="shrink-0 w-3.5 h-3.5 border-2 border-gray-200 border-t-[#7A1330] rounded-full animate-spin" />
+          <span className="shrink-0 w-3.5 h-3.5 border-2 border-t-[#7A1330] rounded-full animate-spin" style={{ borderColor: "var(--ou-card-border, #e5e7eb)", borderTopColor: "#7A1330" }} />
         )}
       </div>
 
       {open && (
         <div
-          className="absolute left-0 right-0 top-full mt-1.5 rounded-xl border bg-white shadow-lg z-50 overflow-hidden"
-          style={{ borderColor: "#e8eaed", maxHeight: 360 }}
+          className="absolute left-0 right-0 top-full mt-1.5 rounded-xl border shadow-lg z-50 overflow-hidden"
+          style={{
+            background: "var(--ou-card-bg, #fff)",
+            borderColor: "var(--ou-card-border, #e8eaed)",
+            maxHeight: 360,
+          }}
         >
           {results.length === 0 ? (
-            <p className="px-4 py-5 text-center text-[13px]" style={{ color: "#9ca3af" }}>
+            <p className="px-4 py-5 text-center text-[13px]" style={{ color: "var(--ou-muted, #9ca3af)" }}>
               No documents found for &ldquo;{query}&rdquo;
             </p>
           ) : (
             <>
-              <p className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider border-b" style={{ color: "#9ca3af", borderColor: "#f1f5f9" }}>
+              <p className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider border-b" style={{ color: "var(--ou-muted, #9ca3af)", borderColor: "var(--ou-divider, #f1f5f9)" }}>
                 {results.length} result{results.length !== 1 ? "s" : ""}
               </p>
               <div className="overflow-y-auto" style={{ maxHeight: 300 }}>
@@ -111,18 +119,20 @@ export function GlobalSearchBar() {
                     key={r.id}
                     href={`/repository/${r.unit_id}/${r.folder_id}`}
                     onClick={() => { setOpen(false); setQuery(""); }}
-                    className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b last:border-0"
-                    style={{ borderColor: "#f8f9fa" }}
+                    className="flex items-start gap-3 px-4 py-3 transition-colors border-b last:border-0"
+                    style={{ borderColor: "var(--ou-divider, #f8f9fa)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ou-row-hover, #f8fafc)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "")}
                   >
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(122,19,48,0.07)" }}>
                       <FileText size={13} style={{ color: "#7A1330" }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold truncate" style={{ color: "#1e293b" }}>{r.title}</p>
-                      <p className="text-[11.5px] truncate mt-0.5" style={{ color: "#64748b" }}>
+                      <p className="text-[13px] font-semibold truncate" style={{ color: "var(--ou-heading, #1e293b)" }}>{r.title}</p>
+                      <p className="text-[11.5px] truncate mt-0.5" style={{ color: "var(--ou-subtext, #64748b)" }}>
                         {r.unit_name} · {r.folder_name}
                       </p>
-                      <p className="text-[11px] mt-0.5" style={{ color: "#94a3b8" }}>
+                      <p className="text-[11px] mt-0.5" style={{ color: "var(--ou-muted, #94a3b8)" }}>
                         SY {r.school_year} · {r.semester}
                       </p>
                     </div>

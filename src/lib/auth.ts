@@ -7,7 +7,7 @@ export type Profile = {
   email: string;
   full_name: string;
   role: "office_user" | "qao" | "system_admin";
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "suspended";
   unit_id: string | null;
   id_number: string | null;
   unit_name: string | null;

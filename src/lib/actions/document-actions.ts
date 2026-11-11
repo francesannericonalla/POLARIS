@@ -11,6 +11,11 @@ import { sendEmail, documentUploadedHtml } from "@/lib/email";
 export async function fetchVersionHistoriesForDoc(docId: string): Promise<DocumentRow[]> {
   const profile = await getCurrentProfile();
   if (!profile || profile.status !== "approved") return [];
+
+  const admin = createAdminClient();
+  const { data: doc } = await admin.from("documents").select("unit_id").eq("id", docId).single();
+  if (!doc || !canAccessUnitRepository(profile, doc.unit_id)) return [];
+
   return getVersionHistory(docId);
 }
 
@@ -230,16 +235,22 @@ export async function bulkArchiveDocuments(documentIds: string[]) {
 
   await admin.from("documents").update({ archived: true }).in("id", documentIds);
 
-  for (const doc of docs as { id: string; unit_id: string; folder_id: string }[]) {
-    await admin.from("audit_log").insert({
+  const typedDocs = docs as { id: string; unit_id: string; folder_id: string }[];
+  await admin.from("audit_log").insert(
+    typedDocs.map((doc) => ({
       actor_id: profile.id,
       action: "archive_document",
       target_type: "document",
       target_id: doc.id,
-    });
-    revalidatePath(`/repository/${doc.unit_id}/${doc.folder_id}`);
-    revalidatePath(`/repository/${doc.unit_id}`);
+    }))
+  );
+
+  const paths = new Set<string>();
+  for (const doc of typedDocs) {
+    paths.add(`/repository/${doc.unit_id}/${doc.folder_id}`);
+    paths.add(`/repository/${doc.unit_id}`);
   }
+  for (const p of paths) revalidatePath(p);
   revalidatePath("/dashboard");
 }
 
@@ -262,16 +273,22 @@ export async function bulkRestoreDocuments(documentIds: string[]) {
 
   await admin.from("documents").update({ archived: false }).in("id", documentIds);
 
-  for (const doc of docs as { id: string; unit_id: string; folder_id: string }[]) {
-    await admin.from("audit_log").insert({
+  const typedDocs = docs as { id: string; unit_id: string; folder_id: string }[];
+  await admin.from("audit_log").insert(
+    typedDocs.map((doc) => ({
       actor_id: profile.id,
       action: "restore_document",
       target_type: "document",
       target_id: doc.id,
-    });
-    revalidatePath(`/repository/${doc.unit_id}/${doc.folder_id}`);
-    revalidatePath(`/repository/${doc.unit_id}`);
+    }))
+  );
+
+  const paths = new Set<string>();
+  for (const doc of typedDocs) {
+    paths.add(`/repository/${doc.unit_id}/${doc.folder_id}`);
+    paths.add(`/repository/${doc.unit_id}`);
   }
+  for (const p of paths) revalidatePath(p);
   revalidatePath("/dashboard");
 }
 

@@ -36,16 +36,22 @@ function CollegeAccordion({
   const [open, setOpen] = useState(hasActive);
 
   const collegeLabelStyle = light
-    ? { color: "#64748b", fontSize: 12.5, fontWeight: 500 }
+    ? { color: "var(--ou-subtext, #64748b)", fontSize: 12.5, fontWeight: 500 }
     : { color: "rgba(255,255,255,0.55)", fontSize: 12.5, fontWeight: 500 };
-  const collegeHover = light ? "hover:bg-slate-50" : "hover:bg-white/[0.05]";
+  const collegeHover = light ? "hover:bg-[var(--ou-row-hover)]" : "hover:bg-white/[0.05]";
   const deptActive = light
-    ? "text-[#7A1330] font-semibold bg-[rgba(122,19,48,0.07)]"
+    ? "font-semibold"
     : "text-white font-bold bg-white/[0.13]";
+  const deptActiveStyle = light
+    ? { color: "var(--ou-accent)", background: "var(--ou-pill-bg)" }
+    : {};
   const deptInactive = light
-    ? "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+    ? "hover:bg-[var(--ou-row-hover)]"
     : "text-white/60 hover:text-white/85 hover:bg-white/[0.05]";
-  const activeBorder = light ? "#7A1330" : GOLD;
+  const deptInactiveStyle = light
+    ? { color: "var(--ou-subtext)" }
+    : {};
+  const activeBorder = light ? "var(--ou-accent)" : GOLD;
 
   return (
     <div>
@@ -70,7 +76,10 @@ function CollegeAccordion({
                 className={`flex items-center pl-8 pr-4 py-2 w-full transition-colors text-[12.5px] truncate ${
                   active ? deptActive : deptInactive
                 }`}
-                style={{ borderLeft: active ? `2px solid ${activeBorder}` : "2px solid transparent" }}
+                style={{
+                  borderLeft: active ? `2px solid ${activeBorder}` : "2px solid transparent",
+                  ...(light ? (active ? deptActiveStyle : deptInactiveStyle) : {}),
+                }}
               >
                 <span className="truncate">{dept.name}</span>
               </Link>
@@ -102,17 +111,23 @@ export function SidebarTree({
   const [adminOpen, setAdminOpen] = useState<boolean>(adminHasActive);
 
   const sectionLabelStyle = light
-    ? { color: "#94a3b8", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em" }
+    ? { color: "var(--ou-muted, #94a3b8)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em" }
     : { color: GOLD, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" };
 
-  const sectionHover = light ? "hover:bg-slate-50" : "hover:bg-white/[0.04]";
+  const sectionHover = light ? "hover:bg-[var(--ou-row-hover)]" : "hover:bg-white/[0.04]";
   const deptActive = light
-    ? "text-[#7A1330] font-semibold bg-[rgba(122,19,48,0.07)]"
+    ? "font-semibold"
     : "text-white font-bold bg-white/[0.13]";
+  const deptActiveStyle = light
+    ? { color: "var(--ou-accent)", background: "var(--ou-pill-bg)" }
+    : {};
   const deptInactive = light
-    ? "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+    ? "hover:bg-[var(--ou-row-hover)]"
     : "text-white/60 hover:text-white/85 hover:bg-white/[0.05]";
-  const activeBorder = light ? "#7A1330" : GOLD;
+  const deptInactiveStyle = light
+    ? { color: "var(--ou-subtext)" }
+    : {};
+  const activeBorder = light ? "var(--ou-accent)" : GOLD;
 
   return (
     <div className="pb-8">
@@ -169,7 +184,10 @@ export function SidebarTree({
                 className={`flex items-center pl-8 pr-4 py-2 w-full transition-colors text-[12.5px] ${
                   active ? deptActive : deptInactive
                 }`}
-                style={{ borderLeft: active ? `2px solid ${activeBorder}` : "2px solid transparent" }}
+                style={{
+                  borderLeft: active ? `2px solid ${activeBorder}` : "2px solid transparent",
+                  ...(light ? (active ? deptActiveStyle : deptInactiveStyle) : {}),
+                }}
               >
                 <span className="truncate">{office.name}</span>
               </Link>

@@ -6,11 +6,11 @@ import { StarField } from "@/components/star-field";
 export default async function PendingPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
-  if (profile.status === "approved" && profile.unit_id) redirect("/dashboard");
-  if (profile.status === "approved" && profile.role === "qao") redirect("/dashboard");
   if (profile.status === "approved" && profile.role === "system_admin") redirect("/admin/accounts");
+  if (profile.status === "approved") redirect("/dashboard");
 
   const rejected = profile.status === "rejected";
+  const suspended = profile.status === "suspended";
 
   return (
     <div className="lf-root">
@@ -73,7 +73,14 @@ export default async function PendingPage() {
             <span className="pend-pulse pend-pulse--2" />
           </div>
 
-          {rejected ? (
+          {suspended ? (
+            <>
+              <h1 className="pend-title">Account Suspended</h1>
+              <p className="pend-body">
+                Your account has been suspended. Please contact the Quality Assurance Office for assistance.
+              </p>
+            </>
+          ) : rejected ? (
             <>
               <h1 className="pend-title">Account Not Approved</h1>
               <p className="pend-body">

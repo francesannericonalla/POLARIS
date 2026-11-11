@@ -85,12 +85,12 @@ function SemRow({
   const color = days !== null ? urgencyColor(days) : "#9ca3af";
 
   return (
-    <div className="py-3.5 border-b last:border-0" style={{ borderColor: "#f1f5f9" }}>
+    <div className="py-3.5 border-b last:border-0" style={{ borderColor: "var(--ou-divider)" }}>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[13px] font-semibold text-slate-700 w-28 shrink-0">{SEM_LABEL[sem]}</span>
+        <span className="text-[13px] font-semibold w-28 shrink-0" style={{ color: "var(--ou-heading)" }}>{SEM_LABEL[sem]}</span>
 
         {!editing && !entry && (
-          <span className="flex-1 text-[12px] text-slate-400">No deadline set</span>
+          <span className="flex-1 text-[12px]" style={{ color: "var(--ou-muted)" }}>No deadline set</span>
         )}
         {!editing && entry && (
           <div className="flex-1 flex items-center gap-3 min-w-0">
@@ -98,7 +98,7 @@ function SemRow({
               {new Date(entry.deadline_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
             </span>
             {entry.label && (
-              <span className="text-[11.5px] text-slate-400 truncate">{entry.label}</span>
+              <span className="text-[11.5px] truncate" style={{ color: "var(--ou-muted)" }}>{entry.label}</span>
             )}
             <span className="text-[12px] font-medium shrink-0" style={{ color }}>
               {days === null ? "" : days < 0 ? "Overdue" : days === 0 ? "Today" : `${days}d left`}
@@ -113,16 +113,16 @@ function SemRow({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="flex-1 px-3 py-1.5 text-[13px] rounded-lg border focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)] text-gray-700"
-                style={{ borderColor: "#e5e7eb" }}
+                className="flex-1 px-3 py-1.5 text-[13px] rounded-lg border focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)]"
+                style={{ borderColor: "var(--ou-card-border)", background: "var(--ou-input-bg, var(--ou-card-bg))", color: "var(--ou-heading)" }}
               />
               <input
                 type="text"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="Label (optional)"
-                className="flex-1 px-3 py-1.5 text-[13px] rounded-lg border focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)] text-gray-700 placeholder-gray-400"
-                style={{ borderColor: "#e5e7eb" }}
+                className="flex-1 px-3 py-1.5 text-[13px] rounded-lg border focus:outline-none focus:ring-2 focus:ring-[rgba(122,19,48,0.15)]"
+                style={{ borderColor: "var(--ou-card-border)", background: "var(--ou-input-bg, var(--ou-card-bg))", color: "var(--ou-heading)" }}
               />
             </div>
             {error && <p className="text-[12px] text-red-500">{error}</p>}
@@ -137,8 +137,8 @@ function SemRow({
               </button>
               <button
                 onClick={() => setEditing(false)}
-                className="px-3 py-1.5 text-[12px] font-medium rounded-lg border hover:bg-slate-50 text-slate-600"
-                style={{ borderColor: "#e5e7eb" }}
+                className="px-3 py-1.5 text-[12px] font-medium rounded-lg border transition-colors dark:hover:bg-white/10"
+                style={{ borderColor: "var(--ou-card-border)", color: "var(--ou-subtext)" }}
               >
                 Cancel
               </button>
@@ -148,18 +148,18 @@ function SemRow({
 
         {!editing && (
           <div className="flex items-center gap-1 shrink-0">
-            <button onClick={openEdit} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors" title="Set / edit">
+            <button onClick={openEdit} className="p-1.5 rounded-lg transition-colors hover:bg-[var(--ou-row-hover)]" title="Set / edit">
               <Pencil size={12} style={{ color: "#64748b" }} />
             </button>
             {entry && (
-              <button onClick={handleDelete} disabled={isPending} className="p-1.5 rounded-lg hover:bg-red-50 transition-colors" title="Remove">
+              <button onClick={handleDelete} disabled={isPending} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Remove">
                 <Trash2 size={12} style={{ color: "#ef4444" }} />
               </button>
             )}
           </div>
         )}
         {editing && (
-          <button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors shrink-0">
+          <button onClick={() => setEditing(false)} className="p-1.5 rounded-lg transition-colors hover:bg-[var(--ou-row-hover)] shrink-0">
             <X size={12} style={{ color: "#64748b" }} />
           </button>
         )}
@@ -170,11 +170,11 @@ function SemRow({
 
 export function DeadlineManager({ schoolYear, deadlines }: Props) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 h-full">
+    <div className="ou-card rounded-2xl p-5 h-full">
       <div className="flex items-center gap-2 mb-3">
-        <CalendarDays size={16} style={{ color: "#7A1330" }} />
-        <h3 className="text-[14px] font-bold text-slate-800">Submission Deadlines</h3>
-        <span className="text-[12px] text-slate-400">SY {schoolYear}</span>
+        <CalendarDays size={16} style={{ color: "var(--ou-accent)" }} />
+        <h3 className="text-[14px] font-bold" style={{ color: "var(--ou-heading)" }}>Submission Deadlines</h3>
+        <span className="text-[12px]" style={{ color: "var(--ou-muted)" }}>SY {schoolYear}</span>
       </div>
       <div>
         {SEMESTERS.map((sem) => (

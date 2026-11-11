@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 
 const SELECT_CLS =
-  "text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold";
+  "text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold transition-colors";
 
 export function FilterBar({
   unitId,
@@ -34,9 +34,10 @@ export function FilterBar({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-400">Filter:</span>
+      <span className="text-xs" style={{ color: "var(--ou-muted)" }}>Filter:</span>
       <select
         className={SELECT_CLS}
+        style={{ color: "var(--ou-heading)", background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)" }}
         value={sy ?? ""}
         onChange={(e) => navigate({ sy: e.target.value, sem })}
       >
@@ -47,6 +48,7 @@ export function FilterBar({
       </select>
       <select
         className={SELECT_CLS}
+        style={{ color: "var(--ou-heading)", background: "var(--ou-card-bg)", border: "1px solid var(--ou-card-border)" }}
         value={sem ?? ""}
         onChange={(e) => navigate({ sy, sem: e.target.value })}
       >
