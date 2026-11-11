@@ -6,6 +6,30 @@ A document repository and compliance tracking portal for CIT-U's Quality Assuran
 
 ---
 
+## Screenshots
+
+### Login & Signup
+| Login | Sign Up |
+|-------|---------|
+| ![Login](docs/screenshots/01-login.png) | ![Sign Up](docs/screenshots/02-signup.png) |
+
+### Office User
+| Compliance Dashboard | Document Repository (unit) | Document Repository (folder) |
+|----------------------|---------------------------|------------------------------|
+| ![Office Dashboard](docs/screenshots/07-office-dashboard.png) | ![Repository Unit](docs/screenshots/05-repository-unit.png) | ![Repository Folder](docs/screenshots/06-repository-folder.png) |
+
+### QAO
+| University Overview | Office Compliance Dashboard |
+|---------------------|-----------------------------|
+| ![QAO Dashboard](docs/screenshots/03-qao-dashboard.png) | ![QAO Office Dashboard](docs/screenshots/04-qao-office-dashboard.png) |
+
+### System Administration
+| Account Requests | All Accounts | Audit Log |
+|------------------|--------------|-----------|
+| ![Admin Approvals](docs/screenshots/09-admin-approvals.png) | ![Admin Accounts](docs/screenshots/10-admin-accounts.png) | ![Audit Log](docs/screenshots/11-admin-audit-log.png) |
+
+---
+
 ## Tech stack
 
 - **Next.js 14** (App Router, TypeScript) — deployed on Vercel
