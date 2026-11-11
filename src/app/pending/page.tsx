@@ -1,14 +1,11 @@
 import { getCurrentProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { logout } from "@/lib/actions/auth-actions";
-import { PolarisLogo } from "@/components/polaris-logo";
+import { StarField } from "@/components/star-field";
 
 export default async function PendingPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
-  // Only redirect approved users who actually have a unit assigned.
-  // An approved office_user with no unit_id would loop between /dashboard
-  // and /pending because dashboard also redirects to /pending when unit_id is null.
   if (profile.status === "approved" && profile.unit_id) redirect("/dashboard");
   if (profile.status === "approved" && profile.role === "qao") redirect("/dashboard");
   if (profile.status === "approved" && profile.role === "system_admin") redirect("/admin/accounts");
@@ -16,48 +13,90 @@ export default async function PendingPage() {
   const rejected = profile.status === "rejected";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-maroon-dark relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none opacity-10">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full border border-gold" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full border border-gold" />
+    <div className="lf-root">
+
+      {/* ── Background: same CIT-U building as login ── */}
+      <div className="lf-bg" aria-hidden="true" />
+
+      {/* ── Animated star field overlay ── */}
+      <StarField />
+
+      {/* ── Left branding — identical to login ── */}
+      <div className="lf-left">
+        <div className="lf-brand">
+          <img
+            src="/POLARIS-logo.png"
+            alt="POLARIS"
+            className="lf-logo-img"
+          />
+          <p className="lf-classification">
+            QAO Compliance &amp; Document Repository
+          </p>
+          <p className="lf-acronym">
+            Performance and Organization Leadership Analytics,<br />
+            Reporting, and Institutional Stewardship
+          </p>
+        </div>
       </div>
 
-      <div className="relative z-10 w-full max-w-sm mx-4">
-        <div className="flex flex-col items-center mb-8">
-          <PolarisLogo size={44} />
-          <h1 className="text-xl font-bold text-gold tracking-widest uppercase mt-3">POLARIS</h1>
-          <p className="text-white/50 text-xs tracking-wide mt-1">CIT-U Quality Assurance Office</p>
-        </div>
+      {/* ── Right: status card ── */}
+      <div className="lf-right">
+        <div className="lf-card pend-card">
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
+          {/* Animated logo */}
+          <div className="pend-logo-wrap" aria-hidden="true">
+            <svg viewBox="0 0 120 120" width="72" height="72" style={{ display: "block", overflow: "visible" }}>
+              <ellipse
+                cx="60" cy="60"
+                rx="52" ry="20"
+                fill="none"
+                stroke="#C9A84C"
+                strokeWidth="2"
+                strokeLinecap="round"
+                transform="rotate(-18, 60, 60)"
+                opacity="0.9"
+                className="pend-orbit"
+              />
+              <g transform="translate(100, 32)" className="pend-orbit-dot">
+                <path d="M0,-7 L1.6,-1.6 L7,0 L1.6,1.6 L0,7 L-1.6,1.6 L-7,0 L-1.6,-1.6 Z" fill="#C9A84C" />
+              </g>
+              <polygon points="60,8 64,20 56,20" fill="#C9A84C" opacity="0.85" />
+              <circle cx="60" cy="60" r="22" fill="#800D2D" />
+              {/* 4-pointed compass star — matches tab favicon style */}
+              <path
+                d="M60,42 L63,57 L78,60 L63,63 L60,78 L57,63 L42,60 L57,57 Z"
+                fill="#C9A84C"
+              />
+            </svg>
+            {/* Pulse rings */}
+            <span className="pend-pulse pend-pulse--1" />
+            <span className="pend-pulse pend-pulse--2" />
+          </div>
+
           {rejected ? (
             <>
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <p className="text-gray-800 font-semibold mb-2">Account Not Approved</p>
-              <p className="text-sm text-gray-500">Please contact the Quality Assurance Office for more information.</p>
+              <h1 className="pend-title">Account Not Approved</h1>
+              <p className="pend-body">
+                Please contact the Quality Assurance Office for more information about your account status.
+              </p>
             </>
           ) : (
             <>
-              <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="text-gray-800 font-semibold mb-2">Awaiting QAO Approval</p>
-              <p className="text-sm text-gray-500">
-                You&apos;ll be able to view and submit documents for your office once QAO confirms your account.
+              <h1 className="pend-title">Awaiting QAO Approval</h1>
+              <p className="pend-body">
+                You&apos;ll be able to view and submit documents for your office once the Admin confirms your account.
               </p>
             </>
           )}
-          <form action={logout} className="mt-6">
-            <button type="submit" className="btn-secondary">
+
+          <div className="lf-divider" style={{ margin: "24px 0" }} />
+
+          <form action={logout}>
+            <button type="submit" className="lf-btn">
               Log Out
             </button>
           </form>
+
         </div>
       </div>
     </div>

@@ -834,3 +834,140 @@ body {
   0%, 100% { transform: scale(0.85); filter: drop-shadow(0 0 2px rgba(121,19,47,0.4)); opacity: 0.85; }
   50%       { transform: scale(1.15); filter: drop-shadow(0 0 6px rgba(121,19,47,0.7)) drop-shadow(0 0 12px rgba(180,60,90,0.4)); opacity: 1; }
 }
+
+/* ── Pending page ── */
+
+@keyframes pendOrbit {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes pendPulseRing {
+  0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+}
+@keyframes pendStarTwinkle {
+  0%, 100% { opacity: 0.6;  transform: scale(0.85); filter: drop-shadow(0 0 3px rgba(255,255,255,0.7)); }
+  50%       { opacity: 1;   transform: scale(1.5);  filter: drop-shadow(0 0 8px rgba(255,255,255,1)) drop-shadow(0 0 18px rgba(255,255,255,0.8)); }
+}
+@keyframes pendRise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Star field overlay */
+.pend-stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pend-star {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+}
+
+/* Distribute 18 stars with varied positions, sizes, delays */
+.pend-star--1  { top:  8%; left:  5%; width: 14px; height: 14px; animation: pendStarTwinkle 3.1s ease-in-out 0.0s infinite; }
+.pend-star--2  { top: 12%; left: 18%; width: 18px; height: 18px; animation: pendStarTwinkle 2.8s ease-in-out 0.4s infinite; }
+.pend-star--3  { top:  5%; left: 38%; width: 14px; height: 14px; animation: pendStarTwinkle 3.5s ease-in-out 1.1s infinite; }
+.pend-star--4  { top: 20%; left: 72%; width: 16px; height: 16px; animation: pendStarTwinkle 2.4s ease-in-out 0.7s infinite; }
+.pend-star--5  { top:  3%; left: 85%; width: 20px; height: 20px; animation: pendStarTwinkle 3.9s ease-in-out 1.6s infinite; }
+.pend-star--6  { top: 32%; left: 92%; width: 14px; height: 14px; animation: pendStarTwinkle 2.6s ease-in-out 0.3s infinite; }
+.pend-star--7  { top: 60%; left: 96%; width: 16px; height: 16px; animation: pendStarTwinkle 3.2s ease-in-out 2.0s infinite; }
+.pend-star--8  { top: 78%; left: 88%; width: 18px; height: 18px; animation: pendStarTwinkle 2.9s ease-in-out 0.9s infinite; }
+.pend-star--9  { top: 90%; left: 70%; width: 14px; height: 14px; animation: pendStarTwinkle 3.7s ease-in-out 1.4s infinite; }
+.pend-star--10 { top: 85%; left: 50%; width: 16px; height: 16px; animation: pendStarTwinkle 2.3s ease-in-out 0.6s infinite; }
+.pend-star--11 { top: 92%; left: 28%; width: 20px; height: 20px; animation: pendStarTwinkle 3.4s ease-in-out 1.8s infinite; }
+.pend-star--12 { top: 75%; left: 10%; width: 14px; height: 14px; animation: pendStarTwinkle 2.7s ease-in-out 0.2s infinite; }
+.pend-star--13 { top: 50%; left:  2%; width: 16px; height: 16px; animation: pendStarTwinkle 3.6s ease-in-out 1.2s infinite; }
+.pend-star--14 { top: 42%; left: 12%; width: 18px; height: 18px; animation: pendStarTwinkle 2.5s ease-in-out 2.3s infinite; }
+.pend-star--15 { top: 15%; left: 55%; width: 14px; height: 14px; animation: pendStarTwinkle 3.0s ease-in-out 0.5s infinite; }
+.pend-star--16 { top: 25%; left: 48%; width: 16px; height: 16px; animation: pendStarTwinkle 2.2s ease-in-out 1.7s infinite; }
+.pend-star--17 { top: 68%; left: 44%; width: 18px; height: 18px; animation: pendStarTwinkle 3.3s ease-in-out 0.8s infinite; }
+.pend-star--18 { top: 55%; left: 60%; width: 14px; height: 14px; animation: pendStarTwinkle 2.1s ease-in-out 1.0s infinite; }
+
+
+/* Card enter animation */
+.pend-card {
+  animation: pendRise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  text-align: center;
+}
+
+/* Logo wrapper — holds the orbit animation */
+.pend-logo-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 24px;
+}
+
+/* Spinning orbit ellipse via SVG element animation */
+.pend-orbit {
+  transform-origin: 60px 60px;
+  animation: pendOrbit 6s linear infinite;
+}
+.pend-orbit-dot {
+  transform-origin: 60px 60px;
+  animation: pendOrbit 6s linear infinite;
+}
+
+/* Pulse rings behind logo */
+.pend-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(201, 168, 76, 0.5);
+  animation: pendPulseRing 2.6s ease-out infinite;
+}
+.pend-pulse--2 {
+  animation-delay: 1.3s;
+}
+
+/* Status icon pill */
+.pend-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.pend-icon-wrap--pending {
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+.pend-icon-wrap--rejected {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+.pend-icon {
+  width: 22px;
+  height: 22px;
+}
+.pend-icon-wrap--pending .pend-icon {
+  color: #C9A84C;
+}
+.pend-icon-wrap--rejected .pend-icon {
+  color: #dc2626;
+}
+
+.pend-title {
+  margin: 0 0 10px;
+  font: 700 22px / 1.2 var(--font-poppins), sans-serif;
+  color: #800D2D;
+  letter-spacing: -0.01em;
+}
+
+.pend-body {
+  margin: 0;
+  font: 400 14px / 1.65 var(--font-manrope), sans-serif;
+  color: rgba(32, 26, 29, 0.6);
+  max-width: 320px;
+  margin-inline: auto;
+}

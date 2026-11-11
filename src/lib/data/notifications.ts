@@ -75,3 +75,23 @@ export async function markAllRead(userId: string) {
   const { revalidateTag } = await import("next/cache");
   revalidateTag(`notifications-${userId}`);
 }
+
+export async function deleteAllReadNotifications(userId: string) {
+  const admin = createAdminClient();
+  await admin
+    .from("notifications")
+    .delete()
+    .eq("user_id", userId)
+    .eq("read", true);
+  const { revalidateTag } = await import("next/cache");
+  revalidateTag(`notifications-${userId}`);
+}
+
+export async function deleteNotification(userId: string, notificationId: string) {
+  const admin = createAdminClient();
+  await admin
+    .from("notifications")
+    .delete()
+    .eq("id", notificationId)
+    .eq("user_id", userId);
+}

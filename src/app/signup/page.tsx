@@ -1,5 +1,6 @@
 import { getAllUnits, buildUnitTree } from "@/lib/data/units";
 import SignupForm from "./signup-form";
+import { StarField } from "@/components/star-field";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,9 @@ export default async function SignupPage() {
 
       {/* ── Background: same CIT-U building as login ── */}
       <div className="lf-bg" aria-hidden="true" />
+
+      {/* ── Blinking star field ── */}
+      <StarField />
 
       {/* ── Left branding — identical to login ── */}
       <div className="lf-left">

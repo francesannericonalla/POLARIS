@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Bell, CheckCheck, FileText, UserCheck, UserX, CalendarDays } from "lucide-react";
+import { Bell, FileText, UserCheck, UserX, CalendarDays } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type Notification = {
@@ -89,6 +89,18 @@ export function NotificationBell({ initialNotifications, initialUnread }: Props)
     }
   }
 
+  function handleDismiss(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    fetch("/api/notifications/dismiss", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+  }
+
+  function handleClearAll() {
+    setNotifications([]);
+    setUnread(0);
+    fetch("/api/notifications/clear", { method: "POST" });
+  }
+
   return (
     <div ref={containerRef} className="relative">
       <button
@@ -115,10 +127,14 @@ export function NotificationBell({ initialNotifications, initialUnread }: Props)
         >
           <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid #f1f5f9" }}>
             <span className="text-[13px] font-bold text-slate-800">Notifications</span>
-            {notifications.some((n) => !n.read) && (
-              <span className="text-[11px] font-semibold" style={{ color: "#7A1330" }}>
-                <CheckCheck size={13} className="inline mr-1" />marking read…
-              </span>
+            {notifications.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="text-[11px] font-semibold hover:underline"
+                style={{ color: "#7A1330" }}
+              >
+                Clear all
+              </button>
             )}
           </div>
 
@@ -150,9 +166,18 @@ export function NotificationBell({ initialNotifications, initialUnread }: Props)
                     <p className="text-[12px] text-slate-500 mt-0.5 leading-snug">{n.body}</p>
                     <p className="text-[11px] text-slate-400 mt-1">{timeAgo(n.created_at)}</p>
                   </div>
-                  {!n.read && (
-                    <span className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ background: "#7A1330" }} />
-                  )}
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    {!n.read && (
+                      <span className="w-2 h-2 rounded-full" style={{ background: "#7A1330" }} />
+                    )}
+                    <button
+                      onClick={(e) => handleDismiss(e, n.id)}
+                      className="text-slate-300 hover:text-slate-500 transition-colors leading-none"
+                      title="Dismiss"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
                 );
               })

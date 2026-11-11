@@ -6,6 +6,7 @@ import Link from "next/link";
 import { login, type LoginState } from "@/lib/actions/auth-actions";
 import { useSearchParams } from "next/navigation";
 import { SubmitButton } from "@/components/submit-button";
+import { StarField } from "@/components/star-field";
 
 const initialState: LoginState = {};
 
@@ -52,6 +53,9 @@ export default function LoginForm() {
 
       {/* ── Background: CIT-U building fills entire page ── */}
       <div className="lf-bg" aria-hidden="true" />
+
+      {/* ── Blinking star field ── */}
+      <StarField />
 
       {/* ── Left branding section ── */}
       <div className="lf-left">

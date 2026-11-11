@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import { useFormStatus } from "react-dom";
 import {
   approveAccount,
   rejectAccount,
@@ -10,6 +11,15 @@ import {
   revokeAdmin,
 } from "@/lib/actions/approval-actions";
 import type { ProfileRow } from "@/lib/data/profiles";
+
+function ActionButton({ className, children }: { className: string; children: React.ReactNode }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending} className={className}>
+      {children}
+    </button>
+  );
+}
 
 const ROLE_LABEL: Record<string, string> = {
   qao: "QAO",
@@ -76,16 +86,12 @@ function ActionsMenu({
           {/* Approve pending accounts */}
           {isPending && (
             <form action={approveAccount.bind(null, profileId)}>
-              <button
-                type="submit"
-                onClick={() => setOpen(false)}
-                className="w-full text-left px-4 py-2.5 text-sm text-green-700 hover:bg-green-50 transition-colors flex items-center gap-2.5"
-              >
+              <ActionButton className="w-full text-left px-4 py-2.5 text-sm text-green-700 hover:bg-green-50 transition-colors flex items-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 Approve
-              </button>
+              </ActionButton>
             </form>
           )}
 
@@ -462,20 +468,14 @@ export function AccountManagementClient({
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <form action={approveAccount.bind(null, p.id)}>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 text-xs font-semibold bg-maroon text-white rounded-lg hover:bg-maroon-dark transition-colors shadow-sm"
-                        >
+                        <ActionButton className="px-4 py-2 text-xs font-semibold bg-maroon text-white rounded-lg hover:bg-maroon-dark transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
                           Approve
-                        </button>
+                        </ActionButton>
                       </form>
                       <form action={rejectAccount.bind(null, p.id)}>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 text-xs font-semibold border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                        >
+                        <ActionButton className="px-4 py-2 text-xs font-semibold border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                           Reject
-                        </button>
+                        </ActionButton>
                       </form>
                     </div>
                   </div>
