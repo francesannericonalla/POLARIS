@@ -5,7 +5,7 @@ import { DownloadButton } from "@/components/download-button";
 import { ArchiveButton } from "@/components/archive-button";
 import { UploadModal } from "@/components/upload-modal";
 import { DocumentPreviewButton } from "@/components/document-preview-button";
-import { bulkArchiveDocuments, bulkRestoreDocuments, getSignedDownloadUrl } from "@/lib/actions/document-actions";
+import { bulkArchiveDocuments, bulkRestoreDocuments, getSignedDownloadUrl, fetchVersionHistoriesForDoc } from "@/lib/actions/document-actions";
 import { formatDate } from "@/lib/date-utils";
 import type { DocumentRow } from "@/lib/data/documents";
 
@@ -46,51 +46,67 @@ function FileIcon({ mimeType }: { mimeType: string }) {
   );
 }
 
-function VersionHistoryTable({ history }: { history: DocumentRow[] }) {
+function VersionHistoryTable({ docId, version }: { docId: string; version: number }) {
+  const [history, setHistory] = useState<DocumentRow[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleToggle(e: React.SyntheticEvent<HTMLDetailsElement>) {
+    const details = e.currentTarget;
+    // onToggle fires after the browser has updated `open`, so fetch when now open
+    if (details.open && history === null && !loading) {
+      setLoading(true);
+      const rows = await fetchVersionHistoriesForDoc(docId);
+      setHistory(rows);
+      setLoading(false);
+    }
+  }
+
   return (
-    <details className="mt-3 group" style={{ marginLeft: "52px" }}>
+    <details className="mt-3 group" style={{ marginLeft: "52px" }} onToggle={handleToggle}>
       <summary className="text-xs text-maroon cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-maroon-dark transition-colors list-none">
         <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
         </svg>
-        {history.length - 1} previous version{history.length - 1 !== 1 ? "s" : ""}
+        {version - 1} previous version{version - 1 !== 1 ? "s" : ""}
       </summary>
-      <div className="mt-2 rounded-xl border border-gray-100 overflow-hidden">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Version</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Uploaded by</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Date</th>
-              <th className="px-3 py-2 text-right font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Download</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {history.map((v, i) => (
-              <tr key={v.id} className={i === 0 ? "bg-maroon/[0.02]" : ""}>
-                <td className="px-3 py-2">
-                  <span className={`font-semibold ${i === 0 ? "text-maroon" : "text-gray-500"}`}>
-                    v{v.version}
-                    {i === 0 && <span className="ml-1 text-[10px] text-maroon/50 font-normal">(current)</span>}
-                  </span>
-                </td>
-                <td className="px-3 py-2 text-gray-500">{v.uploader_name ?? "—"}</td>
-                <td className="px-3 py-2 text-gray-400">{formatDate(v.created_at)}</td>
-                <td className="px-3 py-2 text-right">
-                  <DownloadButton storagePath={v.storage_path} compact />
-                </td>
+      {loading && <p className="mt-2 text-xs text-gray-400 ml-1">Loading…</p>}
+      {history && history.length > 0 && (
+        <div className="mt-2 rounded-xl border border-gray-100 overflow-hidden">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Version</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Uploaded by</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Date</th>
+                <th className="px-3 py-2 text-right font-semibold text-gray-400 uppercase tracking-wider text-[10px]">Download</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {history.map((v, i) => (
+                <tr key={v.id} className={i === 0 ? "bg-maroon/[0.02]" : ""}>
+                  <td className="px-3 py-2">
+                    <span className={`font-semibold ${i === 0 ? "text-maroon" : "text-gray-500"}`}>
+                      v{v.version}
+                      {i === 0 && <span className="ml-1 text-[10px] text-maroon/50 font-normal">(current)</span>}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-gray-500">{v.uploader_name ?? "—"}</td>
+                  <td className="px-3 py-2 text-gray-400">{formatDate(v.created_at)}</td>
+                  <td className="px-3 py-2 text-right">
+                    <DownloadButton storagePath={v.storage_path} compact />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </details>
   );
 }
 
 type Props = {
   documents: DocumentRow[];
-  versionHistories: Record<string, DocumentRow[]>;
   folderId: string;
   schoolYears: string[];
   canUpload: boolean;
@@ -99,7 +115,6 @@ type Props = {
 
 export function BulkDocumentList({
   documents,
-  versionHistories,
   folderId,
   schoolYears,
   canUpload,
@@ -232,8 +247,7 @@ export function BulkDocumentList({
 
       <div className="divide-y divide-gray-50">
         {documents.map((doc) => {
-          const history = versionHistories[doc.id] ?? [];
-          const hasHistory = history.length > 1;
+          const hasHistory = doc.version > 1;
           const isSelected = selected.has(doc.id);
 
           return (
@@ -300,7 +314,7 @@ export function BulkDocumentList({
                 </div>
               </div>
 
-              {hasHistory && <VersionHistoryTable history={history} />}
+              {hasHistory && <VersionHistoryTable docId={doc.id} version={doc.version} />}
             </div>
           );
         })}

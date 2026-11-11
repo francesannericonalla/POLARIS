@@ -27,21 +27,14 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("profiles")
-    .select("id, email, full_name, role, status, unit_id, id_number")
+    .select("id, email, full_name, role, status, unit_id, id_number, units(name)")
     .eq("id", user.id)
     .single();
 
   if (!profile) return null;
 
-  let unit_name: string | null = null;
-  if ((profile as any).unit_id) {
-    const { data: unit } = await admin
-      .from("units")
-      .select("name")
-      .eq("id", (profile as any).unit_id)
-      .single();
-    unit_name = unit?.name ?? null;
-  }
+  const unit_name = (profile as any).units?.name ?? null;
+  const { units: _units, ...profileFields } = profile as any;
 
-  return { ...(profile as any), unit_name } as Profile;
+  return { ...profileFields, unit_name } as Profile;
 }

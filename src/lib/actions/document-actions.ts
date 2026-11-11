@@ -3,10 +3,16 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/auth";
 import { canUploadToUnit, canAccessUnitRepository } from "@/lib/permissions";
-import { getFolderById, BUCKET } from "@/lib/data/documents";
+import { getFolderById, getVersionHistory, BUCKET, type DocumentRow } from "@/lib/data/documents";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/data/notifications";
 import { sendEmail, documentUploadedHtml } from "@/lib/email";
+
+export async function fetchVersionHistoriesForDoc(docId: string): Promise<DocumentRow[]> {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.status !== "approved") return [];
+  return getVersionHistory(docId);
+}
 
 const ALLOWED_TYPES = [
   "application/pdf",

@@ -48,14 +48,20 @@ export const getFoldersForUnit = unstable_cache(
   { revalidate: 300, tags: ["folders"] }
 );
 
-export async function getFolderById(id: string): Promise<Folder | null> {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("folders")
-    .select("id, unit_id, name, is_qao_exclusive, sort_order")
-    .eq("id", id)
-    .single();
-  return data as Folder | null;
+export function getFolderById(id: string): Promise<Folder | null> {
+  return unstable_cache(
+    async () => {
+      const admin = createAdminClient();
+      const { data } = await admin
+        .from("folders")
+        .select("id, unit_id, name, is_qao_exclusive, sort_order")
+        .eq("id", id)
+        .single();
+      return data as Folder | null;
+    },
+    [`folder-by-id-${id}`],
+    { revalidate: 300, tags: ["folders"] }
+  )();
 }
 
 export const getDocumentCountsForUnit = unstable_cache(
@@ -134,23 +140,33 @@ export async function getDocumentsForFolder(
   }));
 }
 
+async function getPreviousVersionId(admin: ReturnType<typeof createAdminClient>, id: string): Promise<string | null> {
+  const { data } = await admin.from("documents").select("previous_version_id").eq("id", id).single();
+  return (data as any)?.previous_version_id ?? null;
+}
+
 export async function getVersionHistory(documentId: string): Promise<DocumentRow[]> {
   const admin = createAdminClient();
-  const { data: target } = await admin
-    .from("documents")
-    .select("folder_id, title")
-    .eq("id", documentId)
-    .single();
-  if (!target) return [];
+
+  // Walk the previous_version_id chain to collect all ancestor IDs
+  const ids: string[] = [documentId];
+  let walkId: string | null = await getPreviousVersionId(admin, documentId);
+  while (walkId !== null) {
+    ids.push(walkId);
+    walkId = await getPreviousVersionId(admin, walkId);
+  }
 
   const { data } = await admin
     .from("documents")
-    .select("id, version, created_at, previous_version_id")
-    .eq("folder_id", target.folder_id)
-    .eq("title", target.title)
+    .select("id, title, version, created_at, previous_version_id, is_latest, storage_path, uploaded_by, profiles!documents_uploaded_by_fkey(full_name)")
+    .in("id", ids)
     .order("version", { ascending: false });
 
-  return (data ?? []) as DocumentRow[];
+  return ((data ?? []) as any[]).map((row) => ({
+    ...row,
+    uploader_name: row.profiles?.full_name ?? "Unknown",
+    profiles: undefined,
+  })) as DocumentRow[];
 }
 
 // Returns a map of documentId → version history for all docs in a folder,

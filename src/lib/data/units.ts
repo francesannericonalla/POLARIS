@@ -30,14 +30,15 @@ export const getAllUnits = unstable_cache(
   { revalidate: 3600 }
 );
 
-export async function getUnitById(id: string): Promise<Unit | null> {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("units")
-    .select("id, name, type, branch, parent_id, is_qao, sort_order")
-    .eq("id", id)
-    .single();
-  return data as Unit | null;
+export function getUnitById(id: string): Promise<Unit | null> {
+  return unstable_cache(
+    async () => {
+      const units = await getAllUnits();
+      return units.find((u) => u.id === id) ?? null;
+    },
+    [`unit-by-id-${id}`],
+    { revalidate: 3600 }
+  )();
 }
 
 // Shapes the flat unit list into the tree the sidebar/signup form need:

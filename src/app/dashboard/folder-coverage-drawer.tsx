@@ -78,7 +78,7 @@ function OfficeListDrawer({
   }, [open, drawer, schoolYear]);
 
   useEffect(() => {
-    if (open) setTimeout(() => searchRef.current?.focus(), 180);
+    if (open) searchRef.current?.focus();
     else setSearch("");
   }, [open]);
 

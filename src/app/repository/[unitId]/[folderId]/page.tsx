@@ -7,8 +7,6 @@ import {
   getFolderById,
   getDocumentsForFolder,
   getDistinctSchoolYears,
-  getVersionHistoriesForFolder,
-  type DocumentRow,
 } from "@/lib/data/documents";
 import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
@@ -35,10 +33,9 @@ export default async function FolderPage({
   const { sy, sem, show } = await searchParams;
   const activeTab: "active" | "archived" = show === "archived" ? "archived" : "active";
 
-  const [allDocuments, schoolYears, versionHistoriesMap] = await Promise.all([
+  const [allDocuments, schoolYears] = await Promise.all([
     getDocumentsForFolder(folderId, { schoolYear: sy, semester: sem, includeArchived: true }),
     getDistinctSchoolYears(unitId),
-    getVersionHistoriesForFolder(folderId),
   ]);
 
   const baseFiltered = allDocuments.filter((d) =>
@@ -53,12 +50,6 @@ export default async function FolderPage({
   const canUpload = canUploadToUnit(profile, unitId);
   const activeCount = allDocuments.filter((d) => !d.archived).length;
   const archivedCount = allDocuments.filter((d) => d.archived).length;
-
-  // Convert Map to plain object for client component serialization
-  const versionHistories: Record<string, DocumentRow[]> = {};
-  for (const [k, v] of versionHistoriesMap.entries()) {
-    versionHistories[k] = v;
-  }
 
   return (
     <AppShell profile={profile} title={folder.name} activeUnitId={unitId} activeHref={`/repository/${unitId}`}>
@@ -117,7 +108,6 @@ export default async function FolderPage({
         {/* Document list with bulk actions */}
         <BulkDocumentList
           documents={visibleDocuments}
-          versionHistories={versionHistories}
           folderId={folderId}
           schoolYears={schoolYears}
           canUpload={canUpload}
