@@ -273,22 +273,22 @@ export type PendingOffice = {
 };
 
 export const getAllOfficesForFolder = unstable_cache(async (
-  folderName: string,
-  branch: "academics" | "administration",
+  folderName: string | string[],
+  branch: "all" | "academics" | "administration",
   schoolYear?: string
 ): Promise<PendingOffice[]> => {
   const admin = createAdminClient();
   const sy = schoolYear || currentSchoolYear();
 
   const allUnits = await getAllUnits();
-  const leafUnits = allUnits.filter((u) => u.type !== "college" && u.branch === branch);
+  const leafUnits = allUnits.filter((u) => u.type !== "college" && (branch === "all" || u.branch === branch));
   const leafIds = new Set(leafUnits.map((u) => u.id));
 
   const [{ data: folders }, { data: docs }] = await Promise.all([
     admin
       .from("folders")
       .select("id, unit_id")
-      .eq("name", folderName)
+      .in("name", typeof folderName === "string" ? [folderName] : folderName)
       .eq("is_qao_exclusive", false),
     admin
       .from("documents")

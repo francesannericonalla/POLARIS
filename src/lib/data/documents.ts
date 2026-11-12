@@ -250,12 +250,17 @@ export async function searchDocumentsGlobal(
   opts: { role?: string; unitId?: string } = {}
 ): Promise<GlobalSearchResult[]> {
   if (!query || query.trim().length < 2) return [];
+  if (opts.role !== "qao" && (opts.role !== "office_user" || !opts.unitId)) return [];
   const admin = createAdminClient();
+
+  // Quote PostgREST filter values so punctuation in filenames stays literal.
+  const pattern = `%${query.trim().replace(/[\\%_]/g, "\\$&")}%`;
+  const filterValue = `"${pattern.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 
   let q = admin
     .from("documents")
     .select("id, title, file_name, school_year, semester, created_at, unit_id, folder_id, units!documents_unit_id_fkey(name), folders!documents_folder_id_fkey(name, is_qao_exclusive)")
-    .ilike("title", `%${query.trim()}%`)
+    .or(`title.ilike.${filterValue},file_name.ilike.${filterValue}`)
     .eq("is_latest", true)
     .eq("archived", false)
     .order("created_at", { ascending: false })

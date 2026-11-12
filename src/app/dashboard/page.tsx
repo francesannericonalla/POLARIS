@@ -19,7 +19,7 @@ import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
 import { OfficeUserSYFilter } from "./office-user-sy-filter";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
-import { FolderCoverageTabbed } from "./folder-coverage-tabbed";
+import { FolderCoverage } from "./folder-coverage";
 import { QAOAllOfficesTable } from "./qao-all-offices-table";
 import { DeadlineManager } from "./deadline-manager";
 import { DeadlineBanner } from "./deadline-banner";
@@ -289,11 +289,6 @@ export default async function DashboardPage({
   const adminFilled2 = adminSummariesAll.reduce((s, u) => s + u.foldersThisYear, 0);
   const adminPct    = adminSlots > 0 ? Math.round((adminFilled2 / adminSlots) * 100) : 0;
 
-  const academicsStats = folderStats.filter((s) => s.branch === "academics");
-  const adminFolderStats = folderStats.filter((s) => s.branch === "administration");
-  const showAcademics = !validBranch || validBranch === "academics";
-  const showAdmin     = !validBranch || validBranch === "administration";
-
   return (
     <AppShell profile={profile} title="University Dashboard" activeHref="/dashboard">
       <div className="p-6 md:p-8 space-y-6" style={{ maxWidth: 1400, margin: "0 auto" }}>
@@ -465,9 +460,9 @@ export default async function DashboardPage({
               </h2>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <FolderCoverageTabbed
-                academicsStats={showAcademics ? academicsStats : []}
-                adminStats={showAdmin ? adminFolderStats : []}
+              <FolderCoverage
+                stats={folderStats}
+                branch={validBranch ?? "all"}
                 schoolYear={activeSY}
               />
             </div>

@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchAllOfficesForFolder } from "./actions";
 import type { PendingOffice } from "@/lib/data/dashboard";
-import type { FolderSubmissionStat } from "@/lib/data/dashboard";
+import type { CoverageBranch, FolderCoverageStat } from "@/lib/folder-coverage";
 
 interface DrawerState {
   folderName: string;
-  branch: "academics" | "administration";
+  folderNames: string[];
+  branch: CoverageBranch;
 }
 
 function XIcon() {
@@ -54,27 +55,26 @@ function OfficeListDrawer({
   onClose: () => void;
 }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [offices, setOffices] = useState<PendingOffice[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "submitted" | "not_submitted">("all");
   const searchRef = useRef<HTMLInputElement>(null);
-  const prevDrawer = useRef<DrawerState | null>(null);
 
   useEffect(() => {
     if (!open || !drawer) return;
-    if (
-      prevDrawer.current?.folderName === drawer.folderName &&
-      prevDrawer.current?.branch === drawer.branch
-    ) return;
-    prevDrawer.current = drawer;
+    let cancelled = false;
+    setPending(true);
+    setError(null);
     setOffices([]);
     setSearch("");
     setFilter("all");
-    startTransition(async () => {
-      const result = await fetchAllOfficesForFolder(drawer.folderName, drawer.branch, schoolYear);
-      setOffices(result);
-    });
+    fetchAllOfficesForFolder(drawer.folderNames, drawer.branch, schoolYear)
+      .then((result) => { if (!cancelled) setOffices(result); })
+      .catch(() => { if (!cancelled) setError("Could not load offices. Please reopen this folder to try again."); })
+      .finally(() => { if (!cancelled) setPending(false); });
+    return () => { cancelled = true; };
   }, [open, drawer, schoolYear]);
 
   useEffect(() => {
@@ -96,7 +96,7 @@ function OfficeListDrawer({
   });
 
   const pendingCount = totalCount - submittedCount;
-  const accentColor = drawer?.branch === "academics" ? "#7A1330" : "#B8892B";
+  const accentColor = drawer?.branch === "administration" ? "#B8892B" : "#7A1330";
 
   function handleOfficeClick(office: PendingOffice) {
     if (!office.folder_id) return;
@@ -141,7 +141,7 @@ function OfficeListDrawer({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: accentColor }}>
-                {drawer?.branch === "academics" ? "Academics" : "Administration"}
+                {drawer?.branch === "all" ? "All Offices & Departments" : drawer?.branch === "academics" ? "Academics" : "Administration"}
               </p>
               <h2 className="text-sm font-semibold text-gray-800 leading-snug truncate">
                 {drawer?.folderName ?? ""}
@@ -209,6 +209,8 @@ function OfficeListDrawer({
                 <div key={i} className="h-9 bg-gray-100 rounded-lg animate-pulse" style={{ opacity: 1 - i * 0.12 }} />
               ))}
             </div>
+          ) : error ? (
+            <p className="py-10 text-center text-sm text-red-500" role="alert">{error}</p>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               {search ? (
@@ -308,7 +310,7 @@ export function FolderCoverageWithDrawer({
 }: {
   title: string;
   subtitle: string;
-  stats: FolderSubmissionStat[];
+  stats: FolderCoverageStat[];
   accentColor: string;
   accentHex: string;
   schoolYear: string;
@@ -316,12 +318,12 @@ export function FolderCoverageWithDrawer({
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState<DrawerState | null>(null);
-  const [activeStat, setActiveStat] = useState<FolderSubmissionStat | null>(null);
+  const [activeStat, setActiveStat] = useState<FolderCoverageStat | null>(null);
   const visibleStats = stats;
 
-  function openDrawer(stat: FolderSubmissionStat) {
+  function openDrawer(stat: FolderCoverageStat) {
     setActiveStat(stat);
-    setActiveDrawer({ folderName: stat.folder_name, branch: stat.branch });
+    setActiveDrawer({ folderName: stat.folder_name, folderNames: stat.folder_names, branch: stat.branch });
     setDrawerOpen(true);
   }
 
